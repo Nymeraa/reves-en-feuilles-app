@@ -1,0 +1,1 @@
+Prisma schema formatted. Please check terminal output for generation status.

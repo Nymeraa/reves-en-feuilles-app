@@ -1,0 +1,352 @@
+{
+  "allRecipes": [
+    {
+      "name": "efrfefe",
+      "id": "vdaymb",
+      "totalIngredientCost": 102.0588,
+      "totalCost": 102.0588,
+      "items": [
+        {
+          "id": "rlurhj",
+          "ingredientId": "mevrfl",
+          "percentage": 51
+        },
+        {
+          "id": "z1ip9f",
+          "ingredientId": "1",
+          "percentage": 9
+        },
+        {
+          "id": "fbd5x5h",
+          "ingredientId": "1",
+          "percentage": 40
+        }
+      ]
+    },
+    {
+      "name": "Audit Tea",
+      "id": "z3xqyd",
+      "totalIngredientCost": 0.12,
+      "totalCost": 0.12,
+      "items": [
+        {
+          "id": "8sjyrr",
+          "ingredientId": "1",
+          "percentage": 100
+        }
+      ]
+    },
+    {
+      "name": "Audit Recipe",
+      "id": "eo740h",
+      "totalIngredientCost": 15,
+      "totalCost": 15,
+      "items": [
+        {
+          "id": "kuyeqt",
+          "ingredientId": "bbj4he",
+          "percentage": 100
+        }
+      ]
+    },
+    {
+      "name": "Audit Recipe",
+      "id": "poi3u4",
+      "totalIngredientCost": 5,
+      "totalCost": 5,
+      "items": [
+        {
+          "id": "za2subi",
+          "ingredientId": "wql1v",
+          "percentage": 100
+        }
+      ]
+    },
+    {
+      "name": "Audit Tea",
+      "id": "pqdamj",
+      "items": []
+    },
+    {
+      "name": "Audit Tea",
+      "id": "u41k8l",
+      "items": []
+    },
+    {
+      "name": "Audit Tea",
+      "id": "7l4dn",
+      "items": []
+    },
+    {
+      "name": "Audit Tea",
+      "id": "0arsrg",
+      "items": []
+    },
+    {
+      "name": "Audit Tea",
+      "id": "xt1nlna",
+      "items": []
+    },
+    {
+      "name": "Test Recipe",
+      "id": "j0kqg",
+      "totalIngredientCost": 0.05,
+      "totalCost": 0.05,
+      "items": [
+        {
+          "id": "nq5hj",
+          "ingredientId": "hsyms",
+          "percentage": 100
+        }
+      ]
+    },
+    {
+      "name": "Test Recipe",
+      "id": "bl6g7h",
+      "totalIngredientCost": 0.05,
+      "totalCost": 0.05,
+      "items": [
+        {
+          "id": "0agleh",
+          "ingredientId": "x2cpqr",
+          "percentage": 100
+        }
+      ]
+    },
+    {
+      "name": "Test Recipe",
+      "id": "wfphnd",
+      "totalIngredientCost": 0.05,
+      "totalCost": 0.05,
+      "items": [
+        {
+          "id": "6dmp0a",
+          "ingredientId": "uc9kxw",
+          "percentage": 100
+        }
+      ]
+    },
+    {
+      "name": "Test Recipe",
+      "id": "un3m3",
+      "totalIngredientCost": 0.05,
+      "totalCost": 0.05,
+      "items": [
+        {
+          "id": "xxqae",
+          "ingredientId": "nynx3r",
+          "percentage": 100
+        }
+      ]
+    },
+    {
+      "name": "Test Recipe",
+      "id": "134li",
+      "totalIngredientCost": 0.05,
+      "totalCost": 0.05,
+      "items": [
+        {
+          "id": "ndht5",
+          "ingredientId": "fswex9",
+          "percentage": 100
+        }
+      ]
+    },
+    {
+      "name": "Test Recipe",
+      "id": "6229y",
+      "totalIngredientCost": 0.05,
+      "totalCost": 0.05,
+      "items": [
+        {
+          "id": "e3hr7k",
+          "ingredientId": "ce18h",
+          "percentage": 100
+        }
+      ]
+    },
+    {
+      "name": "Test Recipe",
+      "id": "b9hl1v",
+      "totalIngredientCost": 0.05,
+      "totalCost": 0.05,
+      "items": [
+        {
+          "id": "ucz3r",
+          "ingredientId": "iozow",
+          "percentage": 100
+        }
+      ]
+    },
+    {
+      "name": "Test Recipe",
+      "id": "w6gupk",
+      "totalIngredientCost": 0.05,
+      "totalCost": 0.05,
+      "items": [
+        {
+          "id": "e6h2cc",
+          "ingredientId": "12wmqa",
+          "percentage": 100
+        }
+      ]
+    },
+    {
+      "name": "Test Recipe",
+      "id": "4kg1wf",
+      "totalIngredientCost": 0.05,
+      "totalCost": 0.05,
+      "items": [
+        {
+          "id": "ucti04",
+          "ingredientId": "tg641n",
+          "percentage": 100
+        }
+      ]
+    },
+    {
+      "name": "TTC Test Recipe",
+      "id": "qs59ba",
+      "totalIngredientCost": 0.12,
+      "totalCost": 0.12,
+      "items": [
+        {
+          "id": "q2cy02",
+          "ingredientId": "1",
+          "percentage": 100
+        }
+      ]
+    },
+    {
+      "name": "Mismatch Test",
+      "id": "gvf62",
+      "totalIngredientCost": 0.12,
+      "totalCost": 0.12,
+      "items": [
+        {
+          "id": "d8f37e",
+          "ingredientId": "1",
+          "percentage": 100
+        }
+      ]
+    },
+    {
+      "name": "Mismatch Test",
+      "id": "b9hfxl",
+      "totalIngredientCost": 0.12,
+      "totalCost": 0.12,
+      "items": [
+        {
+          "id": "1qa3kb",
+          "ingredientId": "1",
+          "percentage": 100
+        }
+      ]
+    },
+    {
+      "name": "TTC Test Recipe",
+      "id": "y5cjlo",
+      "totalIngredientCost": 0.12,
+      "totalCost": 0.12,
+      "items": [
+        {
+          "id": "zzbqvk",
+          "ingredientId": "1",
+          "percentage": 100
+        }
+      ]
+    },
+    {
+      "name": "Mismatch Test",
+      "id": "sjyp3",
+      "totalIngredientCost": 0.12,
+      "totalCost": 0.12,
+      "items": [
+        {
+          "id": "n2e9g5",
+          "ingredientId": "1",
+          "percentage": 100
+        }
+      ]
+    },
+    {
+      "name": "Test Verification Recipe",
+      "id": "hwh3u7",
+      "totalIngredientCost": 0.12,
+      "totalCost": 0.12,
+      "items": [
+        {
+          "id": "6915r",
+          "ingredientId": "1",
+          "percentage": 100
+        }
+      ]
+    },
+    {
+      "name": "tropbon",
+      "id": "2k5ubp",
+      "totalIngredientCost": 15.99,
+      "totalCost": 15.99,
+      "items": [
+        {
+          "id": "5ml97r",
+          "ingredientId": "uz5ahu",
+          "percentage": 1
+        },
+        {
+          "id": "79a3ov",
+          "ingredientId": "f3qft",
+          "percentage": 99
+        }
+      ]
+    }
+  ],
+  "order0009": {
+    "id": "3dt21p",
+    "organizationId": "org-1",
+    "orderNumber": "#0009",
+    "customerName": "Client inconnu",
+    "status": "SHIPPED",
+    "items": [
+      {
+        "id": "xebo6s",
+        "orderId": "3dt21p",
+        "type": "RECIPE",
+        "recipeId": "2k5ubp",
+        "format": 100,
+        "quantity": 1,
+        "name": "tropbon",
+        "versionNumber": 1,
+        "unitPriceSnapshot": 4.2173625,
+        "unitCostSnapshot": 1.6869450000000001,
+        "unitMaterialCostSnapshot": 1.6869450000000001,
+        "unitPackagingCostSnapshot": 0,
+        "totalPrice": 4.2173625
+      }
+    ],
+    "manualTotal": true,
+    "totalAmount": 10000,
+    "totalCost": 1.69,
+    "createdAt": "2026-02-06T00:00:00.000Z",
+    "updatedAt": "2026-02-06T12:11:45.722Z",
+    "source": "Shopify",
+    "email": "",
+    "shippingCarrier": "",
+    "trackingNumber": "",
+    "shippingCost": 50,
+    "packagingType": "Aucun",
+    "discountCode": "",
+    "discountPercent": null,
+    "otherFees": 0.1,
+    "notes": "",
+    "cogsMaterials": 1.69,
+    "cogsPackaging": 0,
+    "netProfit": 8457.91,
+    "margin": 84.5791,
+    "feesUrssaf": 1200,
+    "feesShopify": 290.3,
+    "feesOther": 0.1,
+    "feesTotal": 1490.4,
+    "shippingPrice": null
+  }
+}

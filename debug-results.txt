@@ -1,0 +1,73 @@
+­ƒöì Starting Debug Test
+
+Ô£ô Using recipe: S├®r├®nit├® florale (0iaw2m)
+Ô£ô Ingredient: Th├® blanc
+  Initial stock: 1850g
+  Percentage in recipe: 60%
+
+­ƒôØ Creating DRAFT order...
+Ô£ô Order created: 6zka5c, status: DRAFT
+
+ adding item to order...
+[PackagingService] Packaging matched by Name (Doypack 100g) instead of strict Capacity field. Please update Ingredient capacity.
+Ô£ô Item added
+  Order has 1 item(s)
+  Item: S├®r├®nit├® florale
+  Format: 100g
+  Quantity: 1
+
+­ƒôè Stock BEFORE confirm: 1850g
+
+Ô£à Confirming order (should deduct stock)...
+[PackagingService] Packaging matched by Name (Doypack 100g) instead of strict Capacity field. Please update Ingredient capacity.
+Ô£ô Order confirmed
+  Order status after confirm: PAID
+
+­ƒôè Stock AFTER confirm: 1790g
+
+ Expected:
+  Deduction: 60g
+  Final stock: 1790g
+
+­ƒôè Actual:
+  Stock change: -60g
+  Final stock: 1790g
+
+­ƒô£ Checking movements...
+  Found 6 movement(s) for this order
+  Movement 1:
+    Type: SALE
+    Delta: -60g
+    Reason: Order #6zka5c - 1x S├®r├®nit├® florale
+    Ingredient: d2ltoq
+  Movement 2:
+    Type: SALE
+    Delta: -20g
+    Reason: Order #6zka5c - 1x S├®r├®nit├® florale
+    Ingredient: bw7vz6
+  Movement 3:
+    Type: SALE
+    Delta: -10g
+    Reason: Order #6zka5c - 1x S├®r├®nit├® florale
+    Ingredient: ix0iu
+  Movement 4:
+    Type: SALE
+    Delta: -5g
+    Reason: Order #6zka5c - 1x S├®r├®nit├® florale
+    Ingredient: vlpbn3
+  Movement 5:
+    Type: SALE
+    Delta: -5g
+    Reason: Order #6zka5c - 1x S├®r├®nit├® florale
+    Ingredient: uwa6e
+  Movement 6:
+    Type: SALE
+    Delta: -1g
+    Reason: Order #6zka5c - Doypack 100g for S├®r├®nit├® florale
+    Ingredient: m6jujr
+
+Ô£à TEST PASSED: Stock was correctly deducted
+
+­ƒº╣ Cleaning up...
+[PackagingService] Packaging matched by Name (Doypack 100g) instead of strict Capacity field. Please update Ingredient capacity.
+Ô£ô Test order deleted
