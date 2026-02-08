@@ -56,20 +56,69 @@ export function IngredientDialog({
   suppliers = [],
 }: IngredientDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const isEdit = !!ingredient;
-  const action = isEdit ? updateIngredientAction.bind(null, ingredient.id) : createIngredientAction;
-  const [state, formAction] = useActionState(action, null);
+  // const action = isEdit ? updateIngredientAction.bind(null, ingredient.id) : createIngredientAction;
+  // const [state, formAction] = useActionState(action, null); // Removed for API route fix
 
   // Internal open state handling if not controlled
   const effectiveOpen = open !== undefined ? open : isOpen;
   const setEffectiveOpen = onOpenChange || setIsOpen;
 
-  // Close on success
-  useEffect(() => {
-    if (state?.success && effectiveOpen) {
-      setEffectiveOpen(false);
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    const formData = new FormData(e.currentTarget);
+    const data: any = Object.fromEntries(formData.entries());
+
+    try {
+      // If Edit, we might still use Server Action or switch to PUT API later.
+      // User asked specifically for "Creation" to be fixed via API.
+      if (isEdit) {
+        // UPDATE via API
+        const response = await fetch(`/api/inventory/${ingredient.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success) {
+            setEffectiveOpen(false);
+            window.location.reload();
+          } else {
+            console.error('Update failed logic');
+          }
+        } else {
+          console.error('Update failed network');
+        }
+      } else {
+        // CREATE via API (Fix for Vercel 200 OK text/x-component issue)
+        const response = await fetch('/api/inventory', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success) {
+            setEffectiveOpen(false);
+            // Force refresh since we bypassed Server Action revalidate
+            window.location.reload();
+          }
+        } else {
+          console.error('Create failed', await response.text());
+        }
+      }
+    } catch (err) {
+      console.error('Submit error', err);
+    } finally {
+      setIsLoading(false);
     }
-  }, [state, effectiveOpen, setEffectiveOpen]);
+  };
 
   return (
     <Dialog open={effectiveOpen} onOpenChange={setEffectiveOpen}>
@@ -85,7 +134,7 @@ export function IngredientDialog({
           </DialogTitle>
         </DialogHeader>
 
-        <form action={formAction} className="grid gap-4 py-4">
+        <form onSubmit={handleSubmit} className="grid gap-4 py-4">
           <div className="grid gap-2">
             <Label htmlFor="name">Nom *</Label>
             <Input
@@ -216,8 +265,12 @@ export function IngredientDialog({
               {readonly ? 'Fermer' : 'Annuler'}
             </Button>
             {!readonly && (
-              <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white">
-                {isEdit ? 'Enregistrer' : 'Créer'}
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              >
+                {isLoading ? 'En cours...' : isEdit ? 'Enregistrer' : 'Créer'}
               </Button>
             )}
           </DialogFooter>

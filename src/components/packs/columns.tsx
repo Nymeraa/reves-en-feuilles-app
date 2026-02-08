@@ -5,11 +5,12 @@ import { Pack, PackStatus } from '@/types/pack';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Edit2, Package, Eye } from 'lucide-react';
-import { PackDialog } from '@/components/packs/pack-dialog';
+import { PackActions } from '@/components/packs/pack-actions';
+// import { PackDialog } from '@/components/packs/pack-dialog'
 import { Recipe } from '@/types/recipe';
 import { Ingredient } from '@/types/inventory';
-import { DeleteConfirmButton } from '@/components/ui/delete-confirm-button';
-import { deletePackAction } from '@/actions/pack';
+// import { DeleteConfirmButton } from '@/components/ui/delete-confirm-button'
+// import { deletePackAction } from '@/actions/pack'
 
 export const getPackColumns = (recipes: Recipe[], ingredients: Ingredient[]): ColumnDef<Pack>[] => [
   {
@@ -77,42 +78,7 @@ export const getPackColumns = (recipes: Recipe[], ingredients: Ingredient[]): Co
     id: 'actions',
     header: '',
     cell: ({ row }) => (
-      <div className="flex items-center gap-1">
-        <PackDialog
-          pack={row.original}
-          recipes={recipes}
-          ingredients={ingredients}
-          readonly={true}
-          trigger={
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-slate-500 hover:text-blue-600"
-            >
-              <Eye className="h-4 w-4" />
-            </Button>
-          }
-        />
-        <PackDialog
-          pack={row.original}
-          recipes={recipes}
-          ingredients={ingredients}
-          trigger={
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-slate-500 hover:text-purple-600"
-            >
-              <Edit2 className="h-4 w-4" />
-            </Button>
-          }
-        />
-        <DeleteConfirmButton
-          id={row.original.id}
-          action={deletePackAction}
-          title={`Supprimer ${row.original.name} ?`}
-        />
-      </div>
+      <PackActions pack={row.original} recipes={recipes} ingredients={ingredients} />
     ),
   },
 ];
