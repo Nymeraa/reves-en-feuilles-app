@@ -133,10 +133,10 @@ export function MovementTable({ movements = [], ingredients = [], onAdd }: Movem
             {filtered.map((m) => {
               const isPerUnit = isPerUnitCategory(m.ingredientId);
               const quantityUnit = isPerUnit ? 'unités' : 'g';
-              const priceDisplay = m.unitPriceAtTime
+              const priceDisplay = m.unitPrice
                 ? isPerUnit
-                  ? `${m.unitPriceAtTime.toFixed(2)} €/U`
-                  : `${(m.unitPriceAtTime * 1000).toFixed(2)} €/kg`
+                  ? `${m.unitPrice.toFixed(2)} €/U`
+                  : `${(m.unitPrice * 1000).toFixed(2)} €/kg`
                 : '-';
 
               return (
