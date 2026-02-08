@@ -22,8 +22,9 @@ if (DRIVER === 'sql') {
       implementation = jsonDb;
     } else {
       const msg =
-        '[DB] FATAL: DB_DRIVER=sql but Prisma Client is unavailable. Set ALLOW_JSON_FALLBACK=true to allow degraded mode.';
+        '[DB] FATAL: DB_DRIVER=sql but Prisma Client is unavailable. Set ALLOW_JSON_FALLBACK=true to allow degraded mode (NOT RECOMENDED ON VERCEL).';
       console.error(msg);
+      // Explicit throw to prevent any accidental fallback or silent failure
       throw new Error(msg);
     }
   }

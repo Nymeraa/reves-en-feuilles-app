@@ -17,8 +17,9 @@ Configurer ces variables pour **Production** et **Preview**.
 | `DB_DRIVER`           | `sql`                                                                             | Force l'utilisation de PostgreSQL/Prisma.                                                                                       |
 | `ALLOW_JSON_FALLBACK` | `false`                                                                           | **CRITIQUE**. Interdit le repli sur fichier JSON en cas d'erreur DB.                                                            |
 | `DATABASE_URL`        | `postgres://[user]:[password]@[host]:6543/[db]?pgbouncer=true&connection_limit=1` | **Transaction Pooler**. Copier depuis Supabase > Settings > Database > Connection pools. Ajouter `?pgbouncer=true` si manquant. |
-| `DIRECT_URL`          | `postgres://[user]:[password]@[host]:5432/[db]`                                   | **Direct Connection**. Copier depuis Supabase > Settings > Database > Direct connection.                                        |
 | `NEXT_PUBLIC_...`     | _(Si applicable)_                                                                 | Ajouter toute autre variable publique nécessaire.                                                                               |
+
+> **Important** : la variable `DIRECT_URL` n'est **PAS** nécessaire en production sur Vercel (sauf si vous lancez des migrations depuis Vercel, ce qui est déconseillé). Utilisez `DATABASE_URL` (Pooler) pour l'application.
 
 > **Important** : Ne jamais commiter de fichier `.env` contenant ces secrets. Ils doivent être définis uniquement dans l'interface Vercel.
 
