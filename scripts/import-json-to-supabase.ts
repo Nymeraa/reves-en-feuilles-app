@@ -168,7 +168,7 @@ async function migrate() {
   for (const m of movements) {
     mIndex++;
     if (mIndex % 50 === 0) console.log(`  Processing movement ${mIndex}/${movements.length}...`);
-    const { unitPriceAtTime, ...rest } = m;
+    const { unitPriceAtTime, ...rest } = m as any;
     let movementData: any = {
       ...rest,
       unitPrice: unitPriceAtTime, // Map legacy field
