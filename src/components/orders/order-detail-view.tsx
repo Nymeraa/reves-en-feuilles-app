@@ -63,8 +63,8 @@ export function OrderDetailView({
                   'Êtes-vous sûr de vouloir supprimer cette commande ? Cela annulera les mouvements de stock associés.'
                 )
               ) {
-                const { deleteOrderAction } = await import('@/actions/orders');
-                await deleteOrderAction(order.id);
+                const { apiFetch } = await import('@/lib/api-client');
+                await apiFetch(`/api/orders/${order.id}`, { method: 'DELETE' });
                 router.push('/orders');
               }
             }}

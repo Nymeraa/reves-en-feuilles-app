@@ -15,7 +15,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       recipeId,
       packId,
       ingredientId,
-      format: format ? Number(format) : undefined,
+      format: format ? (Number(format) as any) : undefined,
       quantity: Number(quantity),
       unitPrice: unitPrice ? Number(unitPrice) : undefined,
     };

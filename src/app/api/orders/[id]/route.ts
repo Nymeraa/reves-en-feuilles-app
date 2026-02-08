@@ -34,12 +34,12 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       site,
     } = parseResult.data;
 
-    const input: CreateOrderInput = {
+    const input: Partial<CreateOrderInput> = {
       orderNumber,
       customerName,
       date: date ? new Date(date) : undefined,
       totalAmount,
-      status,
+      status: status as any,
       source,
       email,
       shippingCarrier,

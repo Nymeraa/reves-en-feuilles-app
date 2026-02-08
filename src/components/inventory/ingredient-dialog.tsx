@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useActionState } from 'react'; // React 19
-import { createIngredientAction, updateIngredientAction } from '@/actions/inventory'; // We need to export updateIngredientAction
+// import { createIngredientAction, updateIngredientAction } from '@/actions/inventory';
 import { Ingredient, Supplier } from '@/types/inventory';
 import {
   Dialog,

@@ -10,7 +10,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
     const parseResult = updateSupplierSchema.safeParse(body);
     if (!parseResult.success) {
-      return NextResponse.json({ error: parseResult.error.errors[0].message }, { status: 400 });
+      return NextResponse.json({ error: parseResult.error.issues[0].message }, { status: 400 });
     }
 
     const { name, contactEmail, contactPhone, website, leadTime, defaultConditioning, notes } =

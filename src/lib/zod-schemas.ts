@@ -33,6 +33,12 @@ export const createOrderSchema = z.object({
   paymentStatus: z.string().optional(),
   notes: z.string().optional(),
   site: z.string().optional(),
+  // Added fields
+  date: z.string().optional(), // ISO date string
+  packagingType: z.string().optional(),
+  discountCode: z.string().optional(),
+  discountPercent: z.coerce.number().min(0).optional(),
+  otherFees: z.coerce.number().min(0).optional(),
 });
 
 export const updateOrderSchema = createOrderSchema.partial();

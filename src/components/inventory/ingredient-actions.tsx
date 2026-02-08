@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { apiFetch } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
 import { Edit2, Eye } from 'lucide-react';
 import { IngredientDialog } from './ingredient-dialog';
@@ -18,18 +19,13 @@ export function IngredientActions({ ingredient }: IngredientActionsProps) {
 
   const handleDelete = async (id: string) => {
     try {
-      const res = await fetch(`/api/inventory/${id}`, {
+      await apiFetch(`/inventory/${id}`, {
         method: 'DELETE',
       });
-
-      if (res.ok) {
-        router.refresh();
-        return { success: true };
-      } else {
-        return { error: 'Failed to delete' };
-      }
-    } catch (e) {
-      return { error: 'Network error' };
+      router.refresh();
+      return { success: true };
+    } catch (e: any) {
+      return { error: e.message || 'Failed to delete' };
     }
   };
 

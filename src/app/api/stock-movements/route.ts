@@ -10,7 +10,7 @@ export async function POST(request: Request) {
 
     const parseResult = createStockMovementSchema.safeParse(body);
     if (!parseResult.success) {
-      return NextResponse.json({ error: parseResult.error.errors[0].message }, { status: 400 });
+      return NextResponse.json({ error: parseResult.error.issues[0].message }, { status: 400 });
     }
 
     const { ingredientId, type, quantity, unitPrice, reason, notes } = parseResult.data; // quantity is already number > 0 from schema

@@ -14,7 +14,7 @@ const TVA_RATE = 1.055;
 
 import { IngredientActions } from './ingredient-actions';
 import { DeleteConfirmButton } from '@/components/ui/delete-confirm-button';
-import { deleteIngredientAction } from '@/actions/inventory';
+// import { deleteIngredientAction } from '@/actions/inventory';
 import { Eye } from 'lucide-react';
 
 export const columns: ColumnDef<Ingredient>[] = [

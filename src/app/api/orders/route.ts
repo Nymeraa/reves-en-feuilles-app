@@ -37,7 +37,7 @@ export async function POST(request: Request) {
       customerName: customerName || 'Client inconnu',
       date: date ? new Date(date) : new Date(),
       totalAmount: totalAmount || 0,
-      status,
+      status: status as any, // Cast to any to avoid strict Enum mismatch for now
       source,
       email,
       shippingCarrier,
