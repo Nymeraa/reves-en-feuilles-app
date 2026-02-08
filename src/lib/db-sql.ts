@@ -11,7 +11,10 @@ const globalForPrisma = global as unknown as { prisma: PrismaClient };
 let prismaInstance: PrismaClient;
 
 if (!globalForPrisma.prisma) {
-  const pool = new Pool({ connectionString });
+  const pool = new Pool({
+    connectionString,
+    ssl: { rejectUnauthorized: false }, // Required for Supabase/Vercel (self-signed certs in chain)
+  });
   const adapter = new PrismaPg(pool);
   prismaInstance = new PrismaClient({ adapter });
 } else {
