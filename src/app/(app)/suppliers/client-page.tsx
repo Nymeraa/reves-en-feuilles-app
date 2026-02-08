@@ -1,85 +1,99 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { Supplier } from '@/types/inventory'
-import { SupplierTable } from '@/components/suppliers/supplier-table'
-import { SupplierModal } from '@/components/suppliers/supplier-modal'
-import { createSupplierAction, updateSupplierAction, deleteSupplierAction } from '@/actions/suppliers'
-import { useToast } from '@/components/ui/use-toast'
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Supplier } from '@/types/inventory';
+import { SupplierTable } from '@/components/suppliers/supplier-table';
+import { SupplierModal } from '@/components/suppliers/supplier-modal';
+import { useToast } from '@/components/ui/use-toast';
+import { apiFetch } from '@/lib/api-client';
 
 interface SuppliersClientProps {
-    initialSuppliers: Supplier[]
+  initialSuppliers: Supplier[];
 }
 
 export default function SuppliersClientPage({ initialSuppliers }: SuppliersClientProps) {
-    const [isModalOpen, setIsModalOpen] = useState(false)
-    const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null)
-    const { toast } = useToast()
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
+  const { toast } = useToast();
+  const router = useRouter();
 
-    // In a real app we might rely purely on router refresh, but here we can optimistic update or just refresh.
-    // Since actions revalidatePath, the prop initialSuppliers should update if this is a server component child.
-    // Wait, Client Component does not auto-update props from Server Component re-render unless parent re-renders.
-    // Next.js Server Actions usually trigger a router refresh which re-runs server components.
+  const handleAdd = () => {
+    setEditingSupplier(null);
+    setIsModalOpen(true);
+  };
 
-    // For now, let's presume we might need to handle state if we want instant feedback? 
-    // Or just trust the refresh. Let's use router?
-    // Actually simplicity: Pass data, trust revalidatePath.
+  const handleEdit = (s: Supplier) => {
+    setEditingSupplier(s);
+    setIsModalOpen(true);
+  };
 
-    const handleAdd = () => {
-        setEditingSupplier(null)
-        setIsModalOpen(true)
+  const handleDelete = async (id: string) => {
+    if (!confirm('Supprimer ce fournisseur ?')) return;
+    try {
+      await apiFetch(`/suppliers/${id}`, { method: 'DELETE' });
+      toast({ title: 'Fournisseur supprimé' });
+      router.refresh();
+    } catch (e: any) {
+      toast({ title: 'Erreur', description: e.message, variant: 'destructive' });
     }
+  };
 
-    const handleEdit = (s: Supplier) => {
-        setEditingSupplier(s)
-        setIsModalOpen(true)
+  const handleSubmit = async (formData: FormData) => {
+    const data = {
+      name: formData.get('name'),
+      contactEmail: formData.get('contactEmail'),
+      contactPhone: formData.get('contactPhone'), // The modal binds this to same input, usually.
+      website: formData.get('website'),
+      leadTime: formData.get('leadTime'),
+      defaultConditioning: formData.get('defaultConditioning'),
+      notes: formData.get('notes'),
+    };
+
+    try {
+      if (editingSupplier) {
+        await apiFetch(`/suppliers/${editingSupplier.id}`, {
+          method: 'PUT',
+          body: JSON.stringify(data),
+        });
+        toast({ title: 'Modifications enregistrées' });
+      } else {
+        await apiFetch('/suppliers', {
+          method: 'POST',
+          body: JSON.stringify(data),
+        });
+        toast({ title: 'Fournisseur créé' });
+      }
+      setIsModalOpen(false); // Close modal here on success
+      router.refresh();
+    } catch (e: any) {
+      toast({ title: 'Erreur', description: e.message, variant: 'destructive' });
     }
+  };
 
-    const handleDelete = async (id: string) => {
-        if (!confirm('Supprimer ce fournisseur ?')) return
-        const res = await deleteSupplierAction(id)
-        if (res.success) {
-            toast({ title: "Fournisseur supprimé" })
-        } else {
-            toast({ title: "Erreur", description: res.error, variant: "destructive" })
-        }
-    }
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col gap-2">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Fournisseurs</h1>
+        <p className="text-muted-foreground">
+          Gérez vos partenaires et approvisionnements ({(initialSuppliers || []).length}{' '}
+          fournisseurs)
+        </p>
+      </div>
 
-    const handleSubmit = async (formData: FormData) => {
-        let res;
-        if (editingSupplier) {
-            res = await updateSupplierAction(editingSupplier.id, null, formData)
-        } else {
-            res = await createSupplierAction(null, formData)
-        }
+      <SupplierTable
+        suppliers={initialSuppliers || []}
+        onAdd={handleAdd}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
 
-        if (res.success) {
-            toast({ title: editingSupplier ? "Modifications enregistrées" : "Fournisseur créé" })
-        } else {
-            toast({ title: "Erreur", description: res.error, variant: "destructive" })
-        }
-    }
-
-    return (
-        <div className="space-y-6">
-            <div className="flex flex-col gap-2">
-                <h1 className="text-2xl font-bold tracking-tight text-foreground">Fournisseurs</h1>
-                <p className="text-muted-foreground">Gérez vos partenaires et approvisionnements ({initialSuppliers.length} fournisseurs)</p>
-            </div>
-
-            <SupplierTable
-                suppliers={initialSuppliers}
-                onAdd={handleAdd}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-            />
-
-            <SupplierModal
-                open={isModalOpen}
-                onOpenChange={setIsModalOpen}
-                initialData={editingSupplier}
-                onSubmit={handleSubmit}
-            />
-        </div>
-    )
+      <SupplierModal
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+        initialData={editingSupplier}
+        onSubmit={handleSubmit}
+      />
+    </div>
+  );
 }
