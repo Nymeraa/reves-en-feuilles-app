@@ -1,4 +1,4 @@
-import { jsonDb } from '../db-json';
+// import { jsonDb } from '../db-json'; // Lazy loaded now
 import { sqlDb, isAvailable as isSqlAvailable } from '../db-sql';
 import { DbInterface, EntityType } from './types';
 
@@ -17,6 +17,8 @@ if (DRIVER === 'sql') {
       console.warn(
         '[DB] SQL requested but unavailable. Falling back to JSON (ALLOW_JSON_FALLBACK=true).'
       );
+      // Lazy load JSON DB to avoid filesystem side-effects if not used
+      const { jsonDb } = require('../db-json');
       implementation = jsonDb;
     } else {
       const msg =
@@ -26,6 +28,13 @@ if (DRIVER === 'sql') {
     }
   }
 } else {
+  // Check Vercel environment
+  if (process.env.VERCEL) {
+    throw new Error(
+      '[DB] FATAL: JSON driver is NOT allowed on Vercel environment. You must use DB_DRIVER=sql. Check your Vercel Environment Variables.'
+    );
+  }
+  const { jsonDb } = require('../db-json');
   implementation = jsonDb;
   console.log('[DB] Driver: JSON');
 }

@@ -9,8 +9,17 @@ import { EntityType, DbInterface } from './db/types';
 
 export const DATA_DIR = path.join(process.cwd(), '.data');
 
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR);
+function ensureDataDir() {
+  if (!fs.existsSync(DATA_DIR)) {
+    try {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    } catch (e) {
+      // Ignore EROFS if on Vercel/read-only, we might be just reading?
+      // But if we try to write, it will fail later.
+      // If we are just importing, this shouldn't run.
+      console.error('[DB-JSON] failed to create .data dir', e);
+    }
+  }
 }
 
 // Low level file helpers
@@ -44,6 +53,7 @@ function getFilename(entity: EntityType): string {
 }
 
 function readDataRaw<T>(filename: string, defaultValue: T): T {
+  // ensureDataDir(); // Optional on read? better to check existence first.
   const filePath = path.join(DATA_DIR, filename);
   if (!fs.existsSync(filePath)) {
     return defaultValue;
@@ -58,11 +68,13 @@ function readDataRaw<T>(filename: string, defaultValue: T): T {
 }
 
 function writeDataRaw<T>(filename: string, data: T): void {
+  ensureDataDir();
   const filePath = path.join(DATA_DIR, filename);
   try {
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
   } catch (e) {
     console.error(`Failed to write ${filename}`, e);
+    throw e; // Propagate error so we know if write failed (e.g. RO FS)
   }
 }
 
