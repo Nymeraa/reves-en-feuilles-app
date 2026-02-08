@@ -21,7 +21,7 @@ async function verify() {
 
   // 2. TEST SUPPLIER DELETE PROTECTION
   try {
-    await SupplierService.deleteSupplier(supplier.id);
+    await SupplierService.deleteSupplier(ORG, supplier.id);
     console.error('FAIL: Supplier deleted despite usage!');
   } catch (e: any) {
     if (e.message.includes('Cannot delete')) console.log('PASS: Supplier deletion checked.');
