@@ -140,7 +140,7 @@ export function IngredientDialog({
             <Input
               id="name"
               name="name"
-              defaultValue={ingredient?.name}
+              defaultValue={ingredient?.name ?? ''}
               placeholder="Ex: Thé vert Sencha"
               required
               disabled={readonly}

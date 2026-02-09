@@ -683,7 +683,7 @@ export function OrderDialog({
               <Input
                 name="notes"
                 placeholder="Notes internes..."
-                defaultValue={initialData?.notes}
+                defaultValue={initialData?.notes ?? ''}
               />
             </div>
           </div>

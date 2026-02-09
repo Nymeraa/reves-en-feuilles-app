@@ -47,7 +47,7 @@ export function SupplierModal({ open, onOpenChange, initialData, onSubmit }: Sup
             <Label>Nom *</Label>
             <Input
               name="name"
-              defaultValue={initialData?.name}
+              defaultValue={initialData?.name ?? ''}
               required
               placeholder="Ex: Thé Direct"
             />
@@ -57,7 +57,7 @@ export function SupplierModal({ open, onOpenChange, initialData, onSubmit }: Sup
             <Label>Contact</Label>
             <Input
               name="contactEmail"
-              defaultValue={initialData?.contactEmail ?? undefined}
+              defaultValue={initialData?.contactEmail ?? ''}
               placeholder="Email ou téléphone"
             />
             {/* Hidden phone input if needed or combined? Design shows just one field labeled "Contact"? 
@@ -70,7 +70,7 @@ export function SupplierModal({ open, onOpenChange, initialData, onSubmit }: Sup
             <Label>Site web</Label>
             <Input
               name="website"
-              defaultValue={initialData?.website ?? undefined}
+              defaultValue={initialData?.website ?? ''}
               placeholder="https://..."
             />
           </div>
@@ -89,7 +89,7 @@ export function SupplierModal({ open, onOpenChange, initialData, onSubmit }: Sup
               <Label>Conditionnement par défaut</Label>
               <Input
                 name="defaultConditioning"
-                defaultValue={initialData?.defaultConditioning ?? undefined}
+                defaultValue={initialData?.defaultConditioning ?? ''}
                 placeholder="Ex: sac 1kg"
               />
             </div>
@@ -99,7 +99,7 @@ export function SupplierModal({ open, onOpenChange, initialData, onSubmit }: Sup
             <Label>Notes</Label>
             <Textarea
               name="notes"
-              defaultValue={initialData?.notes ?? undefined}
+              defaultValue={initialData?.notes ?? ''}
               placeholder="Notes internes..."
             />
           </div>
