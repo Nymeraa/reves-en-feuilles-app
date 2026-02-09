@@ -248,24 +248,17 @@ export const InventoryService = {
     const movement: any = {
       id: Math.random().toString(36).substring(7),
       organizationId: orgId,
-      ingredient: { connect: { id: ingredientId } },
+      ingredientId, // Pass scalar IDs, db.upsert (via toPrismaStockMovement) handles conversion
       type,
-      // Audit
       entityType,
       source,
-      sourceId: sourceId || null,
-
+      sourceId,
       deltaQuantity: delta,
       unitPrice: price ?? null,
       reason: reason || 'Movement',
       createdAt: new Date(),
       targetStock: ingredient.currentStock,
     };
-
-    // If source is ORDER, link to Order relation
-    if (source === MovementSource.ORDER && sourceId) {
-      movement.order = { connect: { id: sourceId } };
-    }
 
     await db.upsert('movements', movement, orgId);
 

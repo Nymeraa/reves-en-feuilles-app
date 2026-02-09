@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { InventoryService } from '@/services/inventory-service';
-import { MovementType } from '@/types/inventory';
+import { MovementType, MovementSource, EntityType } from '@/types/inventory';
 
 import { createStockMovementSchema } from '@/lib/zod-schemas';
 
@@ -13,7 +13,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: parseResult.error.issues[0].message }, { status: 400 });
     }
 
-    const { ingredientId, type, quantity, unitPrice, reason, notes } = parseResult.data; // quantity is already number > 0 from schema
+    const { ingredientId, type, quantity, unitPrice, reason, notes, source, sourceId } =
+      parseResult.data;
+
+    // Observability: Log unknown keys for production debugging
+    const knownKeys = [
+      'ingredientId',
+      'type',
+      'quantity',
+      'unitPrice',
+      'reason',
+      'notes',
+      'source',
+      'sourceId',
+    ];
+    const unknownKeys = Object.keys(body).filter((key) => !knownKeys.includes(key));
+    if (unknownKeys.length > 0) {
+      console.warn(`[API] Received unknown keys in StockMovement: ${unknownKeys.join(', ')}`);
+    }
 
     // Fetch ingredient to determine category for price conversion
     const ingredient = await InventoryService.getIngredientById(ingredientId);
@@ -21,8 +38,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Ingredient not found' }, { status: 404 });
     }
 
+    // Rule: PURCHASE type usually requires a unitPrice
+    if (type === MovementType.PURCHASE && (unitPrice === null || unitPrice === undefined)) {
+      return NextResponse.json({ error: 'Unit price is required for purchases' }, { status: 400 });
+    }
+
     const qtyNum = quantity;
-    // Schema ensures > 0, so no need for isNaN check
 
     // Determine delta sign based on movement type
     let delta = Math.abs(qtyNum);
@@ -50,13 +71,21 @@ export async function POST(request: Request) {
           : Number(unitPrice) / 1000
         : undefined;
 
+    // Map category to EntityType for audit purposes
+    let entityType = EntityType.INGREDIENT;
+    if (ingredient.category === 'Packaging') entityType = EntityType.PACKAGING;
+    if (ingredient.category === 'Accessoire') entityType = EntityType.ACCESSORY;
+
     await InventoryService.addMovement(
       'org-1',
       ingredientId,
       type,
       delta,
       pricePerGram,
-      reason + (notes ? ` - ${notes}` : '')
+      reason + (notes ? ` - ${notes}` : ''),
+      entityType,
+      (source as MovementSource) || MovementSource.MANUAL,
+      sourceId || undefined
     );
 
     return NextResponse.json({ success: true });

@@ -61,11 +61,15 @@ export const createOrderSchema = z.object({
 
 export const updateOrderSchema = createOrderSchema.partial();
 
-export const createStockMovementSchema = z.object({
-  ingredientId: z.string().min(1, 'Ingredient ID is required'),
-  type: z.nativeEnum(MovementType),
-  quantity: z.coerce.number().gt(0, 'Quantity must be positive'), // We handle sign logic in API
-  unitPrice: z.coerce.number().min(0).optional(),
-  reason: z.string().min(1, 'Reason is required'),
-  notes: z.string().optional(),
-});
+export const createStockMovementSchema = z
+  .object({
+    ingredientId: z.string().min(1, 'Ingredient ID is required'),
+    type: z.nativeEnum(MovementType),
+    quantity: z.coerce.number().gt(0, 'Quantity must be positive'), // We handle sign logic in API
+    unitPrice: z.coerce.number().min(0).nullable().optional(),
+    reason: z.string().min(1, 'Reason is required'),
+    notes: z.string().optional(),
+    source: z.string().optional(),
+    sourceId: z.string().nullable().optional(),
+  })
+  .passthrough(); // We'll manually check for unknown keys in the handler for observability

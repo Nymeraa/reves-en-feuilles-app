@@ -3,6 +3,7 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
 import { EntityType, DbInterface } from './db/types';
 import { toPrismaOrderItem } from './prisma-mappers/order-item';
+import { toPrismaStockMovement } from './prisma-mappers/stock-movement';
 
 const connectionString = process.env.DATABASE_URL;
 
@@ -234,15 +235,33 @@ export const sqlDb: DbInterface = {
 
     const sanitized = sanitizeData(data);
 
+    // Use specific mappers for entities with relations to ensure schema compliance
+    if (entity === 'movements') {
+      const mapped = toPrismaStockMovement(sanitized);
+      const modelName = getModelName(entity);
+      // For movements, the mapper handles everything including relations as connect objects.
+      // We still need to split items if they existed (though StockMovements don't usually have items).
+      const { items, ...scalarData } = mapped;
+
+      return prisma.$transaction(async (tx: any) => {
+        let createData = { ...scalarData };
+        let updateData = { ...scalarData };
+
+        if (items && Array.isArray(items) && items.length > 0) {
+          createData.items = { create: items };
+          updateData.items = { deleteMany: {}, create: items };
+        }
+
+        return tx[modelName].upsert({
+          where: { id: scalarData.id },
+          create: createData,
+          update: updateData,
+        });
+      }) as unknown as T;
+    }
+
     // Goal A: Convert scalar IDs to connects for top-level object
-    if (sanitized.ingredientId && entity === 'movements') {
-      sanitized.ingredient = { connect: { id: sanitized.ingredientId } };
-      delete sanitized.ingredientId;
-    }
-    if (sanitized.sourceId && entity === 'movements' && sanitized.source === 'ORDER') {
-      sanitized.order = { connect: { id: sanitized.sourceId } };
-      delete sanitized.sourceId;
-    }
+    // (Movements handled by mapper above)
 
     // Now extract items and scalar data AFTER all top-level sanitization
     const { items, ...allScalarData } = sanitized;
@@ -256,17 +275,6 @@ export const sqlDb: DbInterface = {
           obj[key] = allScalarData[key];
           return obj;
         }, {});
-    } else if (entity === 'movements') {
-      scalarData = Object.keys(allScalarData)
-        .filter((key) => PRISMA_MOVEMENT_FIELDS.includes(key))
-        .reduce((obj: any, key) => {
-          obj[key] = allScalarData[key];
-          return obj;
-        }, {});
-    }
-
-    if (sanitized.supplierId && entity === 'ingredients') {
-      // NOTE: Our schema doesn't have a Supplier relation in Ingredient yet, just a string field.
     }
 
     // TRANSACTIONAL UPDATE FOR ENTITIES WITH ITEMS
@@ -292,7 +300,7 @@ export const sqlDb: DbInterface = {
           return mapped;
         }
 
-        // Default relation connect logic (StockMovements, Recipes, Packs)
+        // Default relation connect logic (Recipes, Packs)
         if (newItem.ingredientId) {
           newItem.ingredient = { connect: { id: newItem.ingredientId } };
           delete newItem.ingredientId;
@@ -304,10 +312,6 @@ export const sqlDb: DbInterface = {
         if (newItem.packId) {
           newItem.pack = { connect: { id: newItem.packId } };
           delete newItem.packId;
-        }
-        if (newItem.orderId && entity === 'movements') {
-          newItem.order = { connect: { id: newItem.orderId } };
-          delete newItem.orderId;
         }
 
         return newItem;
