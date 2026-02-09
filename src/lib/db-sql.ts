@@ -155,6 +155,20 @@ const PRISMA_ORDER_ITEM_FIELDS = [
   'totalPrice',
 ];
 
+const PRISMA_MOVEMENT_FIELDS = [
+  'id',
+  'organizationId',
+  'type',
+  'entityType',
+  'source',
+  'deltaQuantity',
+  'unitPrice',
+  'totalPrice',
+  'targetStock',
+  'reason',
+  'createdAt',
+];
+
 export const sqlDb: DbInterface = {
   async readAll<T>(entity: EntityType, orgId?: string): Promise<T[]> {
     const model = getModel(entity);
@@ -218,9 +232,7 @@ export const sqlDb: DbInterface = {
       }) as unknown as T;
     }
 
-    // Special handling for relations (Recipe Items, Pack Items, Order Items)
     const sanitized = sanitizeData(data);
-    const { items, ...scalarData } = sanitized;
 
     // Goal A: Convert scalar IDs to connects for top-level object
     if (sanitized.ingredientId && entity === 'movements') {
@@ -229,14 +241,32 @@ export const sqlDb: DbInterface = {
     }
     if (sanitized.sourceId && entity === 'movements' && sanitized.source === 'ORDER') {
       sanitized.order = { connect: { id: sanitized.sourceId } };
-      // Keep sourceId as scalar as well? Usually Prisma prefers connect only if relation exists.
-      // But we must NOT pass it as scalar if it's used for @relation fields in some Prisma versions.
-      // Let's remove it to be safe and use connect.
       delete sanitized.sourceId;
     }
+
+    // Now extract items and scalar data AFTER all top-level sanitization
+    const { items, ...allScalarData } = sanitized;
+
+    // Filter scalar data based on whitelist per entity
+    let scalarData = allScalarData;
+    if (entity === 'orders') {
+      scalarData = Object.keys(allScalarData)
+        .filter((key) => PRISMA_ORDER_FIELDS.includes(key))
+        .reduce((obj: any, key) => {
+          obj[key] = allScalarData[key];
+          return obj;
+        }, {});
+    } else if (entity === 'movements') {
+      scalarData = Object.keys(allScalarData)
+        .filter((key) => PRISMA_MOVEMENT_FIELDS.includes(key))
+        .reduce((obj: any, key) => {
+          obj[key] = allScalarData[key];
+          return obj;
+        }, {});
+    }
+
     if (sanitized.supplierId && entity === 'ingredients') {
       // NOTE: Our schema doesn't have a Supplier relation in Ingredient yet, just a string field.
-      // If we add it later, we'd do: sanitized.supplier = { connect: { id: sanitized.supplierId } };
     }
 
     // TRANSACTIONAL UPDATE FOR ENTITIES WITH ITEMS
@@ -283,21 +313,13 @@ export const sqlDb: DbInterface = {
         return newItem;
       });
 
-      // Whitelist for Order fields specifically (safety guard)
-      let finalScalarData = scalarData;
-      if (entity === 'orders') {
-        finalScalarData = Object.keys(scalarData)
-          .filter((key) => PRISMA_ORDER_FIELDS.includes(key))
-          .reduce((obj: any, key) => {
-            obj[key] = scalarData[key];
-            return obj;
-          }, {});
-      }
+      // Items mapping is already done above or for specific entities below
+      const finalItems = itemsWithMappedData;
 
       return prisma.$transaction(
         async (tx: any) => {
-          let createData = { ...finalScalarData };
-          let updateData = { ...finalScalarData };
+          let createData = { ...scalarData };
+          let updateData = { ...scalarData };
 
           createData.items = { create: itemsWithMappedData };
           updateData.items = { deleteMany: {}, create: itemsWithMappedData };
