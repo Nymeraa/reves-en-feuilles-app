@@ -209,15 +209,20 @@ export const AnalyticsService = {
   },
 
   async getRecentSales(orgId: string, limit = 5): Promise<Order[]> {
-    const orders = await db.readAll<Order>('orders', orgId);
-    return orders
-      .filter(
-        (o) =>
-          o.organizationId === orgId &&
-          [OrderStatus.PAID, OrderStatus.SHIPPED, OrderStatus.DELIVERED].includes(o.status)
-      )
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-      .slice(0, limit);
+    try {
+      const orders = await db.readAll<Order>('orders', orgId);
+      return orders
+        .filter(
+          (o) =>
+            o.organizationId === orgId &&
+            [OrderStatus.PAID, OrderStatus.SHIPPED, OrderStatus.DELIVERED].includes(o.status)
+        )
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .slice(0, limit);
+    } catch (error: any) {
+      console.error(`[AnalyticsService] Error in getRecentSales:`, error.message);
+      return []; // Return empty instead of crashing the UI
+    }
   },
 
   async getSalesTimeline(orgId: string, days = 30) {

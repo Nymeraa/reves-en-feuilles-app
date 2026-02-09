@@ -174,7 +174,16 @@ export const sqlDb: DbInterface = {
       return s ? [s as unknown as T] : [];
     }
 
-    return (model as any).findMany({ where, include }) as unknown as T[];
+    try {
+      return (await (model as any).findMany({ where, include })) as unknown as T[];
+    } catch (error: any) {
+      if (error.code === 'P2022') {
+        const column = error.meta?.column || error.meta?.field || '(unknown)';
+        console.error(`[Prisma P2022] Table "${entity}" is missing column: ${column}`);
+        console.error(`[Prisma Context] Full Error:`, JSON.stringify(error, null, 2));
+      }
+      throw error;
+    }
   },
 
   async getById<T>(entity: EntityType, id: string, orgId?: string): Promise<T | null> {

@@ -3,94 +3,82 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
+  provider = "postgresql"
 }
 
-// -- INGREDIENTS --
-
 model Ingredient {
-  id                  String   @id
+  id                  String          @id
   organizationId      String
   name                String
   slug                String
   category            String
-  status              String   @default("ACTIVE") // ACTIVE, ARCHIVED
-  currentStock        Float    @default(0)
-  weightedAverageCost Float    @default(0)
+  status              String          @default("ACTIVE")
+  currentStock        Float           @default(0)
+  weightedAverageCost Float           @default(0)
   supplierId          String?
   supplierUrl         String?
   alertThreshold      Float?
   notes               String?
   subtype             String?
-  capacity            Float?   // For Packaging
+  capacity            Float?
   capacityUnit        String?
   dimensions          String?
-  unit                String?  // 'g', 'kg', 'unit'
+  unit                String?
   initialStock        Float?
   initialCost         Float?
-  updatedAt           DateTime @updatedAt
-  
-  // Relations
-  movements      StockMovement[]
-  recipeItems    RecipeItem[]
-  packItems      PackItem[]
-  
+  updatedAt           DateTime        @updatedAt
+  packItems           PackItem[]
+  recipeItems         RecipeItem[]
+  movements           StockMovement[]
+
   @@index([organizationId])
   @@index([slug])
 }
 
 model Supplier {
-  id                 String   @id
-  organizationId     String
-  name               String
-  status             String   @default("ACTIVE")
-  contactEmail       String?
-  contactPhone       String?
-  website            String?
-  leadTime           Int?
+  id                  String  @id
+  organizationId      String
+  name                String
+  status              String  @default("ACTIVE")
+  contactEmail        String?
+  contactPhone        String?
+  website             String?
+  leadTime            Int?
   defaultConditioning String?
-  notes              String?
-  
+  notes               String?
+
   @@index([organizationId])
 }
 
-// -- RECIPES --
-
 model Recipe {
-  id                  String   @id
+  id                  String          @id
   organizationId      String
   name                String
   slug                String
-  status              String   @default("ACTIVE") // ACTIVE, DRAFT, ARCHIVED
+  status              String          @default("ACTIVE")
   description         String?
-  version             Int      @default(1)
-  
-  laborCost           Float    @default(0)
-  packagingCost       Float    @default(0)
-  
-  // Cached calculations
-  totalIngredientCost Float    @default(0)
-  totalCost           Float    @default(0)
-  
-  prices              Json     @default("{}") // Map of format -> price
-  
-  updatedAt           DateTime @updatedAt
-  
+  version             Int             @default(1)
+  laborCost           Float           @default(0)
+  packagingCost       Float           @default(0)
+  totalIngredientCost Float           @default(0)
+  totalCost           Float           @default(0)
+  prices              Json            @default("{}")
+  updatedAt           DateTime        @updatedAt
+  packItems           PackItem[]
   items               RecipeItem[]
   versions            RecipeVersion[]
-  packItems           PackItem[] // Recipes used in Packs
-  
+
   @@index([organizationId])
 }
 
 model RecipeItem {
-  id            String   @id
-  recipeId      String
-  recipe        Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
-  ingredientId  String
-  ingredient    Ingredient @relation(fields: [ingredientId], references: [id])
-  percentage    Float
-  
+  id           String     @id
+  recipeId     String
+  ingredientId String
+  percentage   Float
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
+  recipe       Recipe     @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
   @@index([recipeId])
   @@index([ingredientId])
 }
@@ -98,76 +86,61 @@ model RecipeItem {
 model RecipeVersion {
   id                  String   @id
   recipeId            String
-  recipe              Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   organizationId      String
   name                String
   slug                String
   description         String?
   versionNumber       Int
   snapshotDate        DateTime
-  status              String // VERSION
-  
+  status              String
   laborCost           Float
   packagingCost       Float
   totalIngredientCost Float
   totalCost           Float
-  
   prices              Json     @default("{}")
-  
-  items               Json     // Storing items as JSON snapshot for version immutability is safer/easier than VersionItem table
-  
+  items               Json
   updatedAt           DateTime
-  
+  recipe              Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
   @@index([recipeId])
 }
 
-// -- PACKS --
-
 model Pack {
-  id             String   @id
+  id             String        @id
   organizationId String
   name           String
   slug           String
-  status         String   @default("ACTIVE")
+  status         String        @default("ACTIVE")
   description    String?
-  version        Int      @default(1)
+  version        Int           @default(1)
   price          Float
-  
-  totalCost      Float    @default(0)
-  margin         Float    @default(0)
-  
-  updatedAt      DateTime @updatedAt
-  
+  totalCost      Float         @default(0)
+  margin         Float         @default(0)
+  updatedAt      DateTime      @updatedAt
   items          PackItem[]
   versions       PackVersion[]
-  
+
   @@index([organizationId])
 }
 
 model PackItem {
-  id            String      @id
-  packId        String
-  pack          Pack        @relation(fields: [packId], references: [id], onDelete: Cascade)
-  
-  // A pack item is either a Recipe OR an Ingredient (packaging/accessory)
-  type          String      // RECIPE, INGREDIENT
-  
-  recipeId      String?
-  recipe        Recipe?     @relation(fields: [recipeId], references: [id])
-  
-  ingredientId  String?
-  ingredient    Ingredient? @relation(fields: [ingredientId], references: [id])
-  
-  quantity      Float
-  format        Float?      // If recipe, which format (e.g. 100g)
-  
+  id           String      @id
+  packId       String
+  type         String
+  recipeId     String?
+  ingredientId String?
+  quantity     Float
+  format       Float?
+  ingredient   Ingredient? @relation(fields: [ingredientId], references: [id])
+  pack         Pack        @relation(fields: [packId], references: [id], onDelete: Cascade)
+  recipe       Recipe?     @relation(fields: [recipeId], references: [id])
+
   @@index([packId])
 }
 
 model PackVersion {
   id             String   @id
   packId         String
-  pack           Pack     @relation(fields: [packId], references: [id], onDelete: Cascade)
   organizationId String
   name           String
   slug           String
@@ -175,152 +148,119 @@ model PackVersion {
   versionNumber  Int
   snapshotDate   DateTime
   status         String
-  
   price          Float
   totalCost      Float
   margin         Float
-  
-  recipes        Json     // Snapshot of recipes in pack at time of version
-  packaging      Json     // Snapshot of packaging items
-  
+  recipes        Json
+  packaging      Json
   updatedAt      DateTime
+  pack           Pack     @relation(fields: [packId], references: [id], onDelete: Cascade)
 
   @@index([packId])
 }
 
-// -- ORDERS --
-
 model Order {
-  id              String   @id
+  id              String          @id
   organizationId  String
   orderNumber     String?
   customerName    String
-  status          String   @default("DRAFT") // DRAFT, CONFIRMED, PAID, PREPARED, SHIPPED, DELIVERED, CANCELLED, REFUNDED
-  
+  status          String          @default("DRAFT")
   totalAmount     Float
   totalCost       Float
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
   paidAt          DateTime?
   cancelledAt     DateTime?
-  
-  // -- SNAPSHOT fields for financial immutability --
   packagingType   String?
   packagingId     String?
-  cogsMaterials   Float    @default(0)
-  cogsPackaging   Float    @default(0)
-  netProfit       Float    @default(0)
-  margin          Float    @default(0)
-  feesUrssaf      Float    @default(0)
-  feesShopify     Float    @default(0)
-  feesOther       Float    @default(0)
-  feesTotal       Float    @default(0)
-  shippingCost    Float?   @default(0)
+  cogsMaterials   Float           @default(0)
+  cogsPackaging   Float           @default(0)
+  netProfit       Float           @default(0)
+  margin          Float           @default(0)
+  feesUrssaf      Float           @default(0)
+  feesShopify     Float           @default(0)
+  feesOther       Float           @default(0)
+  feesTotal       Float           @default(0)
+  shippingCost    Float?          @default(0)
   shippingPrice   Float?
-  
-  // -- Meta fields --
   source          String?
   email           String?
   shippingCarrier String?
   trackingNumber  String?
   discountCode    String?
   discountPercent Float?
-  manualTotal     Boolean  @default(false)
+  manualTotal     Boolean         @default(false)
   notes           String?
-  
   items           OrderItem[]
-  movements       StockMovement[] // Relation for tracking which movements belong to this order
-  
+  movements       StockMovement[]
+
   @@index([organizationId])
   @@index([status])
   @@index([createdAt])
 }
 
 model OrderItem {
-  id                        String   @id
+  id                        String  @id
   orderId                   String
-  order                     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  
-  type                      String   // RECIPE, PACK, PRODUCT
+  type                      String
   name                      String
   quantity                  Float
-  
-  // References (optional as they might be deleted later, but snapshots stay)
   recipeId                  String?
   packId                    String?
   ingredientId              String?
-  
-  format                    Float?   // e.g. 100(g) for recipe
-  versionNumber             Int?     // Version of recipe/pack used
-  
-  // -- SNAPSHOT fields (CRITICAL) --
+  format                    Float?
+  versionNumber             Int?
   unitPriceSnapshot         Float
   unitCostSnapshot          Float
-  unitMaterialCostSnapshot  Float    @default(0)
-  unitPackagingCostSnapshot Float    @default(0)
+  unitMaterialCostSnapshot  Float   @default(0)
+  unitPackagingCostSnapshot Float   @default(0)
   totalPrice                Float
-  
+  order                     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
   @@index([orderId])
 }
-
-// -- STOCK MOVEMENTS --
 
 model StockMovement {
   id             String      @id
   organizationId String
-  type           String      // PURCHASE, SALE, ADJUSTMENT, PRODUCTION, CORRECTION, RETURN, LOSS
-  entityType     String      // INGREDIENT, PACKAGING, PRODUCT
-  
+  type           String
+  entityType     String
   ingredientId   String?
-  ingredient     Ingredient? @relation(fields: [ingredientId], references: [id])
-  
-  source         String      // MANUAL, ORDER, PRODUCTION
+  source         String
   sourceId       String?
-  
-  // Relation to Order if source is ORDER
-  order          Order?      @relation(fields: [sourceId], references: [id])
-  
   deltaQuantity  Float
-  unitPrice      Float?      // For PURCHASES
-  totalPrice     Float?      // For PURCHASES
-  
-  targetStock    Float?      // Snapshot of stock after movement
+  unitPrice      Float?
+  totalPrice     Float?
+  targetStock    Float?
   reason         String?
-  
   createdAt      DateTime    @default(now())
-  
+  ingredient     Ingredient? @relation(fields: [ingredientId], references: [id])
+  order          Order?      @relation(fields: [sourceId], references: [id])
+
   @@index([ingredientId])
   @@index([organizationId])
   @@index([createdAt])
   @@index([sourceId])
 }
 
-// -- AUDIT LOGS --
-
 model AuditLog {
   id            String   @id
   timestamp     DateTime @default(now())
   actorUserId   String?
   actorName     String?
-  
-  action        String   // CREATE, UPDATE, DELETE, IMPORT, EXPORT
+  action        String
   entity        String
   entityId      String?
-  
   severity      String   @default("INFO")
   correlationId String?
-  
   metadata      Json?
-  
+
   @@index([entityId])
   @@index([timestamp])
 }
 
-// -- SETTINGS --
-
 model Settings {
-  id                        String @id @default("global") // Singleton
+  id                        String @id @default("global")
   urssafRate                Float
   shopifyTransactionPercent Float
   shopifyFixedFee           Float
@@ -329,18 +269,16 @@ model Settings {
   tvaPackaging              Float
 }
 
-// -- ACTIVITY LOGS --
-
 model ActivityLog {
   id             String   @id
   organizationId String
-  type           String   // CREATE, UPDATE, DELETE, SYSTEM
+  type           String
   entity         String
   entityId       String
   message        String
   user           String?
   timestamp      DateTime @default(now())
-  
+
   @@index([organizationId])
   @@index([timestamp])
 }
