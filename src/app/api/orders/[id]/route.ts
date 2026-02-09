@@ -28,7 +28,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       packagingType,
       discountCode,
       discountPercent,
-      otherFees,
+      feesOther,
       notes,
       items,
       site,
@@ -49,7 +49,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       packagingType,
       discountCode,
       discountPercent,
-      otherFees,
+      feesOther,
       notes,
       site,
     };

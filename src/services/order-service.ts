@@ -58,7 +58,7 @@ export const OrderService = {
       packagingType: input.packagingType || null,
       discountCode: input.discountCode || null,
       discountPercent: input.discountPercent ?? null,
-      otherFees: input.otherFees ?? null,
+      feesOther: input.feesOther ?? 0,
       notes: input.notes || null,
 
       // Init financials
@@ -68,7 +68,6 @@ export const OrderService = {
       margin: 0,
       feesUrssaf: 0,
       feesShopify: 0,
-      feesOther: 0,
       feesTotal: 0,
     };
 
@@ -436,7 +435,7 @@ export const OrderService = {
     order.packagingType = input.packagingType || null;
     order.discountCode = input.discountCode || null;
     order.discountPercent = input.discountPercent ?? null;
-    order.otherFees = input.otherFees ?? null;
+    order.feesOther = input.feesOther ?? null;
     order.notes = input.notes || null;
     order.updatedAt = new Date();
 

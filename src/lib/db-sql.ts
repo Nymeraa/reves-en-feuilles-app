@@ -103,6 +103,38 @@ function getModelName(entity: EntityType) {
   }
 }
 
+const PRISMA_ORDER_FIELDS = [
+  'id',
+  'organizationId',
+  'orderNumber',
+  'customerName',
+  'status',
+  'manualTotal',
+  'totalAmount',
+  'totalCost',
+  'createdAt',
+  'updatedAt',
+  'source',
+  'email',
+  'shippingCarrier',
+  'trackingNumber',
+  'shippingPrice',
+  'shippingCost',
+  'packagingType',
+  'packagingId',
+  'discountCode',
+  'discountPercent',
+  'notes',
+  'feesUrssaf',
+  'feesShopify',
+  'feesOther',
+  'feesTotal',
+  'cogsMaterials',
+  'cogsPackaging',
+  'netProfit',
+  'margin',
+];
+
 export const sqlDb: DbInterface = {
   async readAll<T>(entity: EntityType, orgId?: string): Promise<T[]> {
     const model = getModel(entity);
@@ -178,10 +210,12 @@ export const sqlDb: DbInterface = {
       // If we add it later, we'd do: sanitized.supplier = { connect: { id: sanitized.supplierId } };
     }
 
+    // TRANSACTIONAL UPDATE FOR ENTITIES WITH ITEMS
     if (items && Array.isArray(items)) {
       // Goal A: Convert scalar IDs to connects for items
       const itemsWithConnect = items.map((item: any) => {
         const newItem = { ...item };
+        // ... itemsWithConnect logic remains the same ...
         if (newItem.ingredientId) {
           newItem.ingredient = { connect: { id: newItem.ingredientId } };
           delete newItem.ingredientId;
@@ -201,11 +235,21 @@ export const sqlDb: DbInterface = {
         return newItem;
       });
 
-      // Transactional update for entities with items
+      // Whitelist for Order fields specifically (safety guard)
+      let finalScalarData = scalarData;
+      if (entity === 'orders') {
+        finalScalarData = Object.keys(scalarData)
+          .filter((key) => PRISMA_ORDER_FIELDS.includes(key))
+          .reduce((obj: any, key) => {
+            obj[key] = scalarData[key];
+            return obj;
+          }, {});
+      }
+
       return prisma.$transaction(
         async (tx: any) => {
-          let createData = { ...scalarData };
-          let updateData = { ...scalarData };
+          let createData = { ...finalScalarData };
+          let updateData = { ...finalScalarData };
 
           createData.items = { create: itemsWithConnect };
           updateData.items = { deleteMany: {}, create: itemsWithConnect };
@@ -221,10 +265,21 @@ export const sqlDb: DbInterface = {
       ) as unknown as T;
     }
 
+    // Whitelist for singular upserts (StockMovements, etc.)
+    let finalSanitized = sanitized;
+    if (entity === 'orders') {
+      finalSanitized = Object.keys(sanitized)
+        .filter((key) => PRISMA_ORDER_FIELDS.includes(key))
+        .reduce((obj: any, key) => {
+          obj[key] = sanitized[key];
+          return obj;
+        }, {});
+    }
+
     return (model as any).upsert({
       where: { id: data.id },
-      create: sanitized,
-      update: sanitized,
+      create: finalSanitized,
+      update: finalSanitized,
     }) as unknown as T;
   },
 

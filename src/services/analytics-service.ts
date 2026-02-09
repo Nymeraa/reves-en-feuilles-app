@@ -66,7 +66,7 @@ export const AnalyticsService = {
       cogsShipping += order.shippingCost || 0;
 
       // Fees (separate from COGS) - use feesTotal if available, else otherFees
-      const orderFees = (order.feesTotal ?? 0) || (order.otherFees ?? 0);
+      const orderFees = (order.feesTotal ?? 0) || (order.feesOther ?? 0);
       fees += orderFees;
     }
 
@@ -339,7 +339,7 @@ export const AnalyticsService = {
       const shippingRealCost = order.shippingCost || 0;
 
       // Fee Logic: Use Snapshot Total if available (New), else fallback to legacy otherFees
-      const totalFees = (order.feesTotal ?? 0) || (order.otherFees ?? 0);
+      const totalFees = (order.feesTotal ?? 0) || (order.feesOther ?? 0);
 
       const totalRealCost = productCOGS + shippingRealCost + totalFees;
 

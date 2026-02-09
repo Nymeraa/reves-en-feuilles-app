@@ -38,7 +38,7 @@ export const createOrderSchema = z.object({
   packagingType: z.string().optional(),
   discountCode: z.string().optional(),
   discountPercent: z.coerce.number().min(0).optional(),
-  otherFees: z.coerce.number().min(0).optional(),
+  feesOther: z.coerce.number().min(0).optional(),
 });
 
 export const updateOrderSchema = createOrderSchema.partial();

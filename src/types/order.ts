@@ -67,13 +67,13 @@ export interface Order {
   discountCode?: string | null;
   discountPercent?: number | null;
 
-  otherFees?: number | null; // Legacy/Override input
   notes?: string | null;
 
   // Financial Snapshot (Fees)
   feesUrssaf?: number | null;
   feesShopify?: number | null;
   feesOther?: number | null;
+  feesOther_old?: number | null; // Keep a reference if needed, or just let it be renamed
   feesTotal?: number | null; // Sum of above
 
   // Financial Breakdown
@@ -99,7 +99,7 @@ export interface CreateOrderInput {
   packagingType?: string;
   discountCode?: string;
   discountPercent?: number;
-  otherFees?: number;
+  feesOther?: number;
   notes?: string;
   site?: string;
 }

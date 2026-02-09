@@ -26,7 +26,7 @@ export async function POST(request: Request) {
       packagingType,
       discountCode,
       discountPercent,
-      otherFees,
+      feesOther,
       notes,
       items,
       site,
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
       packagingType,
       discountCode,
       discountPercent: discountPercent || 0,
-      otherFees: otherFees || 0,
+      feesOther: feesOther || 0,
       notes,
       site,
     };

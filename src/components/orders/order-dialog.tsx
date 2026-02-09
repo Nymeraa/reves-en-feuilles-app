@@ -79,7 +79,7 @@ export function OrderDialog({
   // Input States for Calculation
   const [totalAmount, setTotalAmount] = useState(0);
   const [shippingCost, setShippingCost] = useState(0);
-  const [otherFees, setOtherFees] = useState(0.1);
+  const [feesOther, setFeesOther] = useState(0.1);
   const [source, setSource] = useState('Manuel');
   const [site, setSite] = useState('');
 
@@ -156,16 +156,16 @@ export function OrderDialog({
 
         setTotalAmount(initialData.totalAmount || 0);
         setShippingCost(initialData.shippingCost || 0);
-        setOtherFees(initialData.otherFees || 0.1);
+        setFeesOther(initialData.feesOther || 0.1);
         setPackagingType(initialData.packagingType || 'Aucun');
         setSource(initialData.source || 'Manuel');
         setSite((initialData as any).site || '');
-        setTotals((prev) => ({ ...prev, fees: initialData.otherFees || 0.1 })); // ensure consistent
+        setTotals((prev) => ({ ...prev, fees: initialData.feesOther || 0.1 })); // ensure consistent
       } else {
         setItems([]);
         setTotalAmount(0);
         setShippingCost(0);
-        setOtherFees(0.1);
+        setFeesOther(0.1);
         setPackagingType('Aucun');
         setSource('Manuel');
         setSite('');
@@ -252,7 +252,7 @@ export function OrderDialog({
 
     // Profit = Revenue - Costs
     const calculatedFees = urssaf + platformFees;
-    const totalFees = calculatedFees + otherFees;
+    const totalFees = calculatedFees + feesOther;
     const totalCosts = materialCost + totals.cogsPackaging + shippingCost + totalFees;
 
     const netProfit = totalAmount - totalCosts;
@@ -270,7 +270,7 @@ export function OrderDialog({
     totals.cogsPackaging,
     totalAmount,
     shippingCost,
-    otherFees,
+    feesOther,
     recipes,
     packs,
     ingredients,
@@ -327,7 +327,7 @@ export function OrderDialog({
       trackingNumber: formData.get('trackingNumber'),
       shippingCost: parseFloat(formData.get('shippingCost') as string) || 0,
       packagingType: packagingType === 'Aucun' ? undefined : packagingType,
-      otherFees: parseFloat(formData.get('otherFees') as string) || 0,
+      feesOther: parseFloat(formData.get('feesOther') as string) || 0,
       notes: formData.get('notes'),
       items: itemsPayload,
       site: site === 'NONE' ? '' : site, // Add site if managed
@@ -671,11 +671,11 @@ export function OrderDialog({
             <div className="space-y-2">
               <Label>Autres frais (€)</Label>
               <Input
-                name="otherFees"
+                name="feesOther"
                 type="number"
                 step="0.01"
-                defaultValue={initialData?.otherFees ?? 0.1}
-                onChange={(e) => setOtherFees(parseFloat(e.target.value) || 0)}
+                defaultValue={initialData?.feesOther ?? 0.1}
+                onChange={(e) => setFeesOther(parseFloat(e.target.value) || 0)}
               />
             </div>
             <div className="space-y-2">
