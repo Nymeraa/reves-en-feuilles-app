@@ -115,6 +115,8 @@ const PRISMA_ORDER_FIELDS = [
   'totalCost',
   'createdAt',
   'updatedAt',
+  'paidAt',
+  'cancelledAt',
   'source',
   'email',
   'shippingCarrier',

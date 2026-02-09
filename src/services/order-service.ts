@@ -383,6 +383,7 @@ export const OrderService = {
     await this.deductOrderStock(orgId, order);
 
     order.status = OrderStatus.PAID;
+    order.paidAt = new Date();
     order.updatedAt = new Date();
 
     await db.upsert('orders', order, orgId);
@@ -411,6 +412,17 @@ export const OrderService = {
 
     const oldHadStock = hasStockDeducted(oldStatus);
     const newNeedsStock = hasStockDeducted(newStatus);
+
+    if (newStatus === OrderStatus.PAID && oldStatus !== OrderStatus.PAID && !order.paidAt) {
+      order.paidAt = new Date();
+    }
+    if (
+      newStatus === OrderStatus.CANCELLED &&
+      oldStatus !== OrderStatus.CANCELLED &&
+      !order.cancelledAt
+    ) {
+      order.cancelledAt = new Date();
+    }
 
     if (oldHadStock && (!newNeedsStock || itemsInput)) {
       await this.revertOrderStock(orgId, order);
@@ -665,6 +677,7 @@ export const OrderService = {
 
     if (order.status === OrderStatus.DRAFT) {
       order.status = OrderStatus.CANCELLED;
+      order.cancelledAt = new Date();
       order.updatedAt = new Date();
       await db.upsert('orders', order, orgId);
       return;
@@ -674,6 +687,7 @@ export const OrderService = {
       await this.revertOrderStock(orgId, order);
 
       order.status = OrderStatus.CANCELLED;
+      order.cancelledAt = new Date();
       order.updatedAt = new Date();
       await db.upsert('orders', order, orgId);
 

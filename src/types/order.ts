@@ -54,6 +54,8 @@ export interface Order {
 
   createdAt: Date;
   updatedAt: Date;
+  paidAt?: Date | null;
+  cancelledAt?: Date | null;
   // Shipping & Details
   source?: string | null; // 'Manuel', 'Shopify'
   email?: string | null;

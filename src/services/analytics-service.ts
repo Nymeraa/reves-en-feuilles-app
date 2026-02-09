@@ -1,5 +1,5 @@
+import { db } from '@/lib/db';
 import { Order, OrderStatus } from '@/types/order';
-import { readData } from '@/lib/db-json';
 import { InventoryService } from './inventory-service'; // Added import
 
 export interface AnalyticsSummary {
@@ -32,7 +32,7 @@ export interface StockAlert {
 
 export const AnalyticsService = {
   async getSummary(orgId: string, startDate?: Date, endDate?: Date): Promise<AnalyticsSummary> {
-    const orders = readData<Order[]>('orders.json', []);
+    const orders = await db.readAll<Order>('orders', orgId);
 
     const filtered = orders.filter((o) => {
       if (o.organizationId !== orgId) return false;
@@ -40,13 +40,15 @@ export const AnalyticsService = {
       if (![OrderStatus.PAID, OrderStatus.SHIPPED, OrderStatus.DELIVERED].includes(o.status))
         return false;
 
-      const date = new Date(o.createdAt);
+      // Date logic: Prefer paidAt for financial reporting, fallback to createdAt
+      const date = o.paidAt ? new Date(o.paidAt) : new Date(o.createdAt);
       if (startDate && date < startDate) return false;
       if (endDate && date > endDate) return false;
       return true;
     });
 
     let revenue = 0; // Total Paid (Products + Shipping)
+    let profit = 0;
     let cogsMaterials = 0;
     let cogsPackaging = 0;
     let cogsShipping = 0;
@@ -59,20 +61,30 @@ export const AnalyticsService = {
       revenue += totalRevenue;
 
       // COGS from Header (Source of Truth for History)
-      cogsMaterials += order.cogsMaterials || 0;
-      cogsPackaging += order.cogsPackaging || 0;
+      let mCogs = order.cogsMaterials || 0;
+      let pCogs = order.cogsPackaging || 0;
+
+      // Guard: If both are 0 but totalCost exists, use totalCost as materials proxy
+      if (mCogs === 0 && pCogs === 0 && order.totalCost > 0) {
+        mCogs = order.totalCost;
+      }
+
+      cogsMaterials += mCogs;
+      cogsPackaging += pCogs;
 
       // Shipping Cost (part of COGS)
       cogsShipping += order.shippingCost || 0;
 
-      // Fees (separate from COGS) - use feesTotal if available, else otherFees
+      // Fees (separate from COGS) - use feesTotal if available, else feesOther
       const orderFees = (order.feesTotal ?? 0) || (order.feesOther ?? 0);
       fees += orderFees;
+
+      // Profit for this order
+      profit +=
+        order.netProfit ?? totalRevenue - (mCogs + pCogs + (order.shippingCost || 0) + orderFees);
     }
 
     const totalCOGS = cogsMaterials + cogsPackaging + cogsShipping;
-    const totalCosts = totalCOGS + fees; // Total costs including fees
-    const profit = revenue - totalCosts;
     const count = filtered.length;
 
     return {
@@ -89,7 +101,7 @@ export const AnalyticsService = {
   },
 
   async getTopProducts(orgId: string, limit = 5): Promise<TopProduct[]> {
-    const orders = readData<Order[]>('orders.json', []);
+    const orders = await db.readAll<Order>('orders', orgId);
     const productMap = new Map<string, TopProduct>();
 
     for (const order of orders) {
@@ -134,7 +146,7 @@ export const AnalyticsService = {
       revenue: number;
     }>
   > {
-    const orders = readData<Order[]>('orders.json', []);
+    const orders = await db.readAll<Order>('orders', orgId);
     const recipeMap = new Map<
       string,
       {
@@ -150,12 +162,10 @@ export const AnalyticsService = {
       if (![OrderStatus.PAID, OrderStatus.SHIPPED, OrderStatus.DELIVERED].includes(order.status))
         continue;
 
-      // Date filtering
-      if (startDate || endDate) {
-        const orderDate = new Date(order.createdAt);
-        if (startDate && orderDate < startDate) continue;
-        if (endDate && orderDate > endDate) continue;
-      }
+      // Date filtering: Prefer paidAt, fallback to createdAt
+      const orderDate = order.paidAt ? new Date(order.paidAt) : new Date(order.createdAt);
+      if (startDate && orderDate < startDate) continue;
+      if (endDate && orderDate > endDate) continue;
 
       for (const item of order.items) {
         // Only count RECIPE items
@@ -183,7 +193,7 @@ export const AnalyticsService = {
   },
 
   async getStockAlerts(orgId: string): Promise<StockAlert[]> {
-    const ingredients = readData<any[]>('ingredients.json', []); // Loose type
+    const ingredients = await db.readAll<any>('ingredients', orgId);
     // Filter low stock
     return ingredients
       .filter((i) => {
@@ -199,7 +209,7 @@ export const AnalyticsService = {
   },
 
   async getRecentSales(orgId: string, limit = 5): Promise<Order[]> {
-    const orders = readData<Order[]>('orders.json', []);
+    const orders = await db.readAll<Order>('orders', orgId);
     return orders
       .filter(
         (o) =>
@@ -211,7 +221,7 @@ export const AnalyticsService = {
   },
 
   async getSalesTimeline(orgId: string, days = 30) {
-    const orders = readData<Order[]>('orders.json', []);
+    const orders = await db.readAll<Order>('orders', orgId);
     const endDate = new Date();
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
@@ -230,7 +240,7 @@ export const AnalyticsService = {
       )
         return;
 
-      const date = new Date(o.createdAt);
+      const date = o.paidAt ? new Date(o.paidAt) : new Date(o.createdAt);
       if (date < startDate || date > endDate) return;
 
       const iso = date.toISOString().split('T')[0];
@@ -248,7 +258,7 @@ export const AnalyticsService = {
   // PRODUCT PROFITABILITY (Gross Margin: Revenue - Product COGS)
   // Excludes Shipping.
   async getProductProfitability(orgId: string, startDate?: Date, endDate?: Date) {
-    const orders = readData<Order[]>('orders.json', []);
+    const orders = await db.readAll<Order>('orders', orgId);
     const productMap = new Map<
       string,
       {
@@ -267,7 +277,7 @@ export const AnalyticsService = {
       if (![OrderStatus.PAID, OrderStatus.SHIPPED, OrderStatus.DELIVERED].includes(order.status))
         continue;
 
-      const date = new Date(order.createdAt);
+      const date = order.paidAt ? new Date(order.paidAt) : new Date(order.createdAt);
       if (startDate && date < startDate) continue;
       if (endDate && date > endDate) continue;
 
@@ -311,14 +321,14 @@ export const AnalyticsService = {
   // ORDER PROFITABILITY (Real Margin: Total Paid - Total Real Cost)
   // Includes Shipping Charged & Shipping Real Cost.
   async getOrderProfitability(orgId: string, startDate?: Date, endDate?: Date) {
-    const orders = readData<Order[]>('orders.json', []);
+    const orders = await db.readAll<Order>('orders', orgId);
 
     const filtered = orders.filter((o) => {
       if (o.organizationId !== orgId) return false;
       if (![OrderStatus.PAID, OrderStatus.SHIPPED, OrderStatus.DELIVERED].includes(o.status))
         return false;
 
-      const date = new Date(o.createdAt);
+      const date = o.paidAt ? new Date(o.paidAt) : new Date(o.createdAt);
       if (startDate && date < startDate) return false;
       if (endDate && date > endDate) return false;
       return true;
