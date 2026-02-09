@@ -54,7 +54,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       site,
     };
 
-    await OrderService.updateOrder('org-1', id, input, items);
+    await OrderService.updateOrder('org-1', id, input, items as any);
 
     return NextResponse.json({ success: true });
   } catch (error) {

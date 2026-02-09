@@ -13,6 +13,24 @@ export const createSupplierSchema = z.object({
 
 export const updateSupplierSchema = createSupplierSchema.partial();
 
+export const orderItemSchema = z.object({
+  id: z.string().optional(),
+  type: z.enum(['RECIPE', 'PACK', 'ACCESSORY']),
+  name: z.string().optional(),
+  quantity: z.coerce.number().min(1),
+  format: z.coerce.number().optional(),
+  unitPrice: z.coerce.number().optional(),
+  unitPriceSnapshot: z.coerce.number().optional(),
+  unitCostSnapshot: z.coerce.number().optional(),
+  unitMaterialCostSnapshot: z.coerce.number().optional(),
+  unitPackagingCostSnapshot: z.coerce.number().optional(),
+  totalPrice: z.coerce.number().optional(),
+  versionNumber: z.coerce.number().optional(),
+  recipeId: z.string().optional(),
+  packId: z.string().optional(),
+  ingredientId: z.string().optional(),
+});
+
 export const createOrderSchema = z.object({
   orderNumber: z.string().optional(),
   customerName: z.string().min(1, 'Customer Name is required'),
@@ -20,7 +38,7 @@ export const createOrderSchema = z.object({
   status: z
     .enum(['DRAFT', 'CONFIRMED', 'PREPARING', 'READY', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'PAID'])
     .default('DRAFT'),
-  items: z.array(z.any()).optional(), // Detailed item validation can be complex, keeping loose for now
+  items: z.array(orderItemSchema).optional(),
   totalAmount: z.coerce.number().min(0).default(0),
   source: z.string().optional(),
   shippingAddress: z.string().optional(),

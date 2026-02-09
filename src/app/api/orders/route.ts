@@ -57,20 +57,16 @@ export async function POST(request: Request) {
     // 2. Add Items
     if (items && Array.isArray(items)) {
       for (const item of items) {
-        // Determine Type logic similiar to Server Action
-        let type: 'RECIPE' | 'PACK' | 'ACCESSORY' = 'RECIPE';
-        if (item.type) type = item.type;
-        else if (item.packId) type = 'PACK';
-        else if (item.ingredientId) type = 'ACCESSORY';
+        const itemType = item.type as 'RECIPE' | 'PACK' | 'ACCESSORY';
 
         await OrderService.addItemToOrder('org-1', order.id, {
-          type,
-          recipeId: item.recipeId,
-          packId: item.packId,
-          ingredientId: item.ingredientId,
-          format: item.format,
+          type: itemType,
+          recipeId: item.recipeId || undefined,
+          packId: item.packId || undefined,
+          ingredientId: item.ingredientId || undefined,
+          format: (item.format || undefined) as any,
           quantity: item.quantity,
-          unitPrice: item.unitPrice,
+          unitPrice: item.unitPrice || undefined,
         });
       }
     }

@@ -2,6 +2,7 @@ import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
 import { EntityType, DbInterface } from './db/types';
+import { toPrismaOrderItem } from './prisma-mappers/order-item';
 
 const connectionString = process.env.DATABASE_URL;
 
@@ -230,9 +231,27 @@ export const sqlDb: DbInterface = {
     // TRANSACTIONAL UPDATE FOR ENTITIES WITH ITEMS
     if (items && Array.isArray(items)) {
       // Goal A: Convert scalar IDs to connects for items
-      const itemsWithConnect = items.map((item: any) => {
+      const itemsWithMappedData = items.map((item: any) => {
         const newItem = { ...item };
-        // ... itemsWithConnect logic remains the same ...
+
+        // Whitelist for items if entity is orders
+        if (entity === 'orders') {
+          const mapped = toPrismaOrderItem(newItem);
+          // Development Guard: Ensure no relation objects leaked through
+          if (process.env.NODE_ENV === 'development') {
+            const hasConnect = Object.values(mapped).some(
+              (val) => val && typeof val === 'object' && ('connect' in val || 'create' in val)
+            );
+            if (hasConnect) {
+              throw new Error(
+                `[Prisma Guard] OrderItem contains nested relation objects: ${JSON.stringify(mapped)}`
+              );
+            }
+          }
+          return mapped;
+        }
+
+        // Default relation connect logic (StockMovements, Recipes, Packs)
         if (newItem.ingredientId) {
           newItem.ingredient = { connect: { id: newItem.ingredientId } };
           delete newItem.ingredientId;
@@ -248,23 +267,6 @@ export const sqlDb: DbInterface = {
         if (newItem.orderId && entity === 'movements') {
           newItem.order = { connect: { id: newItem.orderId } };
           delete newItem.orderId;
-        }
-
-        // Whitelist for items if entity is orders
-        if (entity === 'orders') {
-          // Explicitly remove orderId for nested create - Prisma handles this link
-          delete newItem.orderId;
-
-          return Object.keys(newItem)
-            .filter(
-              (key) =>
-                PRISMA_ORDER_ITEM_FIELDS.includes(key) ||
-                ['ingredient', 'recipe', 'pack'].includes(key)
-            )
-            .reduce((obj: any, key) => {
-              obj[key] = newItem[key];
-              return obj;
-            }, {});
         }
 
         return newItem;
@@ -286,8 +288,8 @@ export const sqlDb: DbInterface = {
           let createData = { ...finalScalarData };
           let updateData = { ...finalScalarData };
 
-          createData.items = { create: itemsWithConnect };
-          updateData.items = { deleteMany: {}, create: itemsWithConnect };
+          createData.items = { create: itemsWithMappedData };
+          updateData.items = { deleteMany: {}, create: itemsWithMappedData };
 
           return (tx as any)[getModelName(entity)].upsert({
             where: { id: data.id },
