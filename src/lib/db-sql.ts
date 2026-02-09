@@ -135,6 +135,23 @@ const PRISMA_ORDER_FIELDS = [
   'margin',
 ];
 
+const PRISMA_ORDER_ITEM_FIELDS = [
+  'id',
+  'type',
+  'name',
+  'quantity',
+  'recipeId',
+  'packId',
+  'ingredientId',
+  'format',
+  'versionNumber',
+  'unitPriceSnapshot',
+  'unitCostSnapshot',
+  'unitMaterialCostSnapshot',
+  'unitPackagingCostSnapshot',
+  'totalPrice',
+];
+
 export const sqlDb: DbInterface = {
   async readAll<T>(entity: EntityType, orgId?: string): Promise<T[]> {
     const model = getModel(entity);
@@ -232,6 +249,24 @@ export const sqlDb: DbInterface = {
           newItem.order = { connect: { id: newItem.orderId } };
           delete newItem.orderId;
         }
+
+        // Whitelist for items if entity is orders
+        if (entity === 'orders') {
+          // Explicitly remove orderId for nested create - Prisma handles this link
+          delete newItem.orderId;
+
+          return Object.keys(newItem)
+            .filter(
+              (key) =>
+                PRISMA_ORDER_ITEM_FIELDS.includes(key) ||
+                ['ingredient', 'recipe', 'pack'].includes(key)
+            )
+            .reduce((obj: any, key) => {
+              obj[key] = newItem[key];
+              return obj;
+            }, {});
+        }
+
         return newItem;
       });
 
