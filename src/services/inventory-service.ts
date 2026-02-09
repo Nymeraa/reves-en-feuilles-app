@@ -46,15 +46,15 @@ export const InventoryService = {
       status: IngredientStatus.ACTIVE,
       currentStock: input.initialStock || 0,
       weightedAverageCost: costPerGram,
-      supplierId: input.supplierId,
-      supplierUrl: input.supplierUrl,
-      alertThreshold: input.alertThreshold,
-      notes: input.notes,
+      supplierId: input.supplierId || null,
+      supplierUrl: input.supplierUrl || null,
+      alertThreshold: input.alertThreshold ?? null,
+      notes: input.notes || null,
 
-      subtype: input.subtype,
-      dimensions: input.dimensions,
-      capacity: input.capacity,
-      material: input.material,
+      subtype: input.subtype || null,
+      dimensions: input.dimensions || null,
+      capacity: input.capacity ?? null,
+      material: input.material || null,
 
       updatedAt: new Date(),
     };
@@ -141,14 +141,14 @@ export const InventoryService = {
           status: IngredientStatus.ACTIVE,
           currentStock: 0, // Set via movement below
           weightedAverageCost: costPerGram,
-          supplierId: input.supplierId,
-          supplierUrl: input.supplierUrl,
-          alertThreshold: input.alertThreshold,
-          notes: input.notes,
-          subtype: input.subtype,
-          dimensions: input.dimensions,
-          capacity: input.capacity,
-          material: input.material,
+          supplierId: input.supplierId || null,
+          supplierUrl: input.supplierUrl || null,
+          alertThreshold: input.alertThreshold ?? null,
+          notes: input.notes || null,
+          subtype: input.subtype || null,
+          dimensions: input.dimensions || null,
+          capacity: input.capacity ?? null,
+          material: input.material || null,
           updatedAt: new Date(),
         };
 
@@ -166,7 +166,7 @@ export const InventoryService = {
             entityType: EntityType.INGREDIENT,
             source: MovementSource.IMPORT,
             deltaQuantity: input.initialStock,
-            unitPrice: costPerGram,
+            unitPrice: costPerGram ?? null,
             reason: 'Import Initial Stock',
             createdAt: new Date(),
             targetStock: input.initialStock,
@@ -245,7 +245,7 @@ export const InventoryService = {
     await db.upsert('ingredients', ingredient, orgId);
 
     // 3. Record Movement
-    const movement = {
+    const movement: any = {
       id: Math.random().toString(36).substring(7),
       organizationId: orgId,
       ingredient: { connect: { id: ingredientId } },
@@ -253,15 +253,21 @@ export const InventoryService = {
       // Audit
       entityType,
       source,
-      sourceId,
+      sourceId: sourceId || null,
 
       deltaQuantity: delta,
-      unitPrice: price,
+      unitPrice: price ?? null,
       reason: reason || 'Movement',
       createdAt: new Date(),
       targetStock: ingredient.currentStock,
     };
-    await db.upsert('movements', movement as any, orgId);
+
+    // If source is ORDER, link to Order relation
+    if (source === MovementSource.ORDER && sourceId) {
+      movement.order = { connect: { id: sourceId } };
+    }
+
+    await db.upsert('movements', movement, orgId);
 
     // LOG AUDIT
     await AuditService.log({
@@ -302,9 +308,10 @@ export const InventoryService = {
     let totalCost = 0;
 
     for (const p of purchases) {
-      if (p.unitPrice !== undefined) {
+      const price = p.unitPrice;
+      if (price != null) {
         totalQty += p.deltaQuantity;
-        totalCost += p.deltaQuantity * p.unitPrice;
+        totalCost += p.deltaQuantity * price;
       }
     }
 

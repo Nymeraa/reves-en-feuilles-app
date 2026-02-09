@@ -16,12 +16,12 @@ export enum MovementType {
 export interface Supplier {
   id: string;
   name: string;
-  contactEmail?: string;
-  contactPhone?: string;
-  website?: string;
-  leadTime?: number; // Délai livraison (jours)
-  defaultConditioning?: string; // Conditionnement par défaut
-  notes?: string;
+  contactEmail?: string | null;
+  contactPhone?: string | null;
+  website?: string | null;
+  leadTime?: number | null; // Délai livraison (jours)
+  defaultConditioning?: string | null; // Conditionnement par défaut
+  notes?: string | null;
   status: 'ACTIVE' | 'INACTIVE';
   ingredientCount?: number; // Computed field for UI
 }
@@ -31,23 +31,23 @@ export interface Ingredient {
   organizationId: string;
   name: string;
   slug: string;
-  category?: string; // "Fruit", "Fleur", "Épice", "Plante"
+  category?: string | null; // "Fruit", "Fleur", "Épice", "Plante"
   status: IngredientStatus;
   currentStock: number; // in grams
   weightedAverageCost: number; // CMP
 
   // New fields for UI Design
-  supplierId?: string;
+  supplierId?: string | null;
   supplier?: Supplier;
-  supplierUrl?: string;
-  alertThreshold?: number; // Default 100g
-  notes?: string;
+  supplierUrl?: string | null;
+  alertThreshold?: number | null; // Default 100g
+  notes?: string | null;
 
   // Phase N: Packaging/Accessories specific
-  dimensions?: string; // e.g. "40 x 30 x 20 cm"
-  material?: string; // e.g. "Carton double cannelure"
-  capacity?: number; // e.g. 50 (g)
-  subtype?: string; // e.g. "Carton", "Sachet", "Boîte"
+  dimensions?: string | null; // e.g. "40 x 30 x 20 cm"
+  material?: string | null; // e.g. "Carton double cannelure"
+  capacity?: number | null; // e.g. 50 (g)
+  subtype?: string | null; // e.g. "Carton", "Sachet", "Boîte"
 
   updatedAt: Date;
 }
@@ -90,13 +90,13 @@ export interface StockMovement {
   // Audit Fields (New)
   entityType: EntityType;
   source: MovementSource;
-  sourceId?: string; // e.g. Order ID
+  sourceId?: string | null; // e.g. Order ID
 
   type: MovementType;
   deltaQuantity: number; // Negative for usage/loss
-  unitPrice?: number;
-  totalPrice?: number;
-  reason?: string;
+  unitPrice?: number | null;
+  totalPrice?: number | null;
+  reason?: string | null;
   createdAt: Date;
-  targetStock?: number; // Snapshot of stock after movement
+  targetStock?: number | null; // Snapshot of stock after movement
 }

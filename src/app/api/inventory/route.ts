@@ -37,8 +37,18 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({ success: true, data: newIngredient });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[API] Failed to create ingredient:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json(
+      {
+        success: false,
+        error: error.message || 'Failed to create ingredient',
+        code:
+          error.name === 'PrismaClientValidationError'
+            ? 'PRISMA_VALIDATION_ERROR'
+            : 'INTERNAL_ERROR',
+      },
+      { status: 500 }
+    );
   }
 }

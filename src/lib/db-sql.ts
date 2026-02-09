@@ -26,6 +26,27 @@ export const isAvailable = true; // generated client is present
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
+/**
+ * Recursively converts 'undefined' to 'null' for Prisma compatibility.
+ * Prisma rejects 'undefined' but accepts 'null' for optional fields.
+ */
+function sanitizeData(data: any): any {
+  if (data === undefined) return null;
+  if (data === null) return null;
+  if (data instanceof Date) return data;
+  if (Array.isArray(data)) return data.map((item) => sanitizeData(item));
+  if (typeof data === 'object') {
+    const sanitized: any = {};
+    for (const key in data) {
+      // Special case: don't sanitize nested Prisma relation objects like 'connect', 'create'
+      // But we still want to sanitize values inside them.
+      sanitized[key] = sanitizeData(data[key]);
+    }
+    return sanitized;
+  }
+  return data;
+}
+
 function getModel(entity: EntityType) {
   if (!prisma) throw new Error('Prisma not initialized');
   switch (entity) {
@@ -137,17 +158,57 @@ export const sqlDb: DbInterface = {
     }
 
     // Special handling for relations (Recipe Items, Pack Items, Order Items)
-    const { items, ...scalarData } = data as any;
+    const sanitized = sanitizeData(data);
+    const { items, ...scalarData } = sanitized;
+
+    // Goal A: Convert scalar IDs to connects for top-level object
+    if (sanitized.ingredientId && entity === 'movements') {
+      sanitized.ingredient = { connect: { id: sanitized.ingredientId } };
+      delete sanitized.ingredientId;
+    }
+    if (sanitized.sourceId && entity === 'movements' && sanitized.source === 'ORDER') {
+      sanitized.order = { connect: { id: sanitized.sourceId } };
+      // Keep sourceId as scalar as well? Usually Prisma prefers connect only if relation exists.
+      // But we must NOT pass it as scalar if it's used for @relation fields in some Prisma versions.
+      // Let's remove it to be safe and use connect.
+      delete sanitized.sourceId;
+    }
+    if (sanitized.supplierId && entity === 'ingredients') {
+      // NOTE: Our schema doesn't have a Supplier relation in Ingredient yet, just a string field.
+      // If we add it later, we'd do: sanitized.supplier = { connect: { id: sanitized.supplierId } };
+    }
 
     if (items && Array.isArray(items)) {
+      // Goal A: Convert scalar IDs to connects for items
+      const itemsWithConnect = items.map((item: any) => {
+        const newItem = { ...item };
+        if (newItem.ingredientId) {
+          newItem.ingredient = { connect: { id: newItem.ingredientId } };
+          delete newItem.ingredientId;
+        }
+        if (newItem.recipeId) {
+          newItem.recipe = { connect: { id: newItem.recipeId } };
+          delete newItem.recipeId;
+        }
+        if (newItem.packId) {
+          newItem.pack = { connect: { id: newItem.packId } };
+          delete newItem.packId;
+        }
+        if (newItem.orderId && entity === 'movements') {
+          newItem.order = { connect: { id: newItem.orderId } };
+          delete newItem.orderId;
+        }
+        return newItem;
+      });
+
       // Transactional update for entities with items
       return prisma.$transaction(
         async (tx: any) => {
           let createData = { ...scalarData };
           let updateData = { ...scalarData };
 
-          createData.items = { create: items };
-          updateData.items = { deleteMany: {}, create: items };
+          createData.items = { create: itemsWithConnect };
+          updateData.items = { deleteMany: {}, create: itemsWithConnect };
 
           return (tx as any)[getModelName(entity)].upsert({
             where: { id: data.id },
@@ -162,8 +223,8 @@ export const sqlDb: DbInterface = {
 
     return (model as any).upsert({
       where: { id: data.id },
-      create: data,
-      update: data,
+      create: sanitized,
+      update: sanitized,
     }) as unknown as T;
   },
 

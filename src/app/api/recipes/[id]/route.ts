@@ -16,9 +16,19 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     });
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[API] Failed to update recipe:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json(
+      {
+        success: false,
+        error: error.message || 'Failed to update recipe',
+        code:
+          error.name === 'PrismaClientValidationError'
+            ? 'PRISMA_VALIDATION_ERROR'
+            : 'INTERNAL_ERROR',
+      },
+      { status: 500 }
+    );
   }
 }
 
@@ -30,8 +40,18 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
       return NextResponse.json({ error: 'Recipe not found' }, { status: 404 });
     }
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[API] Failed to delete recipe:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json(
+      {
+        success: false,
+        error: error.message || 'Failed to delete recipe',
+        code:
+          error.name === 'PrismaClientValidationError'
+            ? 'PRISMA_VALIDATION_ERROR'
+            : 'INTERNAL_ERROR',
+      },
+      { status: 500 }
+    );
   }
 }

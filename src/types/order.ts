@@ -55,26 +55,26 @@ export interface Order {
   createdAt: Date;
   updatedAt: Date;
   // Shipping & Details
-  source?: string; // 'Manuel', 'Shopify'
-  email?: string;
-  shippingCarrier?: string;
-  trackingNumber?: string;
-  shippingPrice?: number; // Prix facturé au client
-  shippingCost?: number; // Coût réel pour nous
-  packagingType?: string;
-  packagingId?: string; // Stable reference to the Packaging Ingredient used
+  source?: string | null; // 'Manuel', 'Shopify'
+  email?: string | null;
+  shippingCarrier?: string | null;
+  trackingNumber?: string | null;
+  shippingPrice?: number | null; // Prix facturé au client
+  shippingCost?: number | null; // Coût réel pour nous
+  packagingType?: string | null;
+  packagingId?: string | null; // Stable reference to the Packaging Ingredient used
 
-  discountCode?: string;
-  discountPercent?: number;
+  discountCode?: string | null;
+  discountPercent?: number | null;
 
-  otherFees?: number; // Legacy/Override input
-  notes?: string;
+  otherFees?: number | null; // Legacy/Override input
+  notes?: string | null;
 
   // Financial Snapshot (Fees)
-  feesUrssaf?: number;
-  feesShopify?: number;
-  feesOther?: number;
-  feesTotal?: number; // Sum of above
+  feesUrssaf?: number | null;
+  feesShopify?: number | null;
+  feesOther?: number | null;
+  feesTotal?: number | null; // Sum of above
 
   // Financial Breakdown
   cogsMaterials: number;

@@ -49,17 +49,17 @@ export const OrderService = {
       updatedAt: new Date(),
 
       // New fields
-      source: input.source,
-      email: input.email,
-      shippingCarrier: input.shippingCarrier,
-      trackingNumber: input.trackingNumber,
-      shippingPrice: input.shippingPrice,
-      shippingCost: input.shippingCost,
-      packagingType: input.packagingType,
-      discountCode: input.discountCode,
-      discountPercent: input.discountPercent,
-      otherFees: input.otherFees,
-      notes: input.notes,
+      source: input.source || null,
+      email: input.email || null,
+      shippingCarrier: input.shippingCarrier || null,
+      trackingNumber: input.trackingNumber || null,
+      shippingPrice: input.shippingPrice ?? null,
+      shippingCost: input.shippingCost ?? null,
+      packagingType: input.packagingType || null,
+      discountCode: input.discountCode || null,
+      discountPercent: input.discountPercent ?? null,
+      otherFees: input.otherFees ?? null,
+      notes: input.notes || null,
 
       // Init financials
       cogsMaterials: 0,
@@ -429,15 +429,15 @@ export const OrderService = {
       order.manualTotal = true;
     }
 
-    order.shippingCarrier = input.shippingCarrier;
-    order.trackingNumber = input.trackingNumber;
-    order.shippingCost = input.shippingCost;
-    order.shippingPrice = input.shippingPrice;
-    order.packagingType = input.packagingType;
-    order.discountCode = input.discountCode;
-    order.discountPercent = input.discountPercent;
-    order.otherFees = input.otherFees;
-    order.notes = input.notes;
+    order.shippingCarrier = input.shippingCarrier || null;
+    order.trackingNumber = input.trackingNumber || null;
+    order.shippingCost = input.shippingCost ?? null;
+    order.shippingPrice = input.shippingPrice ?? null;
+    order.packagingType = input.packagingType || null;
+    order.discountCode = input.discountCode || null;
+    order.discountPercent = input.discountPercent ?? null;
+    order.otherFees = input.otherFees ?? null;
+    order.notes = input.notes || null;
     order.updatedAt = new Date();
 
     if (itemsInput) {

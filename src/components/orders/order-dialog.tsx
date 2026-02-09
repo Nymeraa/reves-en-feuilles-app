@@ -424,7 +424,7 @@ export function OrderDialog({
               <Input
                 name="customerName"
                 placeholder="Nom du client"
-                defaultValue={initialData?.customerName}
+                defaultValue={initialData?.customerName ?? ''}
               />
             </div>
             <div className="space-y-2 col-span-1">
@@ -433,7 +433,7 @@ export function OrderDialog({
                 name="email"
                 type="email"
                 placeholder="Email"
-                defaultValue={initialData?.email}
+                defaultValue={initialData?.email ?? undefined}
               />
             </div>
             <div className="space-y-2 col-span-1">
@@ -443,7 +443,7 @@ export function OrderDialog({
                   name="totalAmount"
                   type="number"
                   step="0.01"
-                  defaultValue={initialData?.totalAmount}
+                  defaultValue={initialData?.totalAmount ?? ''}
                   onChange={(e) => setTotalAmount(parseFloat(e.target.value) || 0)}
                 />
                 <span className="absolute right-3 top-2.5 text-muted-foreground">€</span>
@@ -452,9 +452,18 @@ export function OrderDialog({
             <div className="space-y-2 col-span-1">
               <Label>Code promo</Label>
               <div className="flex gap-2">
-                <Input name="discountCode" placeholder="Code" />
+                <Input
+                  name="discountCode"
+                  placeholder="Code"
+                  defaultValue={initialData?.discountCode ?? ''}
+                />
                 <div className="relative w-20">
-                  <Input name="discountPercent" type="number" placeholder="%" />
+                  <Input
+                    name="discountPercent"
+                    type="number"
+                    placeholder="%"
+                    defaultValue={initialData?.discountPercent ?? ''}
+                  />
                 </div>
               </div>
             </div>
@@ -499,7 +508,7 @@ export function OrderDialog({
             </div>
             <div className="space-y-2 col-span-1">
               <Label>N° Suivi</Label>
-              <Input name="trackingNumber" defaultValue={initialData?.trackingNumber} />
+              <Input name="trackingNumber" defaultValue={initialData?.trackingNumber ?? ''} />
             </div>
             <div className="space-y-2 col-span-1">
               <Label>Coût livraison</Label>
@@ -507,7 +516,7 @@ export function OrderDialog({
                 name="shippingCost"
                 type="number"
                 step="0.01"
-                defaultValue={initialData?.shippingCost}
+                defaultValue={initialData?.shippingCost ?? ''}
                 onChange={(e) => setShippingCost(parseFloat(e.target.value) || 0)}
               />
             </div>

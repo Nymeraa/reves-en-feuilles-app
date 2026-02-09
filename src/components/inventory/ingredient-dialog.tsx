@@ -192,10 +192,20 @@ export function IngredientDialog({
           </div>
 
           <div className="grid gap-2">
+            <Label>Slug</Label>
+            <Input
+              name="slug"
+              defaultValue={ingredient?.slug ?? ''}
+              placeholder="nom-de-l-ingredient"
+              disabled={readonly}
+            />
+          </div>
+
+          <div className="grid gap-2">
             <Label>URL d'achat fournisseur</Label>
             <Input
               name="supplierUrl"
-              defaultValue={ingredient?.supplierUrl}
+              defaultValue={ingredient?.supplierUrl ?? ''}
               placeholder="https://..."
               disabled={readonly}
             />
@@ -254,7 +264,7 @@ export function IngredientDialog({
             <Label>Notes</Label>
             <Textarea
               name="notes"
-              defaultValue={ingredient?.notes}
+              defaultValue={ingredient?.notes ?? ''}
               placeholder="Notes internes..."
               disabled={readonly}
             />

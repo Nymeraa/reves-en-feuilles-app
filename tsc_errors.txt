@@ -1,0 +1,29 @@
+src/components/catalogue/catalogue-modal.tsx(67,33): error TS2322: Type 'string | null | undefined' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/components/catalogue/catalogue-modal.tsx(115,33): error TS2322: Type 'number | null | undefined' is not assignable to type 'string | number | readonly string[] | undefined'.
+  Type 'null' is not assignable to type 'string | number | readonly string[] | undefined'.
+src/components/inventory/ingredient-dialog.tsx(198,15): error TS2322: Type 'string | null | undefined' is not assignable to type 'string | number | readonly string[] | undefined'.
+  Type 'null' is not assignable to type 'string | number | readonly string[] | undefined'.
+src/components/inventory/ingredient-dialog.tsx(257,15): error TS2322: Type 'string | null | undefined' is not assignable to type 'string | number | readonly string[] | undefined'.
+  Type 'null' is not assignable to type 'string | number | readonly string[] | undefined'.
+src/components/orders/order-dialog.tsx(436,17): error TS2322: Type 'string | null | undefined' is not assignable to type 'string | number | readonly string[] | undefined'.
+  Type 'null' is not assignable to type 'string | number | readonly string[] | undefined'.
+src/components/orders/order-dialog.tsx(502,44): error TS2322: Type 'string | null | undefined' is not assignable to type 'string | number | readonly string[] | undefined'.
+  Type 'null' is not assignable to type 'string | number | readonly string[] | undefined'.
+src/components/orders/order-dialog.tsx(510,17): error TS2322: Type 'number | null | undefined' is not assignable to type 'string | number | readonly string[] | undefined'.
+  Type 'null' is not assignable to type 'string | number | readonly string[] | undefined'.
+src/components/orders/order-dialog.tsx(677,17): error TS2322: Type 'string | null | undefined' is not assignable to type 'string | number | readonly string[] | undefined'.
+  Type 'null' is not assignable to type 'string | number | readonly string[] | undefined'.
+src/components/suppliers/supplier-modal.tsx(47,52): error TS2322: Type 'string | null | undefined' is not assignable to type 'string | number | readonly string[] | undefined'.
+  Type 'null' is not assignable to type 'string | number | readonly string[] | undefined'.
+src/components/suppliers/supplier-modal.tsx(56,47): error TS2322: Type 'string | null | undefined' is not assignable to type 'string | number | readonly string[] | undefined'.
+  Type 'null' is not assignable to type 'string | number | readonly string[] | undefined'.
+src/components/suppliers/supplier-modal.tsx(62,66): error TS2322: Type 'number | null | undefined' is not assignable to type 'string | number | readonly string[] | undefined'.
+  Type 'null' is not assignable to type 'string | number | readonly string[] | undefined'.
+src/components/suppliers/supplier-modal.tsx(66,63): error TS2322: Type 'string | null | undefined' is not assignable to type 'string | number | readonly string[] | undefined'.
+  Type 'null' is not assignable to type 'string | number | readonly string[] | undefined'.
+src/components/suppliers/supplier-modal.tsx(72,48): error TS2322: Type 'string | null | undefined' is not assignable to type 'string | number | readonly string[] | undefined'.
+  Type 'null' is not assignable to type 'string | number | readonly string[] | undefined'.
+src/services/analytics-service.ts(69,21): error TS18047: 'orderFees' is possibly 'null'.
+src/services/analytics-service.ts(315,68): error TS18047: 'totalFees' is possibly 'null'.
+src/services/analytics-service.ts(396,24): error TS18047: 'o.totalFees' is possibly 'null'.
