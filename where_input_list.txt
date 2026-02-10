@@ -1,0 +1,2040 @@
+7:import $Types = runtime.Types // general types
+8:import $Public = runtime.Types.Public
+9:import $Utils = runtime.Types.Utils
+10:import $Extensions = runtime.Types.Extensions
+11:import $Result = runtime.Types.Result
+13:export type PrismaPromise<T> = $Public.PrismaPromise<T>
+20:export type Ingredient = $Result.DefaultSelection<Prisma.$IngredientPayload>
+25:export type Supplier = $Result.DefaultSelection<Prisma.$SupplierPayload>
+30:export type Recipe = $Result.DefaultSelection<Prisma.$RecipePayload>
+35:export type RecipeItem = $Result.DefaultSelection<Prisma.$RecipeItemPayload>
+40:export type RecipeVersion = $Result.DefaultSelection<Prisma.$RecipeVersionPayload>
+45:export type Pack = $Result.DefaultSelection<Prisma.$PackPayload>
+50:export type PackItem = $Result.DefaultSelection<Prisma.$PackItemPayload>
+55:export type PackVersion = $Result.DefaultSelection<Prisma.$PackVersionPayload>
+60:export type Order = $Result.DefaultSelection<Prisma.$OrderPayload>
+65:export type OrderItem = $Result.DefaultSelection<Prisma.$OrderItemPayload>
+70:export type StockMovement = $Result.DefaultSelection<Prisma.$StockMovementPayload>
+75:export type AuditLog = $Result.DefaultSelection<Prisma.$AuditLogPayload>
+80:export type Settings = $Result.DefaultSelection<Prisma.$SettingsPayload>
+85:export type ActivityLog = $Result.DefaultSelection<Prisma.$ActivityLogPayload>
+93: * const prisma = new PrismaClient()
+95: * const ingredients = await prisma.ingredient.findMany()
+101:export class PrismaClient<
+102:  ClientOptions extends Prisma.PrismaClientOptions = Prisma.PrismaClientOptions,
+103:  const U = 'log' extends keyof ClientOptions ? ClientOptions['log'] extends Array<Prisma.LogLevel | Prisma.LogDefinition> ? Prisma.GetEvents<ClientOptions['log']> : never : never,
+104:  ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+106:  [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['other'] }
+114:   * const prisma = new PrismaClient()
+116:   * const ingredients = await prisma.ingredient.findMany()
+124:  $on<V extends U>(eventType: V, callback: (event: V extends 'query' ? Prisma.QueryEvent : Prisma.LogEvent) => void): PrismaClient;
+140:   * const result = await prisma.$executeRaw`UPDATE User SET cool = ${true} WHERE email = ${'user@email.com'};`
+145:  $executeRaw<T = unknown>(query: TemplateStringsArray | Prisma.Sql, ...values: any[]): Prisma.PrismaPromise<number>;
+152:   * const result = await prisma.$executeRawUnsafe('UPDATE User SET cool = $1 WHERE email = $2 ;', true, 'user@email.com')
+157:  $executeRawUnsafe<T = unknown>(query: string, ...values: any[]): Prisma.PrismaPromise<number>;
+163:   * const result = await prisma.$queryRaw`SELECT * FROM User WHERE id = ${1} OR email = ${'user@email.com'};`
+168:  $queryRaw<T = unknown>(query: TemplateStringsArray | Prisma.Sql, ...values: any[]): Prisma.PrismaPromise<T>;
+175:   * const result = await prisma.$queryRawUnsafe('SELECT * FROM User WHERE id = $1 OR email = $2;', 1, 'user@email.com')
+180:  $queryRawUnsafe<T = unknown>(query: string, ...values: any[]): Prisma.PrismaPromise<T>;
+187:   * const [george, bob, alice] = await prisma.$transaction([
+198:  $transaction<R>(fn: (prisma: Omit<PrismaClient, runtime.ITXClientDenyList>) => $Utils.JsPromise<R>, options?: { maxWait?: number, timeout?: number, isolationLevel?: Prisma.TransactionIsolationLevel }): $Utils.JsPromise<R>
+209:    * const ingredients = await prisma.ingredient.findMany()
+219:    * const suppliers = await prisma.supplier.findMany()
+229:    * const recipes = await prisma.recipe.findMany()
+239:    * const recipeItems = await prisma.recipeItem.findMany()
+249:    * const recipeVersions = await prisma.recipeVersion.findMany()
+259:    * const packs = await prisma.pack.findMany()
+269:    * const packItems = await prisma.packItem.findMany()
+279:    * const packVersions = await prisma.packVersion.findMany()
+289:    * const orders = await prisma.order.findMany()
+299:    * const orderItems = await prisma.orderItem.findMany()
+309:    * const stockMovements = await prisma.stockMovement.findMany()
+319:    * const auditLogs = await prisma.auditLog.findMany()
+329:    * const settings = await prisma.settings.findMany()
+339:    * const activityLogs = await prisma.activityLog.findMany()
+345:export namespace Prisma {
+346:  export import DMMF = runtime.DMMF
+348:  export type PrismaPromise<T> = $Public.PrismaPromise<T>
+353:  export import validator = runtime.Public.validator
+358:  export import PrismaClientKnownRequestError = runtime.PrismaClientKnownRequestError
+359:  export import PrismaClientUnknownRequestError = runtime.PrismaClientUnknownRequestError
+360:  export import PrismaClientRustPanicError = runtime.PrismaClientRustPanicError
+361:  export import PrismaClientInitializationError = runtime.PrismaClientInitializationError
+362:  export import PrismaClientValidationError = runtime.PrismaClientValidationError
+365:   * Re-export of sql-template-tag
+367:  export import sql = runtime.sqltag
+368:  export import empty = runtime.empty
+369:  export import join = runtime.join
+370:  export import raw = runtime.raw
+371:  export import Sql = runtime.Sql
+378:  export import Decimal = runtime.Decimal
+380:  export type DecimalJsLike = runtime.DecimalJsLike
+385:  export import Extension = $Extensions.UserArgs
+386:  export import getExtensionContext = runtime.Extensions.getExtensionContext
+387:  export import Args = $Public.Args
+388:  export import Payload = $Public.Payload
+389:  export import Result = $Public.Result
+390:  export import Exact = $Public.Exact
+396:  export type PrismaVersion = {
+401:  export const prismaVersion: PrismaVersion
+408:  export import Bytes = runtime.Bytes
+409:  export import JsonObject = runtime.JsonObject
+410:  export import JsonArray = runtime.JsonArray
+411:  export import JsonValue = runtime.JsonValue
+412:  export import InputJsonObject = runtime.InputJsonObject
+413:  export import InputJsonArray = runtime.InputJsonArray
+414:  export import InputJsonValue = runtime.InputJsonValue
+464:  export const DbNull: NullTypes.DbNull
+471:  export const JsonNull: NullTypes.JsonNull
+478:  export const AnyNull: NullTypes.AnyNull
+480:  type SelectAndInclude = {
+485:  type SelectAndOmit = {
+491:   * Get the type of the value, that the Promise holds.
+493:  export type PromiseType<T extends PromiseLike<any>> = T extends PromiseLike<infer U> ? U : T;
+496:   * Get the return type of a function which returns a Promise.
+498:  export type PromiseReturnType<T extends (...args: any) => $Utils.JsPromise<any>> = PromiseType<ReturnType<T>>
+503:  type Prisma__Pick<T, K extends keyof T> = {
+508:  export type Enumerable<T> = T | Array<T>;
+510:  export type RequiredKeys<T> = {
+514:  export type TruthyKeys<T> = keyof {
+518:  export type TrueKeys<T> = TruthyKeys<Prisma__Pick<T, RequiredKeys<T>>>
+524:  export type Subset<T, U> = {
+533:  export type SelectSubset<T, U> = {
+546:  export type SubsetIntersection<T, U, K> = {
+551:  type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never };
+554:   * XOR is needed to have a real mutually exclusive union type
+555:   * https://stackoverflow.com/questions/42123407/does-typescript-support-mutually-exclusive-types
+557:  type XOR<T, U> =
+567:  type IsObject<T extends any> = T extends Array<any>
+583:  export type UnEnumerate<T extends unknown> = T extends Array<infer U> ? U : T
+589:  type __Either<O extends object, K extends Key> = Omit<O, K> &
+595:  type EitherStrict<O extends object, K extends Key> = Strict<__Either<O, K>>
+597:  type EitherLoose<O extends object, K extends Key> = ComputeRaw<__Either<O, K>>
+599:  type _Either<
+603:  > = {
+608:  type Either<
+611:    strict extends Boolean = 1
+612:  > = O extends unknown ? _Either<O, K, strict> : never
+614:  export type Union = any
+616:  type PatchUndefined<O extends object, O1 extends object> = {
+621:  export type IntersectOf<U extends Union> = (
+622:    U extends unknown ? (k: U) => void : never
+623:  ) extends (k: infer I) => void
+627:  export type Overwrite<O extends object, O1 extends object> = {
+631:  type _Merge<U extends object> = IntersectOf<Overwrite<U, {
+635:  type Key = string | number | symbol;
+636:  type AtBasic<O extends object, K extends Key> = K extends keyof O ? O[K] : never;
+637:  type AtStrict<O extends object, K extends Key> = O[K & keyof O];
+638:  type AtLoose<O extends object, K extends Key> = O extends unknown ? AtStrict<O, K> : never;
+639:  export type At<O extends object, K extends Key, strict extends Boolean = 1> = {
+644:  export type ComputeRaw<A extends any> = A extends Function ? A : {
+648:  export type OptionalFlat<O> = {
+652:  type _Record<K extends keyof any, T> = {
+656:  // cause typescript not to expand types and preserve names
+657:  type NoExpand<T> = T extends unknown ? T : never;
+659:  // this type assumes the passed object is entirely optional
+660:  type AtLeast<O extends object, K extends string> = NoExpand<
+666:  type _Strict<U, _U = U> = U extends unknown ? U & OptionalFlat<_Record<Exclude<Keys<_U>, keyof U>, never>> : never;
+668:  export type Strict<U extends object> = ComputeRaw<_Strict<U>>;
+671:  export type Merge<U extends object> = ComputeRaw<_Merge<Strict<U>>>;
+676:  export type Boolean = True | False
+681:  export type True = 1
+686:  export type False = 0
+688:  export type Not<B extends Boolean> = {
+693:  export type Extends<A1 extends any, A2 extends any> = [A1] extends [never]
+699:  export type Has<U extends Union, U1 extends Union> = Not<
+703:  export type Or<B1 extends Boolean, B2 extends Boolean> = {
+714:  export type Keys<U extends Union> = U extends unknown ? keyof U : never
+716:  type Cast<A, B> = A extends B ? A : B;
+718:  export const type: unique symbol;
+726:  export type GetScalarType<T, O> = O extends object ? {
+732:  type FieldPaths<
+734:    U = Omit<T, '_avg' | '_sum' | '_count' | '_min' | '_max'>
+735:  > = IsObject<T> extends True ? U : T
+737:  type GetHavingFields<T> = {
+756:  type _TupleToUnion<T> = T extends (infer E)[] ? E : never
+757:  type TupleToUnion<K extends readonly any[]> = _TupleToUnion<K>
+758:  type MaybeTupleToUnion<T> = T extends any[] ? TupleToUnion<T> : T
+763:  type PickEnumerable<T, K extends Enumerable<keyof T> | keyof T> = Prisma__Pick<T, MaybeTupleToUnion<K>>
+768:  type ExcludeUnderscoreKeys<T extends string> = T extends `_${string}` ? never : T
+771:  export type FieldRef<Model, FieldType> = runtime.FieldRef<Model, FieldType>
+773:  type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRef<Model, FieldType>
+776:  export const ModelName: {
+793:  export type ModelName = (typeof ModelName)[keyof typeof ModelName]
+797:  interface TypeMapCb<ClientOptions = {}> extends $Utils.Fn<{extArgs: $Extensions.InternalArgs }, $Utils.Record<string, any>> {
+801:  export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> = {
+1870:  export const defineExtension: $Extensions.ExtendsHook<"define", Prisma.TypeMapCb, $Extensions.DefaultArgs>
+1871:  export type DefaultPrismaClient = PrismaClient
+1872:  export type ErrorFormat = 'pretty' | 'colorless' | 'minimal'
+1873:  export interface PrismaClientOptions {
+1905:     * maxWait ?= 2000
+1906:     * timeout ?= 5000
+1926:     * const prisma = new PrismaClient({
+1942:     * const prisma = new PrismaClient({
+1953:  export type GlobalOmitConfig = {
+1971:  export type LogLevel = 'info' | 'query' | 'warn' | 'error'
+1972:  export type LogDefinition = {
+1977:  export type CheckIsLogLevel<T> = T extends LogLevel ? T : never;
+1979:  export type GetLogType<T> = CheckIsLogLevel<
+1983:  export type GetEvents<T extends any[]> = T extends Array<LogLevel | LogDefinition>
+1987:  export type QueryEvent = {
+1995:  export type LogEvent = {
+2003:  export type PrismaAction =
+2027:  export function getLogLevel(log: Array<LogLevel | LogDefinition>): LogLevel | undefined;
+2032:  export type TransactionClient = Omit<Prisma.DefaultPrismaClient, runtime.ITXClientDenyList>
+2034:  export type Datasource = {
+2047:  export type IngredientCountOutputType = {
+2053:  export type IngredientCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+2063:  export type IngredientCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+2073:  export type IngredientCountOutputTypeCountPackItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+2080:  export type IngredientCountOutputTypeCountRecipeItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+2087:  export type IngredientCountOutputTypeCountMovementsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+2096:  export type RecipeCountOutputType = {
+2102:  export type RecipeCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+2112:  export type RecipeCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+2122:  export type RecipeCountOutputTypeCountPackItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+2129:  export type RecipeCountOutputTypeCountItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+2136:  export type RecipeCountOutputTypeCountVersionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+2145:  export type PackCountOutputType = {
+2150:  export type PackCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+2159:  export type PackCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+2169:  export type PackCountOutputTypeCountItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+2176:  export type PackCountOutputTypeCountVersionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+2185:  export type OrderCountOutputType = {
+2190:  export type OrderCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+2199:  export type OrderCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+2209:  export type OrderCountOutputTypeCountItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+2216:  export type OrderCountOutputTypeCountMovementsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+2229:  export type AggregateIngredient = {
+2237:  export type IngredientAvgAggregateOutputType = {
+2246:  export type IngredientSumAggregateOutputType = {
+2255:  export type IngredientMinAggregateOutputType = {
+2268:    subtype: string | null
+2278:  export type IngredientMaxAggregateOutputType = {
+2291:    subtype: string | null
+2301:  export type IngredientCountAggregateOutputType = {
+2314:    subtype: number
+2326:  export type IngredientAvgAggregateInputType = {
+2335:  export type IngredientSumAggregateInputType = {
+2344:  export type IngredientMinAggregateInputType = {
+2357:    subtype?: true
+2367:  export type IngredientMaxAggregateInputType = {
+2380:    subtype?: true
+2390:  export type IngredientCountAggregateInputType = {
+2403:    subtype?: true
+2414:  export type IngredientAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+2475:  export type GetIngredientAggregateType<T extends IngredientAggregateArgs> = {
+2486:  export type IngredientGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+2500:  export type IngredientGroupByOutputType = {
+2513:    subtype: string | null
+2528:  type GetIngredientGroupByPayload<T extends IngredientGroupByArgs> = Prisma.PrismaPromise<
+2542:  export type IngredientSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+2555:    subtype?: boolean
+2569:  export type IngredientSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+2582:    subtype?: boolean
+2592:  export type IngredientSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+2605:    subtype?: boolean
+2615:  export type IngredientSelectScalar = {
+2628:    subtype?: boolean
+2638:  export type IngredientOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "organizationId" | "name" | "slug" | "category" | "status" | "currentStock" | "weightedAverageCost" | "supplierId" | "supplierUrl" | "alertThreshold" | "notes" | "subtype" | "capacity" | "capacityUnit" | "dimensions" | "unit" | "initialStock" | "initialCost" | "updatedAt", ExtArgs["result"]["ingredient"]>
+2639:  export type IngredientInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+2645:  export type IngredientIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+2646:  export type IngredientIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+2648:  export type $IngredientPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+2668:      subtype: string | null
+2680:  type IngredientGetPayload<S extends boolean | null | undefined | IngredientDefaultArgs> = $Result.GetResult<Prisma.$IngredientPayload, S>
+2682:  type IngredientCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+2687:  export interface IngredientDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+2688:    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Ingredient'], meta: { name: 'Ingredient' } }
+2694:     * const ingredient = await prisma.ingredient.findUnique({
+2703:     * Find one Ingredient that matches the filter or throw an error with `error.code='P2025'`
+2708:     * const ingredient = await prisma.ingredient.findUniqueOrThrow({
+2723:     * const ingredient = await prisma.ingredient.findFirst({
+2739:     * const ingredient = await prisma.ingredient.findFirstOrThrow({
+2754:     * const ingredients = await prisma.ingredient.findMany()
+2757:     * const ingredients = await prisma.ingredient.findMany({ take: 10 })
+2760:     * const ingredientWithIdOnly = await prisma.ingredient.findMany({ select: { id: true } })
+2770:     * const Ingredient = await prisma.ingredient.create({
+2784:     * const ingredient = await prisma.ingredient.createMany({
+2798:     * const ingredient = await prisma.ingredient.createManyAndReturn({
+2805:     * const ingredientWithIdOnly = await prisma.ingredient.createManyAndReturn({
+2822:     * const Ingredient = await prisma.ingredient.delete({
+2836:     * const ingredient = await prisma.ingredient.update({
+2853:     * const { count } = await prisma.ingredient.deleteMany({
+2869:     * const ingredient = await prisma.ingredient.updateMany({
+2886:     * const ingredient = await prisma.ingredient.updateManyAndReturn({
+2896:     * const ingredientWithIdOnly = await prisma.ingredient.updateManyAndReturn({
+2916:     * const ingredient = await prisma.ingredient.upsert({
+2938:     * const count = await prisma.ingredient.count({
+2963:     * const aggregations = await prisma.user.aggregate({
+2987:     * const result = await prisma.user.groupBy({
+3068:  export interface Prisma__IngredientClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+3070:    packItems<T extends Ingredient$packItemsArgs<ExtArgs> = {}>(args?: Subset<T, Ingredient$packItemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PackItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+3071:    recipeItems<T extends Ingredient$recipeItemsArgs<ExtArgs> = {}>(args?: Subset<T, Ingredient$recipeItemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RecipeItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+3072:    movements<T extends Ingredient$movementsArgs<ExtArgs> = {}>(args?: Subset<T, Ingredient$movementsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StockMovementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+3079:    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+3085:    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+3092:    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+3114:    readonly subtype: FieldRef<"Ingredient", 'String'>
+3129:  export type IngredientFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+3151:  export type IngredientFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+3173:  export type IngredientFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+3225:  export type IngredientFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+3277:  export type IngredientFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+3324:  export type IngredientCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+3346:  export type IngredientCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+3357:  export type IngredientCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+3376:  export type IngredientUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+3402:  export type IngredientUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+3420:  export type IngredientUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+3446:  export type IngredientUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+3476:  export type IngredientDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+3498:  export type IngredientDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+3512:  export type Ingredient$packItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+3536:  export type Ingredient$recipeItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+3560:  export type Ingredient$movementsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+3584:  export type IngredientDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+3604:  export type AggregateSupplier = {
+3612:  export type SupplierAvgAggregateOutputType = {
+3616:  export type SupplierSumAggregateOutputType = {
+3620:  export type SupplierMinAggregateOutputType = {
+3633:  export type SupplierMaxAggregateOutputType = {
+3646:  export type SupplierCountAggregateOutputType = {
+3661:  export type SupplierAvgAggregateInputType = {
+3665:  export type SupplierSumAggregateInputType = {
+3669:  export type SupplierMinAggregateInputType = {
+3682:  export type SupplierMaxAggregateInputType = {
+3695:  export type SupplierCountAggregateInputType = {
+3709:  export type SupplierAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+3713:    where?: SupplierWhereInput
+3770:  export type GetSupplierAggregateType<T extends SupplierAggregateArgs> = {
+3781:  export type SupplierGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+3782:    where?: SupplierWhereInput
+3795:  export type SupplierGroupByOutputType = {
+3813:  type GetSupplierGroupByPayload<T extends SupplierGroupByArgs> = Prisma.PrismaPromise<
+3827:  export type SupplierSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+3840:  export type SupplierSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+3853:  export type SupplierSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+3866:  export type SupplierSelectScalar = {
+3879:  export type SupplierOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "organizationId" | "name" | "status" | "contactEmail" | "contactPhone" | "website" | "leadTime" | "defaultConditioning" | "notes", ExtArgs["result"]["supplier"]>
+3881:  export type $SupplierPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+3899:  type SupplierGetPayload<S extends boolean | null | undefined | SupplierDefaultArgs> = $Result.GetResult<Prisma.$SupplierPayload, S>
+3901:  type SupplierCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+3906:  export interface SupplierDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+3907:    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Supplier'], meta: { name: 'Supplier' } }
+3913:     * const supplier = await prisma.supplier.findUnique({
+3922:     * Find one Supplier that matches the filter or throw an error with `error.code='P2025'`
+3927:     * const supplier = await prisma.supplier.findUniqueOrThrow({
+3942:     * const supplier = await prisma.supplier.findFirst({
+3958:     * const supplier = await prisma.supplier.findFirstOrThrow({
+3973:     * const suppliers = await prisma.supplier.findMany()
+3976:     * const suppliers = await prisma.supplier.findMany({ take: 10 })
+3979:     * const supplierWithIdOnly = await prisma.supplier.findMany({ select: { id: true } })
+3989:     * const Supplier = await prisma.supplier.create({
+4003:     * const supplier = await prisma.supplier.createMany({
+4017:     * const supplier = await prisma.supplier.createManyAndReturn({
+4024:     * const supplierWithIdOnly = await prisma.supplier.createManyAndReturn({
+4041:     * const Supplier = await prisma.supplier.delete({
+4055:     * const supplier = await prisma.supplier.update({
+4072:     * const { count } = await prisma.supplier.deleteMany({
+4088:     * const supplier = await prisma.supplier.updateMany({
+4105:     * const supplier = await prisma.supplier.updateManyAndReturn({
+4115:     * const supplierWithIdOnly = await prisma.supplier.updateManyAndReturn({
+4135:     * const supplier = await prisma.supplier.upsert({
+4157:     * const count = await prisma.supplier.count({
+4182:     * const aggregations = await prisma.user.aggregate({
+4206:     * const result = await prisma.user.groupBy({
+4287:  export interface Prisma__SupplierClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+4295:    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+4301:    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+4308:    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+4335:  export type SupplierFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+4353:  export type SupplierFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+4371:  export type SupplierFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+4383:    where?: SupplierWhereInput
+4419:  export type SupplierFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+4431:    where?: SupplierWhereInput
+4467:  export type SupplierFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+4479:    where?: SupplierWhereInput
+4510:  export type SupplierCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+4528:  export type SupplierCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+4539:  export type SupplierCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+4558:  export type SupplierUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+4580:  export type SupplierUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+4588:    where?: SupplierWhereInput
+4598:  export type SupplierUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+4614:    where?: SupplierWhereInput
+4624:  export type SupplierUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+4650:  export type SupplierDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+4668:  export type SupplierDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+4672:    where?: SupplierWhereInput
+4682:  export type SupplierDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+4698:  export type AggregateRecipe = {
+4706:  export type RecipeAvgAggregateOutputType = {
+4714:  export type RecipeSumAggregateOutputType = {
+4722:  export type RecipeMinAggregateOutputType = {
+4737:  export type RecipeMaxAggregateOutputType = {
+4752:  export type RecipeCountAggregateOutputType = {
+4770:  export type RecipeAvgAggregateInputType = {
+4778:  export type RecipeSumAggregateInputType = {
+4786:  export type RecipeMinAggregateInputType = {
+4801:  export type RecipeMaxAggregateInputType = {
+4816:  export type RecipeCountAggregateInputType = {
+4833:  export type RecipeAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+4894:  export type GetRecipeAggregateType<T extends RecipeAggregateArgs> = {
+4905:  export type RecipeGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+4919:  export type RecipeGroupByOutputType = {
+4940:  type GetRecipeGroupByPayload<T extends RecipeGroupByArgs> = Prisma.PrismaPromise<
+4954:  export type RecipeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+4974:  export type RecipeSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+4990:  export type RecipeSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+5006:  export type RecipeSelectScalar = {
+5022:  export type RecipeOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "organizationId" | "name" | "slug" | "status" | "description" | "version" | "laborCost" | "packagingCost" | "totalIngredientCost" | "totalCost" | "prices" | "updatedAt", ExtArgs["result"]["recipe"]>
+5023:  export type RecipeInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+5029:  export type RecipeIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+5030:  export type RecipeIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+5032:  export type $RecipePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+5057:  type RecipeGetPayload<S extends boolean | null | undefined | RecipeDefaultArgs> = $Result.GetResult<Prisma.$RecipePayload, S>
+5059:  type RecipeCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+5064:  export interface RecipeDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+5065:    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Recipe'], meta: { name: 'Recipe' } }
+5071:     * const recipe = await prisma.recipe.findUnique({
+5080:     * Find one Recipe that matches the filter or throw an error with `error.code='P2025'`
+5085:     * const recipe = await prisma.recipe.findUniqueOrThrow({
+5100:     * const recipe = await prisma.recipe.findFirst({
+5116:     * const recipe = await prisma.recipe.findFirstOrThrow({
+5131:     * const recipes = await prisma.recipe.findMany()
+5134:     * const recipes = await prisma.recipe.findMany({ take: 10 })
+5137:     * const recipeWithIdOnly = await prisma.recipe.findMany({ select: { id: true } })
+5147:     * const Recipe = await prisma.recipe.create({
+5161:     * const recipe = await prisma.recipe.createMany({
+5175:     * const recipe = await prisma.recipe.createManyAndReturn({
+5182:     * const recipeWithIdOnly = await prisma.recipe.createManyAndReturn({
+5199:     * const Recipe = await prisma.recipe.delete({
+5213:     * const recipe = await prisma.recipe.update({
+5230:     * const { count } = await prisma.recipe.deleteMany({
+5246:     * const recipe = await prisma.recipe.updateMany({
+5263:     * const recipe = await prisma.recipe.updateManyAndReturn({
+5273:     * const recipeWithIdOnly = await prisma.recipe.updateManyAndReturn({
+5293:     * const recipe = await prisma.recipe.upsert({
+5315:     * const count = await prisma.recipe.count({
+5340:     * const aggregations = await prisma.user.aggregate({
+5364:     * const result = await prisma.user.groupBy({
+5445:  export interface Prisma__RecipeClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+5447:    packItems<T extends Recipe$packItemsArgs<ExtArgs> = {}>(args?: Subset<T, Recipe$packItemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PackItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+5448:    items<T extends Recipe$itemsArgs<ExtArgs> = {}>(args?: Subset<T, Recipe$itemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RecipeItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+5449:    versions<T extends Recipe$versionsArgs<ExtArgs> = {}>(args?: Subset<T, Recipe$versionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RecipeVersionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+5456:    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+5462:    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+5469:    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+5499:  export type RecipeFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+5521:  export type RecipeFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+5543:  export type RecipeFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+5595:  export type RecipeFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+5647:  export type RecipeFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+5694:  export type RecipeCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+5716:  export type RecipeCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+5727:  export type RecipeCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+5746:  export type RecipeUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+5772:  export type RecipeUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+5790:  export type RecipeUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+5816:  export type RecipeUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+5846:  export type RecipeDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+5868:  export type RecipeDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+5882:  export type Recipe$packItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+5906:  export type Recipe$itemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+5930:  export type Recipe$versionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+5954:  export type RecipeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+5974:  export type AggregateRecipeItem = {
+5982:  export type RecipeItemAvgAggregateOutputType = {
+5986:  export type RecipeItemSumAggregateOutputType = {
+5990:  export type RecipeItemMinAggregateOutputType = {
+5997:  export type RecipeItemMaxAggregateOutputType = {
+6004:  export type RecipeItemCountAggregateOutputType = {
+6013:  export type RecipeItemAvgAggregateInputType = {
+6017:  export type RecipeItemSumAggregateInputType = {
+6021:  export type RecipeItemMinAggregateInputType = {
+6028:  export type RecipeItemMaxAggregateInputType = {
+6035:  export type RecipeItemCountAggregateInputType = {
+6043:  export type RecipeItemAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+6104:  export type GetRecipeItemAggregateType<T extends RecipeItemAggregateArgs> = {
+6115:  export type RecipeItemGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+6129:  export type RecipeItemGroupByOutputType = {
+6141:  type GetRecipeItemGroupByPayload<T extends RecipeItemGroupByArgs> = Prisma.PrismaPromise<
+6155:  export type RecipeItemSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+6164:  export type RecipeItemSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+6173:  export type RecipeItemSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+6182:  export type RecipeItemSelectScalar = {
+6189:  export type RecipeItemOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "recipeId" | "ingredientId" | "percentage", ExtArgs["result"]["recipeItem"]>
+6190:  export type RecipeItemInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+6194:  export type RecipeItemIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+6198:  export type RecipeItemIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+6203:  export type $RecipeItemPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+6218:  type RecipeItemGetPayload<S extends boolean | null | undefined | RecipeItemDefaultArgs> = $Result.GetResult<Prisma.$RecipeItemPayload, S>
+6220:  type RecipeItemCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+6225:  export interface RecipeItemDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+6226:    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['RecipeItem'], meta: { name: 'RecipeItem' } }
+6232:     * const recipeItem = await prisma.recipeItem.findUnique({
+6241:     * Find one RecipeItem that matches the filter or throw an error with `error.code='P2025'`
+6246:     * const recipeItem = await prisma.recipeItem.findUniqueOrThrow({
+6261:     * const recipeItem = await prisma.recipeItem.findFirst({
+6277:     * const recipeItem = await prisma.recipeItem.findFirstOrThrow({
+6292:     * const recipeItems = await prisma.recipeItem.findMany()
+6295:     * const recipeItems = await prisma.recipeItem.findMany({ take: 10 })
+6298:     * const recipeItemWithIdOnly = await prisma.recipeItem.findMany({ select: { id: true } })
+6308:     * const RecipeItem = await prisma.recipeItem.create({
+6322:     * const recipeItem = await prisma.recipeItem.createMany({
+6336:     * const recipeItem = await prisma.recipeItem.createManyAndReturn({
+6343:     * const recipeItemWithIdOnly = await prisma.recipeItem.createManyAndReturn({
+6360:     * const RecipeItem = await prisma.recipeItem.delete({
+6374:     * const recipeItem = await prisma.recipeItem.update({
+6391:     * const { count } = await prisma.recipeItem.deleteMany({
+6407:     * const recipeItem = await prisma.recipeItem.updateMany({
+6424:     * const recipeItem = await prisma.recipeItem.updateManyAndReturn({
+6434:     * const recipeItemWithIdOnly = await prisma.recipeItem.updateManyAndReturn({
+6454:     * const recipeItem = await prisma.recipeItem.upsert({
+6476:     * const count = await prisma.recipeItem.count({
+6501:     * const aggregations = await prisma.user.aggregate({
+6525:     * const result = await prisma.user.groupBy({
+6606:  export interface Prisma__RecipeItemClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+6608:    ingredient<T extends IngredientDefaultArgs<ExtArgs> = {}>(args?: Subset<T, IngredientDefaultArgs<ExtArgs>>): Prisma__IngredientClient<$Result.GetResult<Prisma.$IngredientPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+6609:    recipe<T extends RecipeDefaultArgs<ExtArgs> = {}>(args?: Subset<T, RecipeDefaultArgs<ExtArgs>>): Prisma__RecipeClient<$Result.GetResult<Prisma.$RecipePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+6616:    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+6622:    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+6629:    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+6650:  export type RecipeItemFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+6672:  export type RecipeItemFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+6694:  export type RecipeItemFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+6746:  export type RecipeItemFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+6798:  export type RecipeItemFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+6845:  export type RecipeItemCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+6867:  export type RecipeItemCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+6878:  export type RecipeItemCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+6901:  export type RecipeItemUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+6927:  export type RecipeItemUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+6945:  export type RecipeItemUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+6975:  export type RecipeItemUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+7005:  export type RecipeItemDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+7027:  export type RecipeItemDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+7041:  export type RecipeItemDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+7061:  export type AggregateRecipeVersion = {
+7069:  export type RecipeVersionAvgAggregateOutputType = {
+7077:  export type RecipeVersionSumAggregateOutputType = {
+7085:  export type RecipeVersionMinAggregateOutputType = {
+7102:  export type RecipeVersionMaxAggregateOutputType = {
+7119:  export type RecipeVersionCountAggregateOutputType = {
+7140:  export type RecipeVersionAvgAggregateInputType = {
+7148:  export type RecipeVersionSumAggregateInputType = {
+7156:  export type RecipeVersionMinAggregateInputType = {
+7173:  export type RecipeVersionMaxAggregateInputType = {
+7190:  export type RecipeVersionCountAggregateInputType = {
+7210:  export type RecipeVersionAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+7271:  export type GetRecipeVersionAggregateType<T extends RecipeVersionAggregateArgs> = {
+7282:  export type RecipeVersionGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+7296:  export type RecipeVersionGroupByOutputType = {
+7320:  type GetRecipeVersionGroupByPayload<T extends RecipeVersionGroupByArgs> = Prisma.PrismaPromise<
+7334:  export type RecipeVersionSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+7354:  export type RecipeVersionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+7374:  export type RecipeVersionSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+7394:  export type RecipeVersionSelectScalar = {
+7413:  export type RecipeVersionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "recipeId" | "organizationId" | "name" | "slug" | "description" | "versionNumber" | "snapshotDate" | "status" | "laborCost" | "packagingCost" | "totalIngredientCost" | "totalCost" | "prices" | "items" | "updatedAt", ExtArgs["result"]["recipeVersion"]>
+7414:  export type RecipeVersionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+7417:  export type RecipeVersionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+7420:  export type RecipeVersionIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+7424:  export type $RecipeVersionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+7450:  type RecipeVersionGetPayload<S extends boolean | null | undefined | RecipeVersionDefaultArgs> = $Result.GetResult<Prisma.$RecipeVersionPayload, S>
+7452:  type RecipeVersionCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+7457:  export interface RecipeVersionDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+7458:    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['RecipeVersion'], meta: { name: 'RecipeVersion' } }
+7464:     * const recipeVersion = await prisma.recipeVersion.findUnique({
+7473:     * Find one RecipeVersion that matches the filter or throw an error with `error.code='P2025'`
+7478:     * const recipeVersion = await prisma.recipeVersion.findUniqueOrThrow({
+7493:     * const recipeVersion = await prisma.recipeVersion.findFirst({
+7509:     * const recipeVersion = await prisma.recipeVersion.findFirstOrThrow({
+7524:     * const recipeVersions = await prisma.recipeVersion.findMany()
+7527:     * const recipeVersions = await prisma.recipeVersion.findMany({ take: 10 })
+7530:     * const recipeVersionWithIdOnly = await prisma.recipeVersion.findMany({ select: { id: true } })
+7540:     * const RecipeVersion = await prisma.recipeVersion.create({
+7554:     * const recipeVersion = await prisma.recipeVersion.createMany({
+7568:     * const recipeVersion = await prisma.recipeVersion.createManyAndReturn({
+7575:     * const recipeVersionWithIdOnly = await prisma.recipeVersion.createManyAndReturn({
+7592:     * const RecipeVersion = await prisma.recipeVersion.delete({
+7606:     * const recipeVersion = await prisma.recipeVersion.update({
+7623:     * const { count } = await prisma.recipeVersion.deleteMany({
+7639:     * const recipeVersion = await prisma.recipeVersion.updateMany({
+7656:     * const recipeVersion = await prisma.recipeVersion.updateManyAndReturn({
+7666:     * const recipeVersionWithIdOnly = await prisma.recipeVersion.updateManyAndReturn({
+7686:     * const recipeVersion = await prisma.recipeVersion.upsert({
+7708:     * const count = await prisma.recipeVersion.count({
+7733:     * const aggregations = await prisma.user.aggregate({
+7757:     * const result = await prisma.user.groupBy({
+7838:  export interface Prisma__RecipeVersionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+7840:    recipe<T extends RecipeDefaultArgs<ExtArgs> = {}>(args?: Subset<T, RecipeDefaultArgs<ExtArgs>>): Prisma__RecipeClient<$Result.GetResult<Prisma.$RecipePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+7847:    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+7853:    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+7860:    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+7893:  export type RecipeVersionFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+7915:  export type RecipeVersionFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+7937:  export type RecipeVersionFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+7989:  export type RecipeVersionFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+8041:  export type RecipeVersionFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+8088:  export type RecipeVersionCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+8110:  export type RecipeVersionCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+8121:  export type RecipeVersionCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+8144:  export type RecipeVersionUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+8170:  export type RecipeVersionUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+8188:  export type RecipeVersionUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+8218:  export type RecipeVersionUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+8248:  export type RecipeVersionDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+8270:  export type RecipeVersionDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+8284:  export type RecipeVersionDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+8304:  export type AggregatePack = {
+8312:  export type PackAvgAggregateOutputType = {
+8319:  export type PackSumAggregateOutputType = {
+8326:  export type PackMinAggregateOutputType = {
+8340:  export type PackMaxAggregateOutputType = {
+8354:  export type PackCountAggregateOutputType = {
+8370:  export type PackAvgAggregateInputType = {
+8377:  export type PackSumAggregateInputType = {
+8384:  export type PackMinAggregateInputType = {
+8398:  export type PackMaxAggregateInputType = {
+8412:  export type PackCountAggregateInputType = {
+8427:  export type PackAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+8488:  export type GetPackAggregateType<T extends PackAggregateArgs> = {
+8499:  export type PackGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+8513:  export type PackGroupByOutputType = {
+8532:  type GetPackGroupByPayload<T extends PackGroupByArgs> = Prisma.PrismaPromise<
+8546:  export type PackSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+8563:  export type PackSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+8577:  export type PackSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+8591:  export type PackSelectScalar = {
+8605:  export type PackOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "organizationId" | "name" | "slug" | "status" | "description" | "version" | "price" | "totalCost" | "margin" | "updatedAt", ExtArgs["result"]["pack"]>
+8606:  export type PackInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+8611:  export type PackIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+8612:  export type PackIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+8614:  export type $PackPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+8636:  type PackGetPayload<S extends boolean | null | undefined | PackDefaultArgs> = $Result.GetResult<Prisma.$PackPayload, S>
+8638:  type PackCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+8643:  export interface PackDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+8644:    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Pack'], meta: { name: 'Pack' } }
+8650:     * const pack = await prisma.pack.findUnique({
+8659:     * Find one Pack that matches the filter or throw an error with `error.code='P2025'`
+8664:     * const pack = await prisma.pack.findUniqueOrThrow({
+8679:     * const pack = await prisma.pack.findFirst({
+8695:     * const pack = await prisma.pack.findFirstOrThrow({
+8710:     * const packs = await prisma.pack.findMany()
+8713:     * const packs = await prisma.pack.findMany({ take: 10 })
+8716:     * const packWithIdOnly = await prisma.pack.findMany({ select: { id: true } })
+8726:     * const Pack = await prisma.pack.create({
+8740:     * const pack = await prisma.pack.createMany({
+8754:     * const pack = await prisma.pack.createManyAndReturn({
+8761:     * const packWithIdOnly = await prisma.pack.createManyAndReturn({
+8778:     * const Pack = await prisma.pack.delete({
+8792:     * const pack = await prisma.pack.update({
+8809:     * const { count } = await prisma.pack.deleteMany({
+8825:     * const pack = await prisma.pack.updateMany({
+8842:     * const pack = await prisma.pack.updateManyAndReturn({
+8852:     * const packWithIdOnly = await prisma.pack.updateManyAndReturn({
+8872:     * const pack = await prisma.pack.upsert({
+8894:     * const count = await prisma.pack.count({
+8919:     * const aggregations = await prisma.user.aggregate({
+8943:     * const result = await prisma.user.groupBy({
+9024:  export interface Prisma__PackClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+9026:    items<T extends Pack$itemsArgs<ExtArgs> = {}>(args?: Subset<T, Pack$itemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PackItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+9027:    versions<T extends Pack$versionsArgs<ExtArgs> = {}>(args?: Subset<T, Pack$versionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PackVersionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+9034:    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+9040:    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+9047:    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+9075:  export type PackFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+9097:  export type PackFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+9119:  export type PackFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+9171:  export type PackFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+9223:  export type PackFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+9270:  export type PackCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+9292:  export type PackCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+9303:  export type PackCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+9322:  export type PackUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+9348:  export type PackUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+9366:  export type PackUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+9392:  export type PackUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+9422:  export type PackDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+9444:  export type PackDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+9458:  export type Pack$itemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+9482:  export type Pack$versionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+9506:  export type PackDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+9526:  export type AggregatePackItem = {
+9534:  export type PackItemAvgAggregateOutputType = {
+9539:  export type PackItemSumAggregateOutputType = {
+9544:  export type PackItemMinAggregateOutputType = {
+9547:    type: string | null
+9554:  export type PackItemMaxAggregateOutputType = {
+9557:    type: string | null
+9564:  export type PackItemCountAggregateOutputType = {
+9567:    type: number
+9576:  export type PackItemAvgAggregateInputType = {
+9581:  export type PackItemSumAggregateInputType = {
+9586:  export type PackItemMinAggregateInputType = {
+9589:    type?: true
+9596:  export type PackItemMaxAggregateInputType = {
+9599:    type?: true
+9606:  export type PackItemCountAggregateInputType = {
+9609:    type?: true
+9617:  export type PackItemAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+9678:  export type GetPackItemAggregateType<T extends PackItemAggregateArgs> = {
+9689:  export type PackItemGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+9703:  export type PackItemGroupByOutputType = {
+9706:    type: string
+9718:  type GetPackItemGroupByPayload<T extends PackItemGroupByArgs> = Prisma.PrismaPromise<
+9732:  export type PackItemSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+9735:    type?: boolean
+9745:  export type PackItemSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+9748:    type?: boolean
+9758:  export type PackItemSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+9761:    type?: boolean
+9771:  export type PackItemSelectScalar = {
+9774:    type?: boolean
+9781:  export type PackItemOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "packId" | "type" | "recipeId" | "ingredientId" | "quantity" | "format", ExtArgs["result"]["packItem"]>
+9782:  export type PackItemInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+9787:  export type PackItemIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+9792:  export type PackItemIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+9798:  export type $PackItemPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+9808:      type: string
+9817:  type PackItemGetPayload<S extends boolean | null | undefined | PackItemDefaultArgs> = $Result.GetResult<Prisma.$PackItemPayload, S>
+9819:  type PackItemCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+9824:  export interface PackItemDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+9825:    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PackItem'], meta: { name: 'PackItem' } }
+9831:     * const packItem = await prisma.packItem.findUnique({
+9840:     * Find one PackItem that matches the filter or throw an error with `error.code='P2025'`
+9845:     * const packItem = await prisma.packItem.findUniqueOrThrow({
+9860:     * const packItem = await prisma.packItem.findFirst({
+9876:     * const packItem = await prisma.packItem.findFirstOrThrow({
+9891:     * const packItems = await prisma.packItem.findMany()
+9894:     * const packItems = await prisma.packItem.findMany({ take: 10 })
+9897:     * const packItemWithIdOnly = await prisma.packItem.findMany({ select: { id: true } })
+9907:     * const PackItem = await prisma.packItem.create({
+9921:     * const packItem = await prisma.packItem.createMany({
+9935:     * const packItem = await prisma.packItem.createManyAndReturn({
+9942:     * const packItemWithIdOnly = await prisma.packItem.createManyAndReturn({
+9959:     * const PackItem = await prisma.packItem.delete({
+9973:     * const packItem = await prisma.packItem.update({
+9990:     * const { count } = await prisma.packItem.deleteMany({
+10006:     * const packItem = await prisma.packItem.updateMany({
+10023:     * const packItem = await prisma.packItem.updateManyAndReturn({
+10033:     * const packItemWithIdOnly = await prisma.packItem.updateManyAndReturn({
+10053:     * const packItem = await prisma.packItem.upsert({
+10075:     * const count = await prisma.packItem.count({
+10100:     * const aggregations = await prisma.user.aggregate({
+10124:     * const result = await prisma.user.groupBy({
+10205:  export interface Prisma__PackItemClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+10207:    ingredient<T extends PackItem$ingredientArgs<ExtArgs> = {}>(args?: Subset<T, PackItem$ingredientArgs<ExtArgs>>): Prisma__IngredientClient<$Result.GetResult<Prisma.$IngredientPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+10208:    pack<T extends PackDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PackDefaultArgs<ExtArgs>>): Prisma__PackClient<$Result.GetResult<Prisma.$PackPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+10209:    recipe<T extends PackItem$recipeArgs<ExtArgs> = {}>(args?: Subset<T, PackItem$recipeArgs<ExtArgs>>): Prisma__RecipeClient<$Result.GetResult<Prisma.$RecipePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+10216:    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+10222:    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+10229:    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+10241:    readonly type: FieldRef<"PackItem", 'String'>
+10253:  export type PackItemFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+10275:  export type PackItemFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+10297:  export type PackItemFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+10349:  export type PackItemFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+10401:  export type PackItemFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+10448:  export type PackItemCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+10470:  export type PackItemCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+10481:  export type PackItemCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+10504:  export type PackItemUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+10530:  export type PackItemUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+10548:  export type PackItemUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+10578:  export type PackItemUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+10608:  export type PackItemDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+10630:  export type PackItemDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+10644:  export type PackItem$ingredientArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+10663:  export type PackItem$recipeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+10682:  export type PackItemDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+10702:  export type AggregatePackVersion = {
+10710:  export type PackVersionAvgAggregateOutputType = {
+10717:  export type PackVersionSumAggregateOutputType = {
+10724:  export type PackVersionMinAggregateOutputType = {
+10740:  export type PackVersionMaxAggregateOutputType = {
+10756:  export type PackVersionCountAggregateOutputType = {
+10776:  export type PackVersionAvgAggregateInputType = {
+10783:  export type PackVersionSumAggregateInputType = {
+10790:  export type PackVersionMinAggregateInputType = {
+10806:  export type PackVersionMaxAggregateInputType = {
+10822:  export type PackVersionCountAggregateInputType = {
+10841:  export type PackVersionAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+10902:  export type GetPackVersionAggregateType<T extends PackVersionAggregateArgs> = {
+10913:  export type PackVersionGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+10927:  export type PackVersionGroupByOutputType = {
+10950:  type GetPackVersionGroupByPayload<T extends PackVersionGroupByArgs> = Prisma.PrismaPromise<
+10964:  export type PackVersionSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+10983:  export type PackVersionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+11002:  export type PackVersionSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+11021:  export type PackVersionSelectScalar = {
+11039:  export type PackVersionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "packId" | "organizationId" | "name" | "slug" | "description" | "versionNumber" | "snapshotDate" | "status" | "price" | "totalCost" | "margin" | "recipes" | "packaging" | "updatedAt", ExtArgs["result"]["packVersion"]>
+11040:  export type PackVersionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+11043:  export type PackVersionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+11046:  export type PackVersionIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+11050:  export type $PackVersionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+11075:  type PackVersionGetPayload<S extends boolean | null | undefined | PackVersionDefaultArgs> = $Result.GetResult<Prisma.$PackVersionPayload, S>
+11077:  type PackVersionCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+11082:  export interface PackVersionDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+11083:    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PackVersion'], meta: { name: 'PackVersion' } }
+11089:     * const packVersion = await prisma.packVersion.findUnique({
+11098:     * Find one PackVersion that matches the filter or throw an error with `error.code='P2025'`
+11103:     * const packVersion = await prisma.packVersion.findUniqueOrThrow({
+11118:     * const packVersion = await prisma.packVersion.findFirst({
+11134:     * const packVersion = await prisma.packVersion.findFirstOrThrow({
+11149:     * const packVersions = await prisma.packVersion.findMany()
+11152:     * const packVersions = await prisma.packVersion.findMany({ take: 10 })
+11155:     * const packVersionWithIdOnly = await prisma.packVersion.findMany({ select: { id: true } })
+11165:     * const PackVersion = await prisma.packVersion.create({
+11179:     * const packVersion = await prisma.packVersion.createMany({
+11193:     * const packVersion = await prisma.packVersion.createManyAndReturn({
+11200:     * const packVersionWithIdOnly = await prisma.packVersion.createManyAndReturn({
+11217:     * const PackVersion = await prisma.packVersion.delete({
+11231:     * const packVersion = await prisma.packVersion.update({
+11248:     * const { count } = await prisma.packVersion.deleteMany({
+11264:     * const packVersion = await prisma.packVersion.updateMany({
+11281:     * const packVersion = await prisma.packVersion.updateManyAndReturn({
+11291:     * const packVersionWithIdOnly = await prisma.packVersion.updateManyAndReturn({
+11311:     * const packVersion = await prisma.packVersion.upsert({
+11333:     * const count = await prisma.packVersion.count({
+11358:     * const aggregations = await prisma.user.aggregate({
+11382:     * const result = await prisma.user.groupBy({
+11463:  export interface Prisma__PackVersionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+11465:    pack<T extends PackDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PackDefaultArgs<ExtArgs>>): Prisma__PackClient<$Result.GetResult<Prisma.$PackPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+11472:    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+11478:    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+11485:    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+11517:  export type PackVersionFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+11539:  export type PackVersionFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+11561:  export type PackVersionFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+11613:  export type PackVersionFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+11665:  export type PackVersionFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+11712:  export type PackVersionCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+11734:  export type PackVersionCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+11745:  export type PackVersionCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+11768:  export type PackVersionUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+11794:  export type PackVersionUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+11812:  export type PackVersionUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+11842:  export type PackVersionUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+11872:  export type PackVersionDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+11894:  export type PackVersionDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+11908:  export type PackVersionDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+11928:  export type AggregateOrder = {
+11936:  export type OrderAvgAggregateOutputType = {
+11952:  export type OrderSumAggregateOutputType = {
+11968:  export type OrderMinAggregateOutputType = {
+12002:  export type OrderMaxAggregateOutputType = {
+12036:  export type OrderCountAggregateOutputType = {
+12072:  export type OrderAvgAggregateInputType = {
+12088:  export type OrderSumAggregateInputType = {
+12104:  export type OrderMinAggregateInputType = {
+12138:  export type OrderMaxAggregateInputType = {
+12172:  export type OrderCountAggregateInputType = {
+12207:  export type OrderAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+12268:  export type GetOrderAggregateType<T extends OrderAggregateArgs> = {
+12279:  export type OrderGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+12293:  export type OrderGroupByOutputType = {
+12332:  type GetOrderGroupByPayload<T extends OrderGroupByArgs> = Prisma.PrismaPromise<
+12346:  export type OrderSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+12383:  export type OrderSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+12417:  export type OrderSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+12451:  export type OrderSelectScalar = {
+12485:  export type OrderOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "organizationId" | "orderNumber" | "customerName" | "status" | "totalAmount" | "totalCost" | "createdAt" | "updatedAt" | "paidAt" | "cancelledAt" | "packagingType" | "packagingId" | "cogsMaterials" | "cogsPackaging" | "netProfit" | "margin" | "feesUrssaf" | "feesShopify" | "feesOther" | "feesTotal" | "shippingCost" | "shippingPrice" | "source" | "email" | "shippingCarrier" | "trackingNumber" | "discountCode" | "discountPercent" | "manualTotal" | "notes", ExtArgs["result"]["order"]>
+12486:  export type OrderInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+12491:  export type OrderIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+12492:  export type OrderIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+12494:  export type $OrderPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+12536:  type OrderGetPayload<S extends boolean | null | undefined | OrderDefaultArgs> = $Result.GetResult<Prisma.$OrderPayload, S>
+12538:  type OrderCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+12543:  export interface OrderDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+12544:    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Order'], meta: { name: 'Order' } }
+12550:     * const order = await prisma.order.findUnique({
+12559:     * Find one Order that matches the filter or throw an error with `error.code='P2025'`
+12564:     * const order = await prisma.order.findUniqueOrThrow({
+12579:     * const order = await prisma.order.findFirst({
+12595:     * const order = await prisma.order.findFirstOrThrow({
+12610:     * const orders = await prisma.order.findMany()
+12613:     * const orders = await prisma.order.findMany({ take: 10 })
+12616:     * const orderWithIdOnly = await prisma.order.findMany({ select: { id: true } })
+12626:     * const Order = await prisma.order.create({
+12640:     * const order = await prisma.order.createMany({
+12654:     * const order = await prisma.order.createManyAndReturn({
+12661:     * const orderWithIdOnly = await prisma.order.createManyAndReturn({
+12678:     * const Order = await prisma.order.delete({
+12692:     * const order = await prisma.order.update({
+12709:     * const { count } = await prisma.order.deleteMany({
+12725:     * const order = await prisma.order.updateMany({
+12742:     * const order = await prisma.order.updateManyAndReturn({
+12752:     * const orderWithIdOnly = await prisma.order.updateManyAndReturn({
+12772:     * const order = await prisma.order.upsert({
+12794:     * const count = await prisma.order.count({
+12819:     * const aggregations = await prisma.user.aggregate({
+12843:     * const result = await prisma.user.groupBy({
+12924:  export interface Prisma__OrderClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+12926:    items<T extends Order$itemsArgs<ExtArgs> = {}>(args?: Subset<T, Order$itemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OrderItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+12927:    movements<T extends Order$movementsArgs<ExtArgs> = {}>(args?: Subset<T, Order$movementsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StockMovementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+12934:    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+12940:    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+12947:    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+12995:  export type OrderFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+13017:  export type OrderFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+13039:  export type OrderFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+13091:  export type OrderFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+13143:  export type OrderFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+13190:  export type OrderCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+13212:  export type OrderCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+13223:  export type OrderCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+13242:  export type OrderUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+13268:  export type OrderUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+13286:  export type OrderUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+13312:  export type OrderUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+13342:  export type OrderDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+13364:  export type OrderDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+13378:  export type Order$itemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+13402:  export type Order$movementsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+13426:  export type OrderDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+13446:  export type AggregateOrderItem = {
+13454:  export type OrderItemAvgAggregateOutputType = {
+13465:  export type OrderItemSumAggregateOutputType = {
+13476:  export type OrderItemMinAggregateOutputType = {
+13479:    type: string | null
+13494:  export type OrderItemMaxAggregateOutputType = {
+13497:    type: string | null
+13512:  export type OrderItemCountAggregateOutputType = {
+13515:    type: number
+13532:  export type OrderItemAvgAggregateInputType = {
+13543:  export type OrderItemSumAggregateInputType = {
+13554:  export type OrderItemMinAggregateInputType = {
+13557:    type?: true
+13572:  export type OrderItemMaxAggregateInputType = {
+13575:    type?: true
+13590:  export type OrderItemCountAggregateInputType = {
+13593:    type?: true
+13609:  export type OrderItemAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+13670:  export type GetOrderItemAggregateType<T extends OrderItemAggregateArgs> = {
+13681:  export type OrderItemGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+13695:  export type OrderItemGroupByOutputType = {
+13698:    type: string
+13718:  type GetOrderItemGroupByPayload<T extends OrderItemGroupByArgs> = Prisma.PrismaPromise<
+13732:  export type OrderItemSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+13735:    type?: boolean
+13751:  export type OrderItemSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+13754:    type?: boolean
+13770:  export type OrderItemSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+13773:    type?: boolean
+13789:  export type OrderItemSelectScalar = {
+13792:    type?: boolean
+13807:  export type OrderItemOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "orderId" | "type" | "name" | "quantity" | "recipeId" | "packId" | "ingredientId" | "format" | "versionNumber" | "unitPriceSnapshot" | "unitCostSnapshot" | "unitMaterialCostSnapshot" | "unitPackagingCostSnapshot" | "totalPrice", ExtArgs["result"]["orderItem"]>
+13808:  export type OrderItemInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+13811:  export type OrderItemIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+13814:  export type OrderItemIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+13818:  export type $OrderItemPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+13826:      type: string
+13843:  type OrderItemGetPayload<S extends boolean | null | undefined | OrderItemDefaultArgs> = $Result.GetResult<Prisma.$OrderItemPayload, S>
+13845:  type OrderItemCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+13850:  export interface OrderItemDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+13851:    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['OrderItem'], meta: { name: 'OrderItem' } }
+13857:     * const orderItem = await prisma.orderItem.findUnique({
+13866:     * Find one OrderItem that matches the filter or throw an error with `error.code='P2025'`
+13871:     * const orderItem = await prisma.orderItem.findUniqueOrThrow({
+13886:     * const orderItem = await prisma.orderItem.findFirst({
+13902:     * const orderItem = await prisma.orderItem.findFirstOrThrow({
+13917:     * const orderItems = await prisma.orderItem.findMany()
+13920:     * const orderItems = await prisma.orderItem.findMany({ take: 10 })
+13923:     * const orderItemWithIdOnly = await prisma.orderItem.findMany({ select: { id: true } })
+13933:     * const OrderItem = await prisma.orderItem.create({
+13947:     * const orderItem = await prisma.orderItem.createMany({
+13961:     * const orderItem = await prisma.orderItem.createManyAndReturn({
+13968:     * const orderItemWithIdOnly = await prisma.orderItem.createManyAndReturn({
+13985:     * const OrderItem = await prisma.orderItem.delete({
+13999:     * const orderItem = await prisma.orderItem.update({
+14016:     * const { count } = await prisma.orderItem.deleteMany({
+14032:     * const orderItem = await prisma.orderItem.updateMany({
+14049:     * const orderItem = await prisma.orderItem.updateManyAndReturn({
+14059:     * const orderItemWithIdOnly = await prisma.orderItem.updateManyAndReturn({
+14079:     * const orderItem = await prisma.orderItem.upsert({
+14101:     * const count = await prisma.orderItem.count({
+14126:     * const aggregations = await prisma.user.aggregate({
+14150:     * const result = await prisma.user.groupBy({
+14231:  export interface Prisma__OrderItemClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+14233:    order<T extends OrderDefaultArgs<ExtArgs> = {}>(args?: Subset<T, OrderDefaultArgs<ExtArgs>>): Prisma__OrderClient<$Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+14240:    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+14246:    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+14253:    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+14265:    readonly type: FieldRef<"OrderItem", 'String'>
+14285:  export type OrderItemFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+14307:  export type OrderItemFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+14329:  export type OrderItemFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+14381:  export type OrderItemFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+14433:  export type OrderItemFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+14480:  export type OrderItemCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+14502:  export type OrderItemCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+14513:  export type OrderItemCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+14536:  export type OrderItemUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+14562:  export type OrderItemUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+14580:  export type OrderItemUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+14610:  export type OrderItemUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+14640:  export type OrderItemDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+14662:  export type OrderItemDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+14676:  export type OrderItemDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+14696:  export type AggregateStockMovement = {
+14704:  export type StockMovementAvgAggregateOutputType = {
+14711:  export type StockMovementSumAggregateOutputType = {
+14718:  export type StockMovementMinAggregateOutputType = {
+14721:    type: string | null
+14734:  export type StockMovementMaxAggregateOutputType = {
+14737:    type: string | null
+14750:  export type StockMovementCountAggregateOutputType = {
+14753:    type: number
+14768:  export type StockMovementAvgAggregateInputType = {
+14775:  export type StockMovementSumAggregateInputType = {
+14782:  export type StockMovementMinAggregateInputType = {
+14785:    type?: true
+14798:  export type StockMovementMaxAggregateInputType = {
+14801:    type?: true
+14814:  export type StockMovementCountAggregateInputType = {
+14817:    type?: true
+14831:  export type StockMovementAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+14892:  export type GetStockMovementAggregateType<T extends StockMovementAggregateArgs> = {
+14903:  export type StockMovementGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+14917:  export type StockMovementGroupByOutputType = {
+14920:    type: string
+14938:  type GetStockMovementGroupByPayload<T extends StockMovementGroupByArgs> = Prisma.PrismaPromise<
+14952:  export type StockMovementSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+14955:    type?: boolean
+14970:  export type StockMovementSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+14973:    type?: boolean
+14988:  export type StockMovementSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+14991:    type?: boolean
+15006:  export type StockMovementSelectScalar = {
+15009:    type?: boolean
+15022:  export type StockMovementOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "organizationId" | "type" | "entityType" | "ingredientId" | "source" | "sourceId" | "deltaQuantity" | "unitPrice" | "totalPrice" | "targetStock" | "reason" | "createdAt", ExtArgs["result"]["stockMovement"]>
+15023:  export type StockMovementInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+15027:  export type StockMovementIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+15031:  export type StockMovementIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+15036:  export type $StockMovementPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+15045:      type: string
+15060:  type StockMovementGetPayload<S extends boolean | null | undefined | StockMovementDefaultArgs> = $Result.GetResult<Prisma.$StockMovementPayload, S>
+15062:  type StockMovementCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+15067:  export interface StockMovementDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+15068:    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['StockMovement'], meta: { name: 'StockMovement' } }
+15074:     * const stockMovement = await prisma.stockMovement.findUnique({
+15083:     * Find one StockMovement that matches the filter or throw an error with `error.code='P2025'`
+15088:     * const stockMovement = await prisma.stockMovement.findUniqueOrThrow({
+15103:     * const stockMovement = await prisma.stockMovement.findFirst({
+15119:     * const stockMovement = await prisma.stockMovement.findFirstOrThrow({
+15134:     * const stockMovements = await prisma.stockMovement.findMany()
+15137:     * const stockMovements = await prisma.stockMovement.findMany({ take: 10 })
+15140:     * const stockMovementWithIdOnly = await prisma.stockMovement.findMany({ select: { id: true } })
+15150:     * const StockMovement = await prisma.stockMovement.create({
+15164:     * const stockMovement = await prisma.stockMovement.createMany({
+15178:     * const stockMovement = await prisma.stockMovement.createManyAndReturn({
+15185:     * const stockMovementWithIdOnly = await prisma.stockMovement.createManyAndReturn({
+15202:     * const StockMovement = await prisma.stockMovement.delete({
+15216:     * const stockMovement = await prisma.stockMovement.update({
+15233:     * const { count } = await prisma.stockMovement.deleteMany({
+15249:     * const stockMovement = await prisma.stockMovement.updateMany({
+15266:     * const stockMovement = await prisma.stockMovement.updateManyAndReturn({
+15276:     * const stockMovementWithIdOnly = await prisma.stockMovement.updateManyAndReturn({
+15296:     * const stockMovement = await prisma.stockMovement.upsert({
+15318:     * const count = await prisma.stockMovement.count({
+15343:     * const aggregations = await prisma.user.aggregate({
+15367:     * const result = await prisma.user.groupBy({
+15448:  export interface Prisma__StockMovementClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+15450:    ingredient<T extends StockMovement$ingredientArgs<ExtArgs> = {}>(args?: Subset<T, StockMovement$ingredientArgs<ExtArgs>>): Prisma__IngredientClient<$Result.GetResult<Prisma.$IngredientPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+15451:    order<T extends StockMovement$orderArgs<ExtArgs> = {}>(args?: Subset<T, StockMovement$orderArgs<ExtArgs>>): Prisma__OrderClient<$Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+15458:    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+15464:    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+15471:    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+15483:    readonly type: FieldRef<"StockMovement", 'String'>
+15501:  export type StockMovementFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+15523:  export type StockMovementFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+15545:  export type StockMovementFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+15597:  export type StockMovementFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+15649:  export type StockMovementFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+15696:  export type StockMovementCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+15718:  export type StockMovementCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+15729:  export type StockMovementCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+15752:  export type StockMovementUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+15778:  export type StockMovementUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+15796:  export type StockMovementUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+15826:  export type StockMovementUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+15856:  export type StockMovementDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+15878:  export type StockMovementDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+15892:  export type StockMovement$ingredientArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+15911:  export type StockMovement$orderArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+15930:  export type StockMovementDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+15950:  export type AggregateAuditLog = {
+15956:  export type AuditLogMinAggregateOutputType = {
+15968:  export type AuditLogMaxAggregateOutputType = {
+15980:  export type AuditLogCountAggregateOutputType = {
+15995:  export type AuditLogMinAggregateInputType = {
+16007:  export type AuditLogMaxAggregateInputType = {
+16019:  export type AuditLogCountAggregateInputType = {
+16033:  export type AuditLogAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+16082:  export type GetAuditLogAggregateType<T extends AuditLogAggregateArgs> = {
+16093:  export type AuditLogGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+16105:  export type AuditLogGroupByOutputType = {
+16121:  type GetAuditLogGroupByPayload<T extends AuditLogGroupByArgs> = Prisma.PrismaPromise<
+16135:  export type AuditLogSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+16148:  export type AuditLogSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+16161:  export type AuditLogSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+16174:  export type AuditLogSelectScalar = {
+16187:  export type AuditLogOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "timestamp" | "actorUserId" | "actorName" | "action" | "entity" | "entityId" | "severity" | "correlationId" | "metadata", ExtArgs["result"]["auditLog"]>
+16189:  export type $AuditLogPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+16207:  type AuditLogGetPayload<S extends boolean | null | undefined | AuditLogDefaultArgs> = $Result.GetResult<Prisma.$AuditLogPayload, S>
+16209:  type AuditLogCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+16214:  export interface AuditLogDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+16215:    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AuditLog'], meta: { name: 'AuditLog' } }
+16221:     * const auditLog = await prisma.auditLog.findUnique({
+16230:     * Find one AuditLog that matches the filter or throw an error with `error.code='P2025'`
+16235:     * const auditLog = await prisma.auditLog.findUniqueOrThrow({
+16250:     * const auditLog = await prisma.auditLog.findFirst({
+16266:     * const auditLog = await prisma.auditLog.findFirstOrThrow({
+16281:     * const auditLogs = await prisma.auditLog.findMany()
+16284:     * const auditLogs = await prisma.auditLog.findMany({ take: 10 })
+16287:     * const auditLogWithIdOnly = await prisma.auditLog.findMany({ select: { id: true } })
+16297:     * const AuditLog = await prisma.auditLog.create({
+16311:     * const auditLog = await prisma.auditLog.createMany({
+16325:     * const auditLog = await prisma.auditLog.createManyAndReturn({
+16332:     * const auditLogWithIdOnly = await prisma.auditLog.createManyAndReturn({
+16349:     * const AuditLog = await prisma.auditLog.delete({
+16363:     * const auditLog = await prisma.auditLog.update({
+16380:     * const { count } = await prisma.auditLog.deleteMany({
+16396:     * const auditLog = await prisma.auditLog.updateMany({
+16413:     * const auditLog = await prisma.auditLog.updateManyAndReturn({
+16423:     * const auditLogWithIdOnly = await prisma.auditLog.updateManyAndReturn({
+16443:     * const auditLog = await prisma.auditLog.upsert({
+16465:     * const count = await prisma.auditLog.count({
+16490:     * const aggregations = await prisma.user.aggregate({
+16514:     * const result = await prisma.user.groupBy({
+16595:  export interface Prisma__AuditLogClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+16603:    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+16609:    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+16616:    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+16643:  export type AuditLogFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+16661:  export type AuditLogFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+16679:  export type AuditLogFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+16727:  export type AuditLogFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+16775:  export type AuditLogFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+16818:  export type AuditLogCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+16836:  export type AuditLogCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+16847:  export type AuditLogCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+16866:  export type AuditLogUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+16888:  export type AuditLogUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+16906:  export type AuditLogUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+16932:  export type AuditLogUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+16958:  export type AuditLogDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+16976:  export type AuditLogDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+16990:  export type AuditLogDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+17006:  export type AggregateSettings = {
+17014:  export type SettingsAvgAggregateOutputType = {
+17023:  export type SettingsSumAggregateOutputType = {
+17032:  export type SettingsMinAggregateOutputType = {
+17042:  export type SettingsMaxAggregateOutputType = {
+17052:  export type SettingsCountAggregateOutputType = {
+17064:  export type SettingsAvgAggregateInputType = {
+17073:  export type SettingsSumAggregateInputType = {
+17082:  export type SettingsMinAggregateInputType = {
+17092:  export type SettingsMaxAggregateInputType = {
+17102:  export type SettingsCountAggregateInputType = {
+17113:  export type SettingsAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+17174:  export type GetSettingsAggregateType<T extends SettingsAggregateArgs> = {
+17185:  export type SettingsGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+17199:  export type SettingsGroupByOutputType = {
+17214:  type GetSettingsGroupByPayload<T extends SettingsGroupByArgs> = Prisma.PrismaPromise<
+17228:  export type SettingsSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+17238:  export type SettingsSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+17248:  export type SettingsSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+17258:  export type SettingsSelectScalar = {
+17268:  export type SettingsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "urssafRate" | "shopifyTransactionPercent" | "shopifyFixedFee" | "defaultOtherFees" | "tvaIngredients" | "tvaPackaging", ExtArgs["result"]["settings"]>
+17270:  export type $SettingsPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+17285:  type SettingsGetPayload<S extends boolean | null | undefined | SettingsDefaultArgs> = $Result.GetResult<Prisma.$SettingsPayload, S>
+17287:  type SettingsCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+17292:  export interface SettingsDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+17293:    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Settings'], meta: { name: 'Settings' } }
+17299:     * const settings = await prisma.settings.findUnique({
+17308:     * Find one Settings that matches the filter or throw an error with `error.code='P2025'`
+17313:     * const settings = await prisma.settings.findUniqueOrThrow({
+17328:     * const settings = await prisma.settings.findFirst({
+17344:     * const settings = await prisma.settings.findFirstOrThrow({
+17359:     * const settings = await prisma.settings.findMany()
+17362:     * const settings = await prisma.settings.findMany({ take: 10 })
+17365:     * const settingsWithIdOnly = await prisma.settings.findMany({ select: { id: true } })
+17375:     * const Settings = await prisma.settings.create({
+17389:     * const settings = await prisma.settings.createMany({
+17403:     * const settings = await prisma.settings.createManyAndReturn({
+17410:     * const settingsWithIdOnly = await prisma.settings.createManyAndReturn({
+17427:     * const Settings = await prisma.settings.delete({
+17441:     * const settings = await prisma.settings.update({
+17458:     * const { count } = await prisma.settings.deleteMany({
+17474:     * const settings = await prisma.settings.updateMany({
+17491:     * const settings = await prisma.settings.updateManyAndReturn({
+17501:     * const settingsWithIdOnly = await prisma.settings.updateManyAndReturn({
+17521:     * const settings = await prisma.settings.upsert({
+17543:     * const count = await prisma.settings.count({
+17568:     * const aggregations = await prisma.user.aggregate({
+17592:     * const result = await prisma.user.groupBy({
+17673:  export interface Prisma__SettingsClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+17681:    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+17687:    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+17694:    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+17718:  export type SettingsFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+17736:  export type SettingsFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+17754:  export type SettingsFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+17802:  export type SettingsFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+17850:  export type SettingsFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+17893:  export type SettingsCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+17911:  export type SettingsCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+17922:  export type SettingsCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+17941:  export type SettingsUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+17963:  export type SettingsUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+17981:  export type SettingsUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+18007:  export type SettingsUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+18033:  export type SettingsDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+18051:  export type SettingsDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+18065:  export type SettingsDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+18081:  export type AggregateActivityLog = {
+18087:  export type ActivityLogMinAggregateOutputType = {
+18090:    type: string | null
+18098:  export type ActivityLogMaxAggregateOutputType = {
+18101:    type: string | null
+18109:  export type ActivityLogCountAggregateOutputType = {
+18112:    type: number
+18122:  export type ActivityLogMinAggregateInputType = {
+18125:    type?: true
+18133:  export type ActivityLogMaxAggregateInputType = {
+18136:    type?: true
+18144:  export type ActivityLogCountAggregateInputType = {
+18147:    type?: true
+18156:  export type ActivityLogAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+18205:  export type GetActivityLogAggregateType<T extends ActivityLogAggregateArgs> = {
+18216:  export type ActivityLogGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+18228:  export type ActivityLogGroupByOutputType = {
+18231:    type: string
+18242:  type GetActivityLogGroupByPayload<T extends ActivityLogGroupByArgs> = Prisma.PrismaPromise<
+18256:  export type ActivityLogSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+18259:    type?: boolean
+18267:  export type ActivityLogSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+18270:    type?: boolean
+18278:  export type ActivityLogSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+18281:    type?: boolean
+18289:  export type ActivityLogSelectScalar = {
+18292:    type?: boolean
+18300:  export type ActivityLogOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "organizationId" | "type" | "entity" | "entityId" | "message" | "user" | "timestamp", ExtArgs["result"]["activityLog"]>
+18302:  export type $ActivityLogPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+18308:      type: string
+18318:  type ActivityLogGetPayload<S extends boolean | null | undefined | ActivityLogDefaultArgs> = $Result.GetResult<Prisma.$ActivityLogPayload, S>
+18320:  type ActivityLogCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+18325:  export interface ActivityLogDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+18326:    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ActivityLog'], meta: { name: 'ActivityLog' } }
+18332:     * const activityLog = await prisma.activityLog.findUnique({
+18341:     * Find one ActivityLog that matches the filter or throw an error with `error.code='P2025'`
+18346:     * const activityLog = await prisma.activityLog.findUniqueOrThrow({
+18361:     * const activityLog = await prisma.activityLog.findFirst({
+18377:     * const activityLog = await prisma.activityLog.findFirstOrThrow({
+18392:     * const activityLogs = await prisma.activityLog.findMany()
+18395:     * const activityLogs = await prisma.activityLog.findMany({ take: 10 })
+18398:     * const activityLogWithIdOnly = await prisma.activityLog.findMany({ select: { id: true } })
+18408:     * const ActivityLog = await prisma.activityLog.create({
+18422:     * const activityLog = await prisma.activityLog.createMany({
+18436:     * const activityLog = await prisma.activityLog.createManyAndReturn({
+18443:     * const activityLogWithIdOnly = await prisma.activityLog.createManyAndReturn({
+18460:     * const ActivityLog = await prisma.activityLog.delete({
+18474:     * const activityLog = await prisma.activityLog.update({
+18491:     * const { count } = await prisma.activityLog.deleteMany({
+18507:     * const activityLog = await prisma.activityLog.updateMany({
+18524:     * const activityLog = await prisma.activityLog.updateManyAndReturn({
+18534:     * const activityLogWithIdOnly = await prisma.activityLog.updateManyAndReturn({
+18554:     * const activityLog = await prisma.activityLog.upsert({
+18576:     * const count = await prisma.activityLog.count({
+18601:     * const aggregations = await prisma.user.aggregate({
+18625:     * const result = await prisma.user.groupBy({
+18706:  export interface Prisma__ActivityLogClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+18714:    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+18720:    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+18727:    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+18739:    readonly type: FieldRef<"ActivityLog", 'String'>
+18752:  export type ActivityLogFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+18770:  export type ActivityLogFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+18788:  export type ActivityLogFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+18836:  export type ActivityLogFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+18884:  export type ActivityLogFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+18927:  export type ActivityLogCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+18945:  export type ActivityLogCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+18956:  export type ActivityLogCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+18975:  export type ActivityLogUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+18997:  export type ActivityLogUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+19015:  export type ActivityLogUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+19041:  export type ActivityLogUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+19067:  export type ActivityLogDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+19085:  export type ActivityLogDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+19099:  export type ActivityLogDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+19115:  export const TransactionIsolationLevel: {
+19122:  export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
+19125:  export const IngredientScalarFieldEnum: {
+19138:    subtype: 'subtype',
+19148:  export type IngredientScalarFieldEnum = (typeof IngredientScalarFieldEnum)[keyof typeof IngredientScalarFieldEnum]
+19151:  export const SupplierScalarFieldEnum: {
+19164:  export type SupplierScalarFieldEnum = (typeof SupplierScalarFieldEnum)[keyof typeof SupplierScalarFieldEnum]
+19167:  export const RecipeScalarFieldEnum: {
+19183:  export type RecipeScalarFieldEnum = (typeof RecipeScalarFieldEnum)[keyof typeof RecipeScalarFieldEnum]
+19186:  export const RecipeItemScalarFieldEnum: {
+19193:  export type RecipeItemScalarFieldEnum = (typeof RecipeItemScalarFieldEnum)[keyof typeof RecipeItemScalarFieldEnum]
+19196:  export const RecipeVersionScalarFieldEnum: {
+19215:  export type RecipeVersionScalarFieldEnum = (typeof RecipeVersionScalarFieldEnum)[keyof typeof RecipeVersionScalarFieldEnum]
+19218:  export const PackScalarFieldEnum: {
+19232:  export type PackScalarFieldEnum = (typeof PackScalarFieldEnum)[keyof typeof PackScalarFieldEnum]
+19235:  export const PackItemScalarFieldEnum: {
+19238:    type: 'type',
+19245:  export type PackItemScalarFieldEnum = (typeof PackItemScalarFieldEnum)[keyof typeof PackItemScalarFieldEnum]
+19248:  export const PackVersionScalarFieldEnum: {
+19266:  export type PackVersionScalarFieldEnum = (typeof PackVersionScalarFieldEnum)[keyof typeof PackVersionScalarFieldEnum]
+19269:  export const OrderScalarFieldEnum: {
+19303:  export type OrderScalarFieldEnum = (typeof OrderScalarFieldEnum)[keyof typeof OrderScalarFieldEnum]
+19306:  export const OrderItemScalarFieldEnum: {
+19309:    type: 'type',
+19324:  export type OrderItemScalarFieldEnum = (typeof OrderItemScalarFieldEnum)[keyof typeof OrderItemScalarFieldEnum]
+19327:  export const StockMovementScalarFieldEnum: {
+19330:    type: 'type',
+19343:  export type StockMovementScalarFieldEnum = (typeof StockMovementScalarFieldEnum)[keyof typeof StockMovementScalarFieldEnum]
+19346:  export const AuditLogScalarFieldEnum: {
+19359:  export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]
+19362:  export const SettingsScalarFieldEnum: {
+19372:  export type SettingsScalarFieldEnum = (typeof SettingsScalarFieldEnum)[keyof typeof SettingsScalarFieldEnum]
+19375:  export const ActivityLogScalarFieldEnum: {
+19378:    type: 'type',
+19386:  export type ActivityLogScalarFieldEnum = (typeof ActivityLogScalarFieldEnum)[keyof typeof ActivityLogScalarFieldEnum]
+19389:  export const SortOrder: {
+19394:  export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+19397:  export const JsonNullValueInput: {
+19398:    JsonNull: typeof JsonNull
+19401:  export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
+19404:  export const NullableJsonNullValueInput: {
+19405:    DbNull: typeof DbNull,
+19406:    JsonNull: typeof JsonNull
+19409:  export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+19412:  export const QueryMode: {
+19417:  export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
+19420:  export const NullsOrder: {
+19425:  export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+19428:  export const JsonNullValueFilter: {
+19429:    DbNull: typeof DbNull,
+19430:    JsonNull: typeof JsonNull,
+19431:    AnyNull: typeof AnyNull
+19434:  export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
+19443:   * Reference to a field of type 'String'
+19445:  export type StringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'String'>
+19450:   * Reference to a field of type 'String[]'
+19452:  export type ListStringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'String[]'>
+19457:   * Reference to a field of type 'Float'
+19459:  export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+19464:   * Reference to a field of type 'Float[]'
+19466:  export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
+19471:   * Reference to a field of type 'DateTime'
+19473:  export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
+19478:   * Reference to a field of type 'DateTime[]'
+19480:  export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
+19485:   * Reference to a field of type 'Int'
+19487:  export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
+19492:   * Reference to a field of type 'Int[]'
+19494:  export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+19499:   * Reference to a field of type 'Json'
+19501:  export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+19506:   * Reference to a field of type 'QueryMode'
+19508:  export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
+19513:   * Reference to a field of type 'Boolean'
+19515:  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+19522:  export type IngredientWhereInput = {
+19538:    subtype?: StringNullableFilter<"Ingredient"> | string | null
+19551:  export type IngredientOrderByWithRelationInput = {
+19564:    subtype?: SortOrderInput | SortOrder
+19577:  export type IngredientWhereUniqueInput = Prisma.AtLeast<{
+19593:    subtype?: StringNullableFilter<"Ingredient"> | string | null
+19606:  export type IngredientOrderByWithAggregationInput = {
+19619:    subtype?: SortOrderInput | SortOrder
+19634:  export type IngredientScalarWhereWithAggregatesInput = {
+19650:    subtype?: StringNullableWithAggregatesFilter<"Ingredient"> | string | null
+19660:  export type SupplierWhereInput = {
+19661:    AND?: SupplierWhereInput | SupplierWhereInput[]
+19662:    OR?: SupplierWhereInput[]
+19663:    NOT?: SupplierWhereInput | SupplierWhereInput[]
+19676:  export type SupplierOrderByWithRelationInput = {
+19689:  export type SupplierWhereUniqueInput = Prisma.AtLeast<{
+19691:    AND?: SupplierWhereInput | SupplierWhereInput[]
+19692:    OR?: SupplierWhereInput[]
+19693:    NOT?: SupplierWhereInput | SupplierWhereInput[]
+19705:  export type SupplierOrderByWithAggregationInput = {
+19723:  export type SupplierScalarWhereWithAggregatesInput = {
+19739:  export type RecipeWhereInput = {
+19761:  export type RecipeOrderByWithRelationInput = {
+19780:  export type RecipeWhereUniqueInput = Prisma.AtLeast<{
+19802:  export type RecipeOrderByWithAggregationInput = {
+19823:  export type RecipeScalarWhereWithAggregatesInput = {
+19842:  export type RecipeItemWhereInput = {
+19854:  export type RecipeItemOrderByWithRelationInput = {
+19863:  export type RecipeItemWhereUniqueInput = Prisma.AtLeast<{
+19875:  export type RecipeItemOrderByWithAggregationInput = {
+19887:  export type RecipeItemScalarWhereWithAggregatesInput = {
+19897:  export type RecipeVersionWhereInput = {
+19920:  export type RecipeVersionOrderByWithRelationInput = {
+19940:  export type RecipeVersionWhereUniqueInput = Prisma.AtLeast<{
+19963:  export type RecipeVersionOrderByWithAggregationInput = {
+19987:  export type RecipeVersionScalarWhereWithAggregatesInput = {
+20009:  export type PackWhereInput = {
+20028:  export type PackOrderByWithRelationInput = {
+20044:  export type PackWhereUniqueInput = Prisma.AtLeast<{
+20063:  export type PackOrderByWithAggregationInput = {
+20082:  export type PackScalarWhereWithAggregatesInput = {
+20099:  export type PackItemWhereInput = {
+20105:    type?: StringFilter<"PackItem"> | string
+20115:  export type PackItemOrderByWithRelationInput = {
+20118:    type?: SortOrder
+20128:  export type PackItemWhereUniqueInput = Prisma.AtLeast<{
+20134:    type?: StringFilter<"PackItem"> | string
+20144:  export type PackItemOrderByWithAggregationInput = {
+20147:    type?: SortOrder
+20159:  export type PackItemScalarWhereWithAggregatesInput = {
+20165:    type?: StringWithAggregatesFilter<"PackItem"> | string
+20172:  export type PackVersionWhereInput = {
+20194:  export type PackVersionOrderByWithRelationInput = {
+20213:  export type PackVersionWhereUniqueInput = Prisma.AtLeast<{
+20235:  export type PackVersionOrderByWithAggregationInput = {
+20258:  export type PackVersionScalarWhereWithAggregatesInput = {
+20279:  export type OrderWhereInput = {
+20318:  export type OrderOrderByWithRelationInput = {
+20354:  export type OrderWhereUniqueInput = Prisma.AtLeast<{
+20393:  export type OrderOrderByWithAggregationInput = {
+20432:  export type OrderScalarWhereWithAggregatesInput = {
+20469:  export type OrderItemWhereInput = {
+20475:    type?: StringFilter<"OrderItem"> | string
+20491:  export type OrderItemOrderByWithRelationInput = {
+20494:    type?: SortOrder
+20510:  export type OrderItemWhereUniqueInput = Prisma.AtLeast<{
+20516:    type?: StringFilter<"OrderItem"> | string
+20532:  export type OrderItemOrderByWithAggregationInput = {
+20535:    type?: SortOrder
+20555:  export type OrderItemScalarWhereWithAggregatesInput = {
+20561:    type?: StringWithAggregatesFilter<"OrderItem"> | string
+20576:  export type StockMovementWhereInput = {
+20582:    type?: StringFilter<"StockMovement"> | string
+20597:  export type StockMovementOrderByWithRelationInput = {
+20600:    type?: SortOrder
+20615:  export type StockMovementWhereUniqueInput = Prisma.AtLeast<{
+20621:    type?: StringFilter<"StockMovement"> | string
+20636:  export type StockMovementOrderByWithAggregationInput = {
+20639:    type?: SortOrder
+20657:  export type StockMovementScalarWhereWithAggregatesInput = {
+20663:    type?: StringWithAggregatesFilter<"StockMovement"> | string
+20676:  export type AuditLogWhereInput = {
+20692:  export type AuditLogOrderByWithRelationInput = {
+20705:  export type AuditLogWhereUniqueInput = Prisma.AtLeast<{
+20721:  export type AuditLogOrderByWithAggregationInput = {
+20737:  export type AuditLogScalarWhereWithAggregatesInput = {
+20753:  export type SettingsWhereInput = {
+20766:  export type SettingsOrderByWithRelationInput = {
+20776:  export type SettingsWhereUniqueInput = Prisma.AtLeast<{
+20789:  export type SettingsOrderByWithAggregationInput = {
+20804:  export type SettingsScalarWhereWithAggregatesInput = {
+20817:  export type ActivityLogWhereInput = {
+20823:    type?: StringFilter<"ActivityLog"> | string
+20831:  export type ActivityLogOrderByWithRelationInput = {
+20834:    type?: SortOrder
+20842:  export type ActivityLogWhereUniqueInput = Prisma.AtLeast<{
+20848:    type?: StringFilter<"ActivityLog"> | string
+20856:  export type ActivityLogOrderByWithAggregationInput = {
+20859:    type?: SortOrder
+20870:  export type ActivityLogScalarWhereWithAggregatesInput = {
+20876:    type?: StringWithAggregatesFilter<"ActivityLog"> | string
+20884:  export type IngredientCreateInput = {
+20897:    subtype?: string | null
+20910:  export type IngredientUncheckedCreateInput = {
+20923:    subtype?: string | null
+20936:  export type IngredientUpdateInput = {
+20949:    subtype?: NullableStringFieldUpdateOperationsInput | string | null
+20962:  export type IngredientUncheckedUpdateInput = {
+20975:    subtype?: NullableStringFieldUpdateOperationsInput | string | null
+20988:  export type IngredientCreateManyInput = {
+21001:    subtype?: string | null
+21011:  export type IngredientUpdateManyMutationInput = {
+21024:    subtype?: NullableStringFieldUpdateOperationsInput | string | null
+21034:  export type IngredientUncheckedUpdateManyInput = {
+21047:    subtype?: NullableStringFieldUpdateOperationsInput | string | null
+21057:  export type SupplierCreateInput = {
+21070:  export type SupplierUncheckedCreateInput = {
+21083:  export type SupplierUpdateInput = {
+21096:  export type SupplierUncheckedUpdateInput = {
+21109:  export type SupplierCreateManyInput = {
+21122:  export type SupplierUpdateManyMutationInput = {
+21135:  export type SupplierUncheckedUpdateManyInput = {
+21148:  export type RecipeCreateInput = {
+21167:  export type RecipeUncheckedCreateInput = {
+21186:  export type RecipeUpdateInput = {
+21205:  export type RecipeUncheckedUpdateInput = {
+21224:  export type RecipeCreateManyInput = {
+21240:  export type RecipeUpdateManyMutationInput = {
+21256:  export type RecipeUncheckedUpdateManyInput = {
+21272:  export type RecipeItemCreateInput = {
+21279:  export type RecipeItemUncheckedCreateInput = {
+21286:  export type RecipeItemUpdateInput = {
+21293:  export type RecipeItemUncheckedUpdateInput = {
+21300:  export type RecipeItemCreateManyInput = {
+21307:  export type RecipeItemUpdateManyMutationInput = {
+21312:  export type RecipeItemUncheckedUpdateManyInput = {
+21319:  export type RecipeVersionCreateInput = {
+21338:  export type RecipeVersionUncheckedCreateInput = {
+21357:  export type RecipeVersionUpdateInput = {
+21376:  export type RecipeVersionUncheckedUpdateInput = {
+21395:  export type RecipeVersionCreateManyInput = {
+21414:  export type RecipeVersionUpdateManyMutationInput = {
+21432:  export type RecipeVersionUncheckedUpdateManyInput = {
+21451:  export type PackCreateInput = {
+21467:  export type PackUncheckedCreateInput = {
+21483:  export type PackUpdateInput = {
+21499:  export type PackUncheckedUpdateInput = {
+21515:  export type PackCreateManyInput = {
+21529:  export type PackUpdateManyMutationInput = {
+21543:  export type PackUncheckedUpdateManyInput = {
+21557:  export type PackItemCreateInput = {
+21559:    type: string
+21567:  export type PackItemUncheckedCreateInput = {
+21570:    type: string
+21577:  export type PackItemUpdateInput = {
+21579:    type?: StringFieldUpdateOperationsInput | string
+21587:  export type PackItemUncheckedUpdateInput = {
+21590:    type?: StringFieldUpdateOperationsInput | string
+21597:  export type PackItemCreateManyInput = {
+21600:    type: string
+21607:  export type PackItemUpdateManyMutationInput = {
+21609:    type?: StringFieldUpdateOperationsInput | string
+21614:  export type PackItemUncheckedUpdateManyInput = {
+21617:    type?: StringFieldUpdateOperationsInput | string
+21624:  export type PackVersionCreateInput = {
+21642:  export type PackVersionUncheckedCreateInput = {
+21660:  export type PackVersionUpdateInput = {
+21678:  export type PackVersionUncheckedUpdateInput = {
+21696:  export type PackVersionCreateManyInput = {
+21714:  export type PackVersionUpdateManyMutationInput = {
+21731:  export type PackVersionUncheckedUpdateManyInput = {
+21749:  export type OrderCreateInput = {
+21785:  export type OrderUncheckedCreateInput = {
+21821:  export type OrderUpdateInput = {
+21857:  export type OrderUncheckedUpdateInput = {
+21893:  export type OrderCreateManyInput = {
+21927:  export type OrderUpdateManyMutationInput = {
+21961:  export type OrderUncheckedUpdateManyInput = {
+21995:  export type OrderItemCreateInput = {
+21997:    type: string
+22013:  export type OrderItemUncheckedCreateInput = {
+22016:    type: string
+22031:  export type OrderItemUpdateInput = {
+22033:    type?: StringFieldUpdateOperationsInput | string
+22049:  export type OrderItemUncheckedUpdateInput = {
+22052:    type?: StringFieldUpdateOperationsInput | string
+22067:  export type OrderItemCreateManyInput = {
+22070:    type: string
+22085:  export type OrderItemUpdateManyMutationInput = {
+22087:    type?: StringFieldUpdateOperationsInput | string
+22102:  export type OrderItemUncheckedUpdateManyInput = {
+22105:    type?: StringFieldUpdateOperationsInput | string
+22120:  export type StockMovementCreateInput = {
+22123:    type: string
+22136:  export type StockMovementUncheckedCreateInput = {
+22139:    type: string
+22152:  export type StockMovementUpdateInput = {
+22155:    type?: StringFieldUpdateOperationsInput | string
+22168:  export type StockMovementUncheckedUpdateInput = {
+22171:    type?: StringFieldUpdateOperationsInput | string
+22184:  export type StockMovementCreateManyInput = {
+22187:    type: string
+22200:  export type StockMovementUpdateManyMutationInput = {
+22203:    type?: StringFieldUpdateOperationsInput | string
+22214:  export type StockMovementUncheckedUpdateManyInput = {
+22217:    type?: StringFieldUpdateOperationsInput | string
+22230:  export type AuditLogCreateInput = {
+22243:  export type AuditLogUncheckedCreateInput = {
+22256:  export type AuditLogUpdateInput = {
+22269:  export type AuditLogUncheckedUpdateInput = {
+22282:  export type AuditLogCreateManyInput = {
+22295:  export type AuditLogUpdateManyMutationInput = {
+22308:  export type AuditLogUncheckedUpdateManyInput = {
+22321:  export type SettingsCreateInput = {
+22331:  export type SettingsUncheckedCreateInput = {
+22341:  export type SettingsUpdateInput = {
+22351:  export type SettingsUncheckedUpdateInput = {
+22361:  export type SettingsCreateManyInput = {
+22371:  export type SettingsUpdateManyMutationInput = {
+22381:  export type SettingsUncheckedUpdateManyInput = {
+22391:  export type ActivityLogCreateInput = {
+22394:    type: string
+22402:  export type ActivityLogUncheckedCreateInput = {
+22405:    type: string
+22413:  export type ActivityLogUpdateInput = {
+22416:    type?: StringFieldUpdateOperationsInput | string
+22424:  export type ActivityLogUncheckedUpdateInput = {
+22427:    type?: StringFieldUpdateOperationsInput | string
+22435:  export type ActivityLogCreateManyInput = {
+22438:    type: string
+22446:  export type ActivityLogUpdateManyMutationInput = {
+22449:    type?: StringFieldUpdateOperationsInput | string
+22457:  export type ActivityLogUncheckedUpdateManyInput = {
+22460:    type?: StringFieldUpdateOperationsInput | string
+22468:  export type StringFilter<$PrismaModel = never> = {
+22483:  export type FloatFilter<$PrismaModel = never> = {
+22494:  export type StringNullableFilter<$PrismaModel = never> = {
+22509:  export type FloatNullableFilter<$PrismaModel = never> = {
+22520:  export type DateTimeFilter<$PrismaModel = never> = {
+22531:  export type PackItemListRelationFilter = {
+22537:  export type RecipeItemListRelationFilter = {
+22543:  export type StockMovementListRelationFilter = {
+22549:  export type SortOrderInput = {
+22554:  export type PackItemOrderByRelationAggregateInput = {
+22558:  export type RecipeItemOrderByRelationAggregateInput = {
+22562:  export type StockMovementOrderByRelationAggregateInput = {
+22566:  export type IngredientCountOrderByAggregateInput = {
+22579:    subtype?: SortOrder
+22589:  export type IngredientAvgOrderByAggregateInput = {
+22598:  export type IngredientMaxOrderByAggregateInput = {
+22611:    subtype?: SortOrder
+22621:  export type IngredientMinOrderByAggregateInput = {
+22634:    subtype?: SortOrder
+22644:  export type IngredientSumOrderByAggregateInput = {
+22653:  export type StringWithAggregatesFilter<$PrismaModel = never> = {
+22671:  export type FloatWithAggregatesFilter<$PrismaModel = never> = {
+22687:  export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
+22705:  export type FloatNullableWithAggregatesFilter<$PrismaModel = never> = {
+22721:  export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
+22735:  export type IntNullableFilter<$PrismaModel = never> = {
+22746:  export type SupplierCountOrderByAggregateInput = {
+22759:  export type SupplierAvgOrderByAggregateInput = {
+22763:  export type SupplierMaxOrderByAggregateInput = {
+22776:  export type SupplierMinOrderByAggregateInput = {
+22789:  export type SupplierSumOrderByAggregateInput = {
+22793:  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
+22809:  export type IntFilter<$PrismaModel = never> = {
+22819:  export type JsonFilter<$PrismaModel = never> =
+22826:  export type JsonFilterBase<$PrismaModel = never> = {
+22843:  export type RecipeVersionListRelationFilter = {
+22849:  export type RecipeVersionOrderByRelationAggregateInput = {
+22853:  export type RecipeCountOrderByAggregateInput = {
+22869:  export type RecipeAvgOrderByAggregateInput = {
+22877:  export type RecipeMaxOrderByAggregateInput = {
+22892:  export type RecipeMinOrderByAggregateInput = {
+22907:  export type RecipeSumOrderByAggregateInput = {
+22915:  export type IntWithAggregatesFilter<$PrismaModel = never> = {
+22930:  export type JsonWithAggregatesFilter<$PrismaModel = never> =
+22937:  export type JsonWithAggregatesFilterBase<$PrismaModel = never> = {
+22957:  export type IngredientScalarRelationFilter = {
+22962:  export type RecipeScalarRelationFilter = {
+22967:  export type RecipeItemCountOrderByAggregateInput = {
+22974:  export type RecipeItemAvgOrderByAggregateInput = {
+22978:  export type RecipeItemMaxOrderByAggregateInput = {
+22985:  export type RecipeItemMinOrderByAggregateInput = {
+22992:  export type RecipeItemSumOrderByAggregateInput = {
+22996:  export type RecipeVersionCountOrderByAggregateInput = {
+23015:  export type RecipeVersionAvgOrderByAggregateInput = {
+23023:  export type RecipeVersionMaxOrderByAggregateInput = {
+23040:  export type RecipeVersionMinOrderByAggregateInput = {
+23057:  export type RecipeVersionSumOrderByAggregateInput = {
+23065:  export type PackVersionListRelationFilter = {
+23071:  export type PackVersionOrderByRelationAggregateInput = {
+23075:  export type PackCountOrderByAggregateInput = {
+23089:  export type PackAvgOrderByAggregateInput = {
+23096:  export type PackMaxOrderByAggregateInput = {
+23110:  export type PackMinOrderByAggregateInput = {
+23124:  export type PackSumOrderByAggregateInput = {
+23131:  export type IngredientNullableScalarRelationFilter = {
+23136:  export type PackScalarRelationFilter = {
+23141:  export type RecipeNullableScalarRelationFilter = {
+23146:  export type PackItemCountOrderByAggregateInput = {
+23149:    type?: SortOrder
+23156:  export type PackItemAvgOrderByAggregateInput = {
+23161:  export type PackItemMaxOrderByAggregateInput = {
+23164:    type?: SortOrder
+23171:  export type PackItemMinOrderByAggregateInput = {
+23174:    type?: SortOrder
+23181:  export type PackItemSumOrderByAggregateInput = {
+23186:  export type PackVersionCountOrderByAggregateInput = {
+23204:  export type PackVersionAvgOrderByAggregateInput = {
+23211:  export type PackVersionMaxOrderByAggregateInput = {
+23227:  export type PackVersionMinOrderByAggregateInput = {
+23243:  export type PackVersionSumOrderByAggregateInput = {
+23250:  export type DateTimeNullableFilter<$PrismaModel = never> = {
+23261:  export type BoolFilter<$PrismaModel = never> = {
+23266:  export type OrderItemListRelationFilter = {
+23272:  export type OrderItemOrderByRelationAggregateInput = {
+23276:  export type OrderCountOrderByAggregateInput = {
+23310:  export type OrderAvgOrderByAggregateInput = {
+23326:  export type OrderMaxOrderByAggregateInput = {
+23360:  export type OrderMinOrderByAggregateInput = {
+23394:  export type OrderSumOrderByAggregateInput = {
+23410:  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+23424:  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
+23432:  export type OrderScalarRelationFilter = {
+23437:  export type OrderItemCountOrderByAggregateInput = {
+23440:    type?: SortOrder
+23455:  export type OrderItemAvgOrderByAggregateInput = {
+23466:  export type OrderItemMaxOrderByAggregateInput = {
+23469:    type?: SortOrder
+23484:  export type OrderItemMinOrderByAggregateInput = {
+23487:    type?: SortOrder
+23502:  export type OrderItemSumOrderByAggregateInput = {
+23513:  export type OrderNullableScalarRelationFilter = {
+23518:  export type StockMovementCountOrderByAggregateInput = {
+23521:    type?: SortOrder
+23534:  export type StockMovementAvgOrderByAggregateInput = {
+23541:  export type StockMovementMaxOrderByAggregateInput = {
+23544:    type?: SortOrder
+23557:  export type StockMovementMinOrderByAggregateInput = {
+23560:    type?: SortOrder
+23573:  export type StockMovementSumOrderByAggregateInput = {
+23579:  export type JsonNullableFilter<$PrismaModel = never> =
+23586:  export type JsonNullableFilterBase<$PrismaModel = never> = {
+23603:  export type AuditLogCountOrderByAggregateInput = {
+23616:  export type AuditLogMaxOrderByAggregateInput = {
+23628:  export type AuditLogMinOrderByAggregateInput = {
+23639:  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
+23646:  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
+23666:  export type SettingsCountOrderByAggregateInput = {
+23676:  export type SettingsAvgOrderByAggregateInput = {
+23685:  export type SettingsMaxOrderByAggregateInput = {
+23695:  export type SettingsMinOrderByAggregateInput = {
+23705:  export type SettingsSumOrderByAggregateInput = {
+23714:  export type ActivityLogCountOrderByAggregateInput = {
+23717:    type?: SortOrder
+23725:  export type ActivityLogMaxOrderByAggregateInput = {
+23728:    type?: SortOrder
+23736:  export type ActivityLogMinOrderByAggregateInput = {
+23739:    type?: SortOrder
+23747:  export type PackItemCreateNestedManyWithoutIngredientInput = {
+23754:  export type RecipeItemCreateNestedManyWithoutIngredientInput = {
+23761:  export type StockMovementCreateNestedManyWithoutIngredientInput = {
+23768:  export type PackItemUncheckedCreateNestedManyWithoutIngredientInput = {
+23775:  export type RecipeItemUncheckedCreateNestedManyWithoutIngredientInput = {
+23782:  export type StockMovementUncheckedCreateNestedManyWithoutIngredientInput = {
+23789:  export type StringFieldUpdateOperationsInput = {
+23793:  export type FloatFieldUpdateOperationsInput = {
+23801:  export type NullableStringFieldUpdateOperationsInput = {
+23805:  export type NullableFloatFieldUpdateOperationsInput = {
+23813:  export type DateTimeFieldUpdateOperationsInput = {
+23817:  export type PackItemUpdateManyWithoutIngredientNestedInput = {
+23831:  export type RecipeItemUpdateManyWithoutIngredientNestedInput = {
+23845:  export type StockMovementUpdateManyWithoutIngredientNestedInput = {
+23859:  export type PackItemUncheckedUpdateManyWithoutIngredientNestedInput = {
+23873:  export type RecipeItemUncheckedUpdateManyWithoutIngredientNestedInput = {
+23887:  export type StockMovementUncheckedUpdateManyWithoutIngredientNestedInput = {
+23901:  export type NullableIntFieldUpdateOperationsInput = {
+23909:  export type PackItemCreateNestedManyWithoutRecipeInput = {
+23916:  export type RecipeItemCreateNestedManyWithoutRecipeInput = {
+23923:  export type RecipeVersionCreateNestedManyWithoutRecipeInput = {
+23930:  export type PackItemUncheckedCreateNestedManyWithoutRecipeInput = {
+23937:  export type RecipeItemUncheckedCreateNestedManyWithoutRecipeInput = {
+23944:  export type RecipeVersionUncheckedCreateNestedManyWithoutRecipeInput = {
+23951:  export type IntFieldUpdateOperationsInput = {
+23959:  export type PackItemUpdateManyWithoutRecipeNestedInput = {
+23973:  export type RecipeItemUpdateManyWithoutRecipeNestedInput = {
+23987:  export type RecipeVersionUpdateManyWithoutRecipeNestedInput = {
+24001:  export type PackItemUncheckedUpdateManyWithoutRecipeNestedInput = {
+24015:  export type RecipeItemUncheckedUpdateManyWithoutRecipeNestedInput = {
+24029:  export type RecipeVersionUncheckedUpdateManyWithoutRecipeNestedInput = {
+24043:  export type IngredientCreateNestedOneWithoutRecipeItemsInput = {
+24049:  export type RecipeCreateNestedOneWithoutItemsInput = {
+24055:  export type IngredientUpdateOneRequiredWithoutRecipeItemsNestedInput = {
+24063:  export type RecipeUpdateOneRequiredWithoutItemsNestedInput = {
+24071:  export type RecipeCreateNestedOneWithoutVersionsInput = {
+24077:  export type RecipeUpdateOneRequiredWithoutVersionsNestedInput = {
+24085:  export type PackItemCreateNestedManyWithoutPackInput = {
+24092:  export type PackVersionCreateNestedManyWithoutPackInput = {
+24099:  export type PackItemUncheckedCreateNestedManyWithoutPackInput = {
+24106:  export type PackVersionUncheckedCreateNestedManyWithoutPackInput = {
+24113:  export type PackItemUpdateManyWithoutPackNestedInput = {
+24127:  export type PackVersionUpdateManyWithoutPackNestedInput = {
+24141:  export type PackItemUncheckedUpdateManyWithoutPackNestedInput = {
+24155:  export type PackVersionUncheckedUpdateManyWithoutPackNestedInput = {
+24169:  export type IngredientCreateNestedOneWithoutPackItemsInput = {
+24175:  export type PackCreateNestedOneWithoutItemsInput = {
+24181:  export type RecipeCreateNestedOneWithoutPackItemsInput = {
+24187:  export type IngredientUpdateOneWithoutPackItemsNestedInput = {
+24197:  export type PackUpdateOneRequiredWithoutItemsNestedInput = {
+24205:  export type RecipeUpdateOneWithoutPackItemsNestedInput = {
+24215:  export type PackCreateNestedOneWithoutVersionsInput = {
+24221:  export type PackUpdateOneRequiredWithoutVersionsNestedInput = {
+24229:  export type OrderItemCreateNestedManyWithoutOrderInput = {
+24236:  export type StockMovementCreateNestedManyWithoutOrderInput = {
+24243:  export type OrderItemUncheckedCreateNestedManyWithoutOrderInput = {
+24250:  export type StockMovementUncheckedCreateNestedManyWithoutOrderInput = {
+24257:  export type NullableDateTimeFieldUpdateOperationsInput = {
+24261:  export type BoolFieldUpdateOperationsInput = {
+24265:  export type OrderItemUpdateManyWithoutOrderNestedInput = {
+24279:  export type StockMovementUpdateManyWithoutOrderNestedInput = {
+24293:  export type OrderItemUncheckedUpdateManyWithoutOrderNestedInput = {
+24307:  export type StockMovementUncheckedUpdateManyWithoutOrderNestedInput = {
+24321:  export type OrderCreateNestedOneWithoutItemsInput = {
+24327:  export type OrderUpdateOneRequiredWithoutItemsNestedInput = {
+24335:  export type IngredientCreateNestedOneWithoutMovementsInput = {
+24341:  export type OrderCreateNestedOneWithoutMovementsInput = {
+24347:  export type IngredientUpdateOneWithoutMovementsNestedInput = {
+24357:  export type OrderUpdateOneWithoutMovementsNestedInput = {
+24367:  export type NestedStringFilter<$PrismaModel = never> = {
+24381:  export type NestedFloatFilter<$PrismaModel = never> = {
+24392:  export type NestedStringNullableFilter<$PrismaModel = never> = {
+24406:  export type NestedFloatNullableFilter<$PrismaModel = never> = {
+24417:  export type NestedDateTimeFilter<$PrismaModel = never> = {
+24428:  export type NestedStringWithAggregatesFilter<$PrismaModel = never> = {
+24445:  export type NestedIntFilter<$PrismaModel = never> = {
+24456:  export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
+24472:  export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
+24489:  export type NestedIntNullableFilter<$PrismaModel = never> = {
+24500:  export type NestedFloatNullableWithAggregatesFilter<$PrismaModel = never> = {
+24516:  export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
+24530:  export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
+24546:  export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
+24561:  export type NestedJsonFilter<$PrismaModel = never> =
+24568:  export type NestedJsonFilterBase<$PrismaModel = never> = {
+24585:  export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
+24596:  export type NestedBoolFilter<$PrismaModel = never> = {
+24601:  export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+24615:  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
+24622:  export type NestedJsonNullableFilter<$PrismaModel = never> =
+24629:  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
+24646:  export type PackItemCreateWithoutIngredientInput = {
+24648:    type: string
+24655:  export type PackItemUncheckedCreateWithoutIngredientInput = {
+24658:    type: string
+24664:  export type PackItemCreateOrConnectWithoutIngredientInput = {
+24669:  export type PackItemCreateManyIngredientInputEnvelope = {
+24674:  export type RecipeItemCreateWithoutIngredientInput = {
+24680:  export type RecipeItemUncheckedCreateWithoutIngredientInput = {
+24686:  export type RecipeItemCreateOrConnectWithoutIngredientInput = {
+24691:  export type RecipeItemCreateManyIngredientInputEnvelope = {
+24696:  export type StockMovementCreateWithoutIngredientInput = {
+24699:    type: string
+24711:  export type StockMovementUncheckedCreateWithoutIngredientInput = {
+24714:    type: string
+24726:  export type StockMovementCreateOrConnectWithoutIngredientInput = {
+24731:  export type StockMovementCreateManyIngredientInputEnvelope = {
+24736:  export type PackItemUpsertWithWhereUniqueWithoutIngredientInput = {
+24742:  export type PackItemUpdateWithWhereUniqueWithoutIngredientInput = {
+24747:  export type PackItemUpdateManyWithWhereWithoutIngredientInput = {
+24752:  export type PackItemScalarWhereInput = {
+24758:    type?: StringFilter<"PackItem"> | string
+24765:  export type RecipeItemUpsertWithWhereUniqueWithoutIngredientInput = {
+24771:  export type RecipeItemUpdateWithWhereUniqueWithoutIngredientInput = {
+24776:  export type RecipeItemUpdateManyWithWhereWithoutIngredientInput = {
+24781:  export type RecipeItemScalarWhereInput = {
+24791:  export type StockMovementUpsertWithWhereUniqueWithoutIngredientInput = {
+24797:  export type StockMovementUpdateWithWhereUniqueWithoutIngredientInput = {
+24802:  export type StockMovementUpdateManyWithWhereWithoutIngredientInput = {
+24807:  export type StockMovementScalarWhereInput = {
+24813:    type?: StringFilter<"StockMovement"> | string
+24826:  export type PackItemCreateWithoutRecipeInput = {
+24828:    type: string
+24835:  export type PackItemUncheckedCreateWithoutRecipeInput = {
+24838:    type: string
+24844:  export type PackItemCreateOrConnectWithoutRecipeInput = {
+24849:  export type PackItemCreateManyRecipeInputEnvelope = {
+24854:  export type RecipeItemCreateWithoutRecipeInput = {
+24860:  export type RecipeItemUncheckedCreateWithoutRecipeInput = {
+24866:  export type RecipeItemCreateOrConnectWithoutRecipeInput = {
+24871:  export type RecipeItemCreateManyRecipeInputEnvelope = {
+24876:  export type RecipeVersionCreateWithoutRecipeInput = {
+24894:  export type RecipeVersionUncheckedCreateWithoutRecipeInput = {
+24912:  export type RecipeVersionCreateOrConnectWithoutRecipeInput = {
+24917:  export type RecipeVersionCreateManyRecipeInputEnvelope = {
+24922:  export type PackItemUpsertWithWhereUniqueWithoutRecipeInput = {
+24928:  export type PackItemUpdateWithWhereUniqueWithoutRecipeInput = {
+24933:  export type PackItemUpdateManyWithWhereWithoutRecipeInput = {
+24938:  export type RecipeItemUpsertWithWhereUniqueWithoutRecipeInput = {
+24944:  export type RecipeItemUpdateWithWhereUniqueWithoutRecipeInput = {
+24949:  export type RecipeItemUpdateManyWithWhereWithoutRecipeInput = {
+24954:  export type RecipeVersionUpsertWithWhereUniqueWithoutRecipeInput = {
+24960:  export type RecipeVersionUpdateWithWhereUniqueWithoutRecipeInput = {
+24965:  export type RecipeVersionUpdateManyWithWhereWithoutRecipeInput = {
+24970:  export type RecipeVersionScalarWhereInput = {
+24992:  export type IngredientCreateWithoutRecipeItemsInput = {
+25005:    subtype?: string | null
+25017:  export type IngredientUncheckedCreateWithoutRecipeItemsInput = {
+25030:    subtype?: string | null
+25042:  export type IngredientCreateOrConnectWithoutRecipeItemsInput = {
+25047:  export type RecipeCreateWithoutItemsInput = {
+25065:  export type RecipeUncheckedCreateWithoutItemsInput = {
+25083:  export type RecipeCreateOrConnectWithoutItemsInput = {
+25088:  export type IngredientUpsertWithoutRecipeItemsInput = {
+25094:  export type IngredientUpdateToOneWithWhereWithoutRecipeItemsInput = {
+25099:  export type IngredientUpdateWithoutRecipeItemsInput = {
+25112:    subtype?: NullableStringFieldUpdateOperationsInput | string | null
+25124:  export type IngredientUncheckedUpdateWithoutRecipeItemsInput = {
+25137:    subtype?: NullableStringFieldUpdateOperationsInput | string | null
+25149:  export type RecipeUpsertWithoutItemsInput = {
+25155:  export type RecipeUpdateToOneWithWhereWithoutItemsInput = {
+25160:  export type RecipeUpdateWithoutItemsInput = {
+25178:  export type RecipeUncheckedUpdateWithoutItemsInput = {
+25196:  export type RecipeCreateWithoutVersionsInput = {
+25214:  export type RecipeUncheckedCreateWithoutVersionsInput = {
+25232:  export type RecipeCreateOrConnectWithoutVersionsInput = {
+25237:  export type RecipeUpsertWithoutVersionsInput = {
+25243:  export type RecipeUpdateToOneWithWhereWithoutVersionsInput = {
+25248:  export type RecipeUpdateWithoutVersionsInput = {
+25266:  export type RecipeUncheckedUpdateWithoutVersionsInput = {
+25284:  export type PackItemCreateWithoutPackInput = {
+25286:    type: string
+25293:  export type PackItemUncheckedCreateWithoutPackInput = {
+25295:    type: string
+25302:  export type PackItemCreateOrConnectWithoutPackInput = {
+25307:  export type PackItemCreateManyPackInputEnvelope = {
+25312:  export type PackVersionCreateWithoutPackInput = {
+25329:  export type PackVersionUncheckedCreateWithoutPackInput = {
+25346:  export type PackVersionCreateOrConnectWithoutPackInput = {
+25351:  export type PackVersionCreateManyPackInputEnvelope = {
+25356:  export type PackItemUpsertWithWhereUniqueWithoutPackInput = {
+25362:  export type PackItemUpdateWithWhereUniqueWithoutPackInput = {
+25367:  export type PackItemUpdateManyWithWhereWithoutPackInput = {
+25372:  export type PackVersionUpsertWithWhereUniqueWithoutPackInput = {
+25378:  export type PackVersionUpdateWithWhereUniqueWithoutPackInput = {
+25383:  export type PackVersionUpdateManyWithWhereWithoutPackInput = {
+25388:  export type PackVersionScalarWhereInput = {
+25409:  export type IngredientCreateWithoutPackItemsInput = {
+25422:    subtype?: string | null
+25434:  export type IngredientUncheckedCreateWithoutPackItemsInput = {
+25447:    subtype?: string | null
+25459:  export type IngredientCreateOrConnectWithoutPackItemsInput = {
+25464:  export type PackCreateWithoutItemsInput = {
+25479:  export type PackUncheckedCreateWithoutItemsInput = {
+25494:  export type PackCreateOrConnectWithoutItemsInput = {
+25499:  export type RecipeCreateWithoutPackItemsInput = {
+25517:  export type RecipeUncheckedCreateWithoutPackItemsInput = {
+25535:  export type RecipeCreateOrConnectWithoutPackItemsInput = {
+25540:  export type IngredientUpsertWithoutPackItemsInput = {
+25546:  export type IngredientUpdateToOneWithWhereWithoutPackItemsInput = {
+25551:  export type IngredientUpdateWithoutPackItemsInput = {
+25564:    subtype?: NullableStringFieldUpdateOperationsInput | string | null
+25576:  export type IngredientUncheckedUpdateWithoutPackItemsInput = {
+25589:    subtype?: NullableStringFieldUpdateOperationsInput | string | null
+25601:  export type PackUpsertWithoutItemsInput = {
+25607:  export type PackUpdateToOneWithWhereWithoutItemsInput = {
+25612:  export type PackUpdateWithoutItemsInput = {
+25627:  export type PackUncheckedUpdateWithoutItemsInput = {
+25642:  export type RecipeUpsertWithoutPackItemsInput = {
+25648:  export type RecipeUpdateToOneWithWhereWithoutPackItemsInput = {
+25653:  export type RecipeUpdateWithoutPackItemsInput = {
+25671:  export type RecipeUncheckedUpdateWithoutPackItemsInput = {
+25689:  export type PackCreateWithoutVersionsInput = {
+25704:  export type PackUncheckedCreateWithoutVersionsInput = {
+25719:  export type PackCreateOrConnectWithoutVersionsInput = {
+25724:  export type PackUpsertWithoutVersionsInput = {
+25730:  export type PackUpdateToOneWithWhereWithoutVersionsInput = {
+25735:  export type PackUpdateWithoutVersionsInput = {
+25750:  export type PackUncheckedUpdateWithoutVersionsInput = {
+25765:  export type OrderItemCreateWithoutOrderInput = {
+25767:    type: string
+25782:  export type OrderItemUncheckedCreateWithoutOrderInput = {
+25784:    type: string
+25799:  export type OrderItemCreateOrConnectWithoutOrderInput = {
+25804:  export type OrderItemCreateManyOrderInputEnvelope = {
+25809:  export type StockMovementCreateWithoutOrderInput = {
+25812:    type: string
+25824:  export type StockMovementUncheckedCreateWithoutOrderInput = {
+25827:    type: string
+25839:  export type StockMovementCreateOrConnectWithoutOrderInput = {
+25844:  export type StockMovementCreateManyOrderInputEnvelope = {
+25849:  export type OrderItemUpsertWithWhereUniqueWithoutOrderInput = {
+25855:  export type OrderItemUpdateWithWhereUniqueWithoutOrderInput = {
+25860:  export type OrderItemUpdateManyWithWhereWithoutOrderInput = {
+25865:  export type OrderItemScalarWhereInput = {
+25871:    type?: StringFilter<"OrderItem"> | string
+25886:  export type StockMovementUpsertWithWhereUniqueWithoutOrderInput = {
+25892:  export type StockMovementUpdateWithWhereUniqueWithoutOrderInput = {
+25897:  export type StockMovementUpdateManyWithWhereWithoutOrderInput = {
+25902:  export type OrderCreateWithoutItemsInput = {
+25937:  export type OrderUncheckedCreateWithoutItemsInput = {
+25972:  export type OrderCreateOrConnectWithoutItemsInput = {
+25977:  export type OrderUpsertWithoutItemsInput = {
+25983:  export type OrderUpdateToOneWithWhereWithoutItemsInput = {
+25988:  export type OrderUpdateWithoutItemsInput = {
+26023:  export type OrderUncheckedUpdateWithoutItemsInput = {
+26058:  export type IngredientCreateWithoutMovementsInput = {
+26071:    subtype?: string | null
+26083:  export type IngredientUncheckedCreateWithoutMovementsInput = {
+26096:    subtype?: string | null
+26108:  export type IngredientCreateOrConnectWithoutMovementsInput = {
+26113:  export type OrderCreateWithoutMovementsInput = {
+26148:  export type OrderUncheckedCreateWithoutMovementsInput = {
+26183:  export type OrderCreateOrConnectWithoutMovementsInput = {
+26188:  export type IngredientUpsertWithoutMovementsInput = {
+26194:  export type IngredientUpdateToOneWithWhereWithoutMovementsInput = {
+26199:  export type IngredientUpdateWithoutMovementsInput = {
+26212:    subtype?: NullableStringFieldUpdateOperationsInput | string | null
+26224:  export type IngredientUncheckedUpdateWithoutMovementsInput = {
+26237:    subtype?: NullableStringFieldUpdateOperationsInput | string | null
+26249:  export type OrderUpsertWithoutMovementsInput = {
+26255:  export type OrderUpdateToOneWithWhereWithoutMovementsInput = {
+26260:  export type OrderUpdateWithoutMovementsInput = {
+26295:  export type OrderUncheckedUpdateWithoutMovementsInput = {
+26330:  export type PackItemCreateManyIngredientInput = {
+26333:    type: string
+26339:  export type RecipeItemCreateManyIngredientInput = {
+26345:  export type StockMovementCreateManyIngredientInput = {
+26348:    type: string
+26360:  export type PackItemUpdateWithoutIngredientInput = {
+26362:    type?: StringFieldUpdateOperationsInput | string
+26369:  export type PackItemUncheckedUpdateWithoutIngredientInput = {
+26372:    type?: StringFieldUpdateOperationsInput | string
+26378:  export type PackItemUncheckedUpdateManyWithoutIngredientInput = {
+26381:    type?: StringFieldUpdateOperationsInput | string
+26387:  export type RecipeItemUpdateWithoutIngredientInput = {
+26393:  export type RecipeItemUncheckedUpdateWithoutIngredientInput = {
+26399:  export type RecipeItemUncheckedUpdateManyWithoutIngredientInput = {
+26405:  export type StockMovementUpdateWithoutIngredientInput = {
+26408:    type?: StringFieldUpdateOperationsInput | string
+26420:  export type StockMovementUncheckedUpdateWithoutIngredientInput = {
+26423:    type?: StringFieldUpdateOperationsInput | string
+26435:  export type StockMovementUncheckedUpdateManyWithoutIngredientInput = {
+26438:    type?: StringFieldUpdateOperationsInput | string
+26450:  export type PackItemCreateManyRecipeInput = {
+26453:    type: string
+26459:  export type RecipeItemCreateManyRecipeInput = {
+26465:  export type RecipeVersionCreateManyRecipeInput = {
+26483:  export type PackItemUpdateWithoutRecipeInput = {
+26485:    type?: StringFieldUpdateOperationsInput | string
+26492:  export type PackItemUncheckedUpdateWithoutRecipeInput = {
+26495:    type?: StringFieldUpdateOperationsInput | string
+26501:  export type PackItemUncheckedUpdateManyWithoutRecipeInput = {
+26504:    type?: StringFieldUpdateOperationsInput | string
+26510:  export type RecipeItemUpdateWithoutRecipeInput = {
+26516:  export type RecipeItemUncheckedUpdateWithoutRecipeInput = {
+26522:  export type RecipeItemUncheckedUpdateManyWithoutRecipeInput = {
+26528:  export type RecipeVersionUpdateWithoutRecipeInput = {
+26546:  export type RecipeVersionUncheckedUpdateWithoutRecipeInput = {
+26564:  export type RecipeVersionUncheckedUpdateManyWithoutRecipeInput = {
+26582:  export type PackItemCreateManyPackInput = {
+26584:    type: string
+26591:  export type PackVersionCreateManyPackInput = {
+26608:  export type PackItemUpdateWithoutPackInput = {
+26610:    type?: StringFieldUpdateOperationsInput | string
+26617:  export type PackItemUncheckedUpdateWithoutPackInput = {
+26619:    type?: StringFieldUpdateOperationsInput | string
+26626:  export type PackItemUncheckedUpdateManyWithoutPackInput = {
+26628:    type?: StringFieldUpdateOperationsInput | string
+26635:  export type PackVersionUpdateWithoutPackInput = {
+26652:  export type PackVersionUncheckedUpdateWithoutPackInput = {
+26669:  export type PackVersionUncheckedUpdateManyWithoutPackInput = {
+26686:  export type OrderItemCreateManyOrderInput = {
+26688:    type: string
+26703:  export type StockMovementCreateManyOrderInput = {
+26706:    type: string
+26718:  export type OrderItemUpdateWithoutOrderInput = {
+26720:    type?: StringFieldUpdateOperationsInput | string
+26735:  export type OrderItemUncheckedUpdateWithoutOrderInput = {
+26737:    type?: StringFieldUpdateOperationsInput | string
+26752:  export type OrderItemUncheckedUpdateManyWithoutOrderInput = {
+26754:    type?: StringFieldUpdateOperationsInput | string
+26769:  export type StockMovementUpdateWithoutOrderInput = {
+26772:    type?: StringFieldUpdateOperationsInput | string
+26784:  export type StockMovementUncheckedUpdateWithoutOrderInput = {
+26787:    type?: StringFieldUpdateOperationsInput | string
+26799:  export type StockMovementUncheckedUpdateManyWithoutOrderInput = {
+26802:    type?: StringFieldUpdateOperationsInput | string
+26820:  export type BatchPayload = {
+26827:  export const dmmf: runtime.BaseDMMF
