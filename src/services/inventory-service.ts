@@ -63,21 +63,16 @@ export const InventoryService = {
 
     // Initial movement
     if (input.initialStock && input.initialStock > 0) {
-      const movement = {
-        id: Math.random().toString(36).substring(7),
-        organizationId: orgId,
-        ingredient: { connect: { id: newIngredient.id } },
-        type: MovementType.PURCHASE,
-        entityType: EntityType.INGREDIENT,
-        source: MovementSource.INITIAL,
-
-        deltaQuantity: input.initialStock,
-        unitPrice: costPerGram,
-        reason: 'Initial Stock',
-        createdAt: new Date(),
-        targetStock: input.initialStock,
-      };
-      await db.upsert('movements', movement as any, orgId);
+      await this.addMovement(
+        orgId,
+        newIngredient.id,
+        MovementType.PURCHASE,
+        input.initialStock,
+        costPerGram,
+        'Initial Stock',
+        EntityType.INGREDIENT,
+        MovementSource.INITIAL
+      );
     }
 
     return newIngredient;
@@ -155,23 +150,18 @@ export const InventoryService = {
         await db.upsert('ingredients', newIngredient, orgId);
         newIngredients.push(newIngredient);
 
-        // Handle Initial Stock
+        // Handle Initial Stock via consolidated logic
         if (input.initialStock && input.initialStock > 0) {
-          newIngredient.currentStock = input.initialStock;
-          const movement = {
-            id: Math.random().toString(36).substring(7),
-            organizationId: orgId,
-            ingredient: { connect: { id: newIngredient.id } },
-            type: MovementType.PURCHASE,
-            entityType: EntityType.INGREDIENT,
-            source: MovementSource.IMPORT,
-            deltaQuantity: input.initialStock,
-            unitPrice: costPerGram ?? null,
-            reason: 'Import Initial Stock',
-            createdAt: new Date(),
-            targetStock: input.initialStock,
-          };
-          await db.upsert('movements', movement as any, orgId);
+          await this.addMovement(
+            orgId,
+            newIngredient.id,
+            MovementType.PURCHASE,
+            input.initialStock,
+            costPerGram,
+            'Import Initial Stock',
+            EntityType.INGREDIENT,
+            MovementSource.IMPORT
+          );
         }
 
         // Log Create

@@ -1,13 +1,13 @@
-import { InventoryService } from '@/services/inventory-service'
-import { readData } from '@/lib/db-json'
-import StockMovementsClientPage from './client-page'
-import { StockMovement } from '@/types/inventory'
+import { InventoryService } from '@/services/inventory-service';
+import StockMovementsClientPage from './client-page';
 
-const MOVEMENTS_FILE = 'movements.json';
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default async function StockMovementsPage() {
-    const allIngredients = await InventoryService.getIngredients('org-1');
-    const movements = readData<StockMovement[]>(MOVEMENTS_FILE, []);
+  const orgId = 'org-1';
+  const allIngredients = await InventoryService.getIngredients(orgId);
+  const movements = await InventoryService.getMovements(orgId);
 
-    return <StockMovementsClientPage movements={movements} ingredients={allIngredients} />
+  return <StockMovementsClientPage movements={movements} ingredients={allIngredients} />;
 }

@@ -1,8 +1,47 @@
 import { NextResponse } from 'next/server';
 import { InventoryService } from '@/services/inventory-service';
 import { MovementType, MovementSource, EntityType } from '@/types/inventory';
-
+import { prisma } from '@/lib/db-sql';
 import { createStockMovementSchema } from '@/lib/zod-schemas';
+
+export async function GET() {
+  const organizationId = 'org-1'; // Fallback to current convention
+  try {
+    const count = await prisma.stockMovement.count({
+      where: { organizationId },
+    });
+
+    const data = await prisma.stockMovement.findMany({
+      where: { organizationId },
+      orderBy: { createdAt: 'desc' },
+      take: 200,
+      include: {
+        ingredient: true,
+        order: true,
+      },
+    });
+
+    console.log(`[API GET] StockMovements - orgId: ${organizationId}, count: ${count}`);
+
+    return NextResponse.json(
+      { success: true, count, data },
+      {
+        headers: {
+          'Cache-Control': 'no-store, max-age=0',
+        },
+      }
+    );
+  } catch (error) {
+    console.error('[API GET] Failed to fetch movements:', error);
+    return NextResponse.json(
+      {
+        error: 'Internal Server Error',
+        details: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 }
+    );
+  }
+}
 
 export async function POST(request: Request) {
   try {
