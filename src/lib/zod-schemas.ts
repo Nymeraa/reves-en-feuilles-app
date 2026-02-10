@@ -3,12 +3,17 @@ import { MovementType } from '@/types/inventory';
 
 export const createSupplierSchema = z.object({
   name: z.string().min(1, 'Name is required'),
-  contactEmail: z.string().email().optional().or(z.literal('')),
-  contactPhone: z.string().optional(),
-  website: z.string().url().optional().or(z.literal('')),
-  leadTime: z.coerce.number().min(0).optional(),
-  defaultConditioning: z.string().optional(),
-  notes: z.string().optional(),
+  contactEmail: z.string().email().nullable().optional().or(z.literal('')),
+  contactPhone: z.string().nullable().optional().or(z.literal('')),
+  website: z.string().url().nullable().optional().or(z.literal('')),
+  leadTime: z
+    .preprocess(
+      (val) => (val === '' || val === null ? undefined : val),
+      z.coerce.number().min(0).optional()
+    )
+    .optional(),
+  defaultConditioning: z.string().nullable().optional().or(z.literal('')),
+  notes: z.string().nullable().optional().or(z.literal('')),
 });
 
 export const updateSupplierSchema = createSupplierSchema.partial();
