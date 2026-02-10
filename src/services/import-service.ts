@@ -1,221 +1,254 @@
-import { z } from 'zod';
-import { InventoryService } from './inventory-service';
-import { SupplierService } from './supplier-service';
-import { RecipeService } from './recipe-service';
-import { PackService } from './pack-service';
-import { OrderService } from './order-service';
 import { parse } from 'csv-parse/sync';
+import { prisma } from '@/lib/db-sql';
 import { AuditService } from './audit-service';
 import { AuditAction, AuditEntity, AuditSeverity } from '@/types/audit';
-import { RecipeStatus } from '@/types/recipe';
-import { PackStatus } from '@/types/pack';
-import { OrderStatus } from '@/types/order';
+import { detectSeparator, normalizeHeader, normalizeValue } from '@/lib/import-utils';
+import { HEADER_MAPPINGS, getImportSchema } from '@/lib/import-schemas';
 
-export type ImportEntityType =
-  | 'Ingrédients'
-  | 'Packaging'
-  | 'Accessoires'
-  | 'Fournisseurs'
-  | 'Recettes'
-  | 'Packs'
-  | 'Commandes';
+export type ImportEntity =
+  | 'ingredients'
+  | 'recipes'
+  | 'packs'
+  | 'packaging'
+  | 'accessories'
+  | 'orders'
+  | 'suppliers';
 
-// Schemas
-const IngredientSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  category: z.string().optional(),
-  initialStock: z.coerce.number().min(0).optional(),
-  initialCost: z.coerce.number().min(0).optional(),
-  supplierId: z.string().optional(),
-  alertThreshold: z.coerce.number().min(0).optional(),
-  notes: z.string().optional(),
-  // Packaging props (optional)
-  subtype: z.string().optional(),
-  dimensions: z.string().optional(),
-  capacity: z.coerce.number().optional(),
-  // Removed 'material' as it's not in the schema
-});
-
-const AccessorySchema = IngredientSchema;
-
-const SupplierSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  contactEmail: z.string().email().optional().or(z.literal('')),
-  contactPhone: z.string().optional(),
-  website: z.string().url().optional().or(z.literal('')),
-  leadTime: z.coerce.number().min(0).optional(),
-  notes: z.string().optional(),
-});
-
-const RecipeSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  description: z.string().optional(),
-  status: z.nativeEnum(RecipeStatus).optional().default(RecipeStatus.DRAFT),
-  laborCost: z.coerce.number().min(0).optional(),
-  packagingCost: z.coerce.number().min(0).optional(),
-});
-
-const PackSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  description: z.string().optional(),
-  price: z.coerce.number().min(0).optional(),
-  status: z.nativeEnum(PackStatus).optional().default(PackStatus.DRAFT),
-});
-
-const OrderSchema = z.object({
-  orderNumber: z.string().min(1, 'Order Number is required'),
-  customerName: z.string().min(1, 'Customer Name is required'),
-  email: z.string().email().optional().or(z.literal('')),
-  status: z.nativeEnum(OrderStatus).optional().default(OrderStatus.DRAFT),
-  totalAmount: z.coerce.number().optional(),
-  date: z.coerce.date().optional(),
-  source: z.string().optional(),
-  shippingCarrier: z.string().optional(),
-  trackingNumber: z.string().optional(),
-});
-
-export interface ImportValidationResult {
-  totalRows: number;
-  validRows: any[];
-  invalidRows: { row: any; errors: string[] }[];
-  isValid: boolean;
+export interface ImportResult {
+  success: boolean;
+  total: number;
+  created: number;
+  updated: number;
+  skipped: number;
+  errors: { line: number; field?: string; message: string }[];
 }
 
 export const ImportService = {
-  parseCsv(content: string): any[] {
-    return parse(content, {
-      columns: true,
-      skip_empty_lines: true,
-      trim: true,
-      bom: true,
-    });
-  },
-
-  validateCsv(type: ImportEntityType, rows: any[]): ImportValidationResult {
-    const validRows: any[] = [];
-    const invalidRows: { row: any; errors: string[] }[] = [];
-
-    let schema: z.ZodType<any>;
-
-    switch (type) {
-      case 'Ingrédients':
-      case 'Packaging':
-        schema = IngredientSchema;
-        break;
-      case 'Accessoires':
-        schema = AccessorySchema;
-        break;
-      case 'Fournisseurs':
-        schema = SupplierSchema;
-        break;
-      case 'Recettes':
-        schema = RecipeSchema;
-        break;
-      case 'Packs':
-        schema = PackSchema;
-        break;
-      case 'Commandes':
-        schema = OrderSchema;
-        break;
-      default:
-        throw new Error('Unsupported entity type');
-    }
-
-    rows.forEach((row) => {
-      const result = schema.safeParse(row);
-      if (result.success) {
-        validRows.push(result.data);
-      } else {
-        const issues = result.error.issues || [];
-        invalidRows.push({
-          row,
-          errors: issues.map((e: any) => `${e.path?.join('.') || '?'}: ${e.message}`),
-        });
-      }
-    });
-
-    return {
-      totalRows: rows.length,
-      validRows,
-      invalidRows,
-      isValid: invalidRows.length === 0,
-    };
-  },
-
+  /**
+   * Main entry point for CSV imports.
+   */
   async executeImport(
     orgId: string,
-    type: ImportEntityType,
-    rows: any[],
-    mode: 'create' | 'upsert' = 'create'
-  ) {
-    const correlationId = `import-${Date.now()}`;
+    entity: ImportEntity,
+    csvText: string,
+    options: { dryRun?: boolean; upsert?: boolean } = {}
+  ): Promise<ImportResult> {
+    const { dryRun = false, upsert = true } = options;
+    const result: ImportResult = {
+      success: false,
+      total: 0,
+      created: 0,
+      updated: 0,
+      skipped: 0,
+      errors: [],
+    };
 
-    AuditService.log({
-      action: AuditAction.IMPORT,
-      entity: AuditEntity.IMPORT_JOB,
-      entityId: correlationId,
-      correlationId,
-      metadata: { type, rowCount: rows.length, mode, status: 'STARTED' },
-    });
-
-    let result: any;
     try {
-      switch (type) {
-        case 'Ingrédients':
-        case 'Packaging':
-          result = await InventoryService.bulkCreateIngredients(orgId, rows, mode);
-          break;
-        case 'Accessoires':
-          const accessoryRows = rows.map((r) => ({ ...r, category: r.category || 'Accessoire' }));
-          result = await InventoryService.bulkCreateIngredients(orgId, accessoryRows, mode);
-          break;
-        case 'Fournisseurs':
-          result = await SupplierService.bulkCreateSuppliers(orgId, rows);
-          break;
-        case 'Recettes':
-          const recipes = [];
-          for (const row of rows) {
-            recipes.push(await RecipeService.createRecipe(orgId, row));
-          }
-          result = recipes;
-          break;
-        case 'Packs':
-          const packs = [];
-          for (const row of rows) {
-            packs.push(await PackService.createPack(orgId, row));
-          }
-          result = packs;
-          break;
-        case 'Commandes':
-          const orders = [];
-          for (const row of rows) {
-            orders.push(await OrderService.createDraftOrder(orgId, row));
-          }
-          result = orders;
-          break;
-        default:
-          throw new Error('Unsupported entity type');
+      // 1. Parse CSV
+      const separator = detectSeparator(csvText);
+      const rows = parse(csvText, {
+        delimiter: separator,
+        columns: (headers: string[]) => headers.map(normalizeHeader),
+        skip_empty_lines: true,
+        trim: true,
+        bom: true,
+      });
+
+      result.total = rows.length;
+      if (result.total === 0) {
+        result.errors.push({ line: 0, message: 'Le fichier CSV est vide.' });
+        return result;
       }
 
-      AuditService.log({
-        action: AuditAction.IMPORT,
-        entity: AuditEntity.IMPORT_JOB,
-        entityId: correlationId,
-        correlationId,
-        metadata: { type, mode, status: 'COMPLETED', createdCount: result?.length || 0 },
+      // 2. Map & Validate Rows
+      const schema = getImportSchema(entity);
+      const mapping = HEADER_MAPPINGS[entity] || {};
+      const validatedRows: any[] = [];
+
+      // Pre-fetch lookups if needed
+      const lookups = await this.prepareLookups(orgId, entity, rows);
+
+      rows.forEach((row: any, index: number) => {
+        const line = index + 2; // +1 for header, +1 for 1-based index
+        const mappedRow: any = {};
+
+        // Apply header mapping
+        Object.keys(row).forEach((header) => {
+          const internalKey = mapping[header] || header;
+          mappedRow[internalKey] = normalizeValue(row[header]);
+        });
+
+        // Validate
+        const validation = schema.safeParse(mappedRow);
+        if (!validation.success) {
+          validation.error.issues.forEach((issue) => {
+            result.errors.push({
+              line,
+              field: issue.path.join('.'),
+              message: issue.message,
+            });
+          });
+        } else {
+          // Add lookups (e.g. resolve supplierName to supplierId)
+          const finalRow = this.applyLookups(entity, validation.data, lookups);
+          validatedRows.push({ line, data: finalRow });
+        }
       });
 
-      return result;
-    } catch (error: any) {
-      AuditService.log({
+      // If we have errors during validation, we might want to return early if too many
+      // but the requirement says "erreurs non bloquantes par ligne".
+      // However, if parsing failed completely or validation is critical, handles it.
+
+      if (dryRun) {
+        result.success = result.errors.length === 0;
+        result.created = validatedRows.length; // In dry-run, we count potential creations
+        return result;
+      }
+
+      // 3. Execute Mutations in Transaction
+      await prisma.$transaction(async (tx) => {
+        for (const { line, data } of validatedRows) {
+          try {
+            const dataToSave = { ...data, organizationId: orgId };
+
+            // Handle unit cost normalization for ingredients (€/kg -> €/g)
+            if (entity === 'ingredients' && dataToSave.initialCost) {
+              const isPerUnit =
+                dataToSave.category === 'Packaging' || dataToSave.category === 'Accessoire';
+              if (!isPerUnit) {
+                dataToSave.initialCost = dataToSave.initialCost / 1000;
+                if (dataToSave.weightedAverageCost === undefined) {
+                  dataToSave.weightedAverageCost = dataToSave.initialCost;
+                }
+              }
+            }
+
+            // Handle specific entity logic (slugs, etc.)
+            if (dataToSave.name && !dataToSave.slug) {
+              dataToSave.slug = dataToSave.name.toLowerCase().replace(/\s+/g, '-');
+            }
+            if (!dataToSave.id) {
+              dataToSave.id = Math.random().toString(36).substring(7);
+            }
+
+            // Remove temporary fields used for lookup but not in schema
+            const { supplierName, ...finalData } = dataToSave;
+
+            const model = this.getPrismaModel(tx, entity);
+            if (upsert) {
+              // For upsert, we need a unique identifier.
+              // Usually name or id. If ID is random, it's not very useful for matching.
+              // We'll try to match by name+orgId if possible.
+              // Note: Prisma upsert requires a unique filter.
+              // We'll use findFirst + update or create for flex matching.
+              const existing = await (model as any).findFirst({
+                where: {
+                  name: finalData.name,
+                  organizationId: orgId,
+                },
+              });
+
+              if (existing) {
+                await (model as any).update({
+                  where: { id: existing.id },
+                  data: finalData,
+                });
+                result.updated++;
+              } else {
+                await (model as any).create({ data: finalData });
+                result.created++;
+              }
+            } else {
+              await (model as any).create({ data: finalData });
+              result.created++;
+            }
+          } catch (err: any) {
+            result.errors.push({ line, message: err.message });
+          }
+        }
+      });
+
+      result.success = true; // Overall success if we finished the transaction (even with some row errors handled inside if any)
+
+      // 4. Audit Log
+      void AuditService.log({
         action: AuditAction.IMPORT,
         entity: AuditEntity.IMPORT_JOB,
-        entityId: correlationId,
-        severity: AuditSeverity.ERROR,
-        correlationId,
-        metadata: { type, mode, status: 'FAILED', error: error.message },
+        metadata: {
+          entity,
+          total: result.total,
+          created: result.created,
+          updated: result.updated,
+          errors: result.errors.length,
+          dryRun,
+        },
       });
-      throw error;
+    } catch (error: any) {
+      result.errors.push({ line: 0, message: `Erreur fatale: ${error.message}` });
+    }
+
+    return result;
+  },
+
+  /**
+   * Pre-fetches related data to avoid N+1 queries during row processing.
+   */
+  async prepareLookups(orgId: string, entity: string, rows: any[]): Promise<any> {
+    const lookups: any = {};
+
+    if (entity === 'ingredients' || entity === 'packaging' || entity === 'accessories') {
+      const supplierNames = [
+        ...new Set(rows.map((r) => r.fournisseur || r.supplier).filter(Boolean)),
+      ];
+      if (supplierNames.length > 0) {
+        const suppliers = await prisma.supplier.findMany({
+          where: {
+            organizationId: orgId,
+            name: { in: supplierNames as string[] },
+          },
+        });
+        lookups.suppliers = suppliers.reduce((acc: any, s) => {
+          acc[s.name.toLowerCase()] = s.id;
+          return acc;
+        }, {});
+      }
+    }
+
+    return lookups;
+  },
+
+  /**
+   * Applies resolved lookups to a validated row.
+   */
+  applyLookups(entity: string, data: any, lookups: any): any {
+    const final = { ...data };
+
+    if (lookups.suppliers && data.supplierName) {
+      final.supplierId = lookups.suppliers[data.supplierName.toLowerCase()] || null;
+    }
+
+    return final;
+  },
+
+  /**
+   * Helper to get the correct prisma model from transaction.
+   */
+  getPrismaModel(tx: any, entity: string) {
+    switch (entity) {
+      case 'ingredients':
+      case 'packaging':
+      case 'accessories':
+        return tx.ingredient;
+      case 'recipes':
+        return tx.recipe;
+      case 'packs':
+        return tx.pack;
+      case 'suppliers':
+        return tx.supplier;
+      case 'orders':
+        return tx.order;
+      default:
+        throw new Error(`Unsupported entity for mutation: ${entity}`);
     }
   },
 };
