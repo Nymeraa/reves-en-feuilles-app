@@ -72,10 +72,9 @@ async function verify() {
 
   // 4. IMPORT
   console.log('[4] Import');
-  const csvContent = 'name,category,initialStock,initialCost\nImp1,Cat1,100,5\nImp2,Cat1,200,10';
-  const parsed = ImportService.parseCsv(csvContent);
-  const validRows = ImportService.validateCsv('Ingrédients', parsed).validRows;
-  await ImportService.executeImport(ORG, 'Ingrédients', validRows, 'create');
+  const csvContent =
+    'Nom;Catégorie;Stock Initial;Prix Unitaire\nImp1;Ingrédient;100;5\nImp2;Ingrédient;200;10';
+  await ImportService.executeImport(ORG, 'ingredients', csvContent, { upsert: true });
 
   // 5. BACKUP
   console.log('[5] Backup');

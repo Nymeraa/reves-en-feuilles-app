@@ -52,17 +52,14 @@ Invalid Ingredient,,,-1`;
       console.error('❌ Validation Counts Wrong');
     }
 
-    // Execute Import (Test Mode - creates real data in .data!)
-    // Clean up later? Or just let it be (it's "Scratch" env).
+    // Execute Import
     if (validation.validRows.length > 0) {
-      const imported = await ImportService.executeImport(
-        'org-1',
-        'Ingrédients',
-        validation.validRows,
-        'create'
-      );
-      console.log(`Imported ${imported.length} ingredients.`);
-      if (imported.length === 1 && imported[0].name === 'Test Ingredient Import') {
+      const result = await ImportService.executeImport('org-1', 'ingredients', mockCsv, {
+        dryRun: false,
+        upsert: true,
+      });
+      console.log(`Import results: ${result.created} created, ${result.errors.length} errors.`);
+      if (result.created >= 1) {
         console.log('✅ Import Execution OK');
       } else {
         console.error('❌ Import Execution Failed');

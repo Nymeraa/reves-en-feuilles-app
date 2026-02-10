@@ -25,6 +25,70 @@ export interface ImportResult {
 
 export const ImportService = {
   /**
+   * Compatibility method for scripts.
+   */
+  parseCsv(csvText: string): any[] {
+    const separator = detectSeparator(csvText);
+    return parse(csvText, {
+      delimiter: separator,
+      columns: (headers: string[]) => headers.map(normalizeHeader),
+      skip_empty_lines: true,
+      trim: true,
+      bom: true,
+    });
+  },
+
+  /**
+   * Compatibility method for scripts.
+   */
+  validateCsv(
+    type: string,
+    rows: any[]
+  ): { isValid: boolean; validRows: any[]; invalidRows: any[] } {
+    // Map old entity names to new ones
+    const entityMap: Record<string, ImportEntity> = {
+      Ingrédients: 'ingredients',
+      Packaging: 'packaging',
+      Accessoires: 'accessories',
+      Fournisseurs: 'suppliers',
+      Recettes: 'recipes',
+      Packs: 'packs',
+      Commandes: 'orders',
+    };
+
+    const entity = entityMap[type] || (type.toLowerCase() as ImportEntity);
+    const schema = getImportSchema(entity);
+    const mapping = HEADER_MAPPINGS[entity] || {};
+
+    const validRows: any[] = [];
+    const invalidRows: any[] = [];
+
+    rows.forEach((row, index) => {
+      const mappedRow: any = {};
+      Object.keys(row).forEach((header) => {
+        const internalKey = mapping[header] || header;
+        mappedRow[internalKey] = normalizeValue(row[header]);
+      });
+
+      const result = schema.safeParse(mappedRow);
+      if (result.success) {
+        validRows.push(result.data);
+      } else {
+        invalidRows.push({
+          row,
+          errors: result.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`),
+        });
+      }
+    });
+
+    return {
+      isValid: invalidRows.length === 0,
+      validRows,
+      invalidRows,
+    };
+  },
+
+  /**
    * Main entry point for CSV imports.
    */
   async executeImport(

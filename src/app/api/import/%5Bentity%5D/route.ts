@@ -1,14 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ImportService, ImportEntity } from '@/services/import-service';
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ entity: string }> }
-) {
+/**
+ * Helper to extract entity from context.params, handling Next.js 15+ Promise requirements.
+ */
+async function getEntity(context: any): Promise<string | null> {
+  if (!context || !context.params) return null;
+  const p = context.params;
+  const params = p instanceof Promise ? await p : p;
+  return params?.entity || null;
+}
+
+export async function POST(request: NextRequest, context: any) {
   try {
-    const { entity } = await params;
+    const entity = await getEntity(context);
     const body = await request.json();
     const { orgId = 'org-1', csvText, dryRun = false, upsert = true } = body;
+
+    if (!entity) {
+      return NextResponse.json(
+        { success: false, error: 'Entity parameter is missing' },
+        { status: 400 }
+      );
+    }
 
     if (!csvText) {
       return NextResponse.json({ success: false, error: 'csvText is required' }, { status: 400 });
