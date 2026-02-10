@@ -277,8 +277,9 @@ export const sqlDb: DbInterface = {
         }, {});
     }
 
-    // TRANSACTIONAL UPDATE FOR ENTITIES WITH ITEMS
-    if (items && Array.isArray(items)) {
+    // TRANSACTIONAL UPDATE FOR ENTITIES WITH RELATIONAL ITEMS (Recipes, Packs, Orders)
+    const entitiesWithRelationalItems = ['recipes', 'packs', 'orders'];
+    if (items && Array.isArray(items) && entitiesWithRelationalItems.includes(entity)) {
       // Goal A: Convert scalar IDs to connects for items
       const itemsWithMappedData = items.map((item: any) => {
         const newItem = { ...item };

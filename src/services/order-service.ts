@@ -388,6 +388,13 @@ export const OrderService = {
 
     await db.upsert('orders', order, orgId);
 
+    void AuditService.log({
+      action: AuditAction.CONFIRM,
+      entity: AuditEntity.ORDER,
+      entityId: order.id,
+      metadata: { totalAmount: order.totalAmount, status: OrderStatus.PAID, organizationId: orgId },
+    });
+
     const { ActivityService } = await import('./activity-service');
     await ActivityService.log(
       orgId,

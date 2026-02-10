@@ -117,6 +117,15 @@ export const BackupService = {
     if (data.length > MAX_ROWS_PER_ENTITY) {
       throw new Error(`Payload Too Large: Entity ${entity} exceeds ${MAX_ROWS_PER_ENTITY} rows.`);
     }
+
+    // Log the export
+    void AuditService.log({
+      action: AuditAction.EXPORT,
+      entity: AuditEntity.BACKUP,
+      entityId: `csv-${entity}-${new Date().getTime()}`,
+      metadata: { entity, organizationId: orgId, rowCount: data.length },
+    });
+
     return this.getCsvDataFromSet(entity, data);
   },
 
@@ -193,6 +202,14 @@ export const BackupService = {
       }
     }
 
+    // Log the export
+    void AuditService.log({
+      action: AuditAction.EXPORT,
+      entity: AuditEntity.BACKUP,
+      entityId: `global-zip-${new Date().getTime()}`,
+      metadata: { format: 'zip', organizationId: orgId, totalRows },
+    });
+
     return zip.toBuffer();
   },
 
@@ -229,6 +246,14 @@ export const BackupService = {
       }
       payload.data[entity] = data;
     }
+
+    // Log the export
+    void AuditService.log({
+      action: AuditAction.EXPORT,
+      entity: AuditEntity.BACKUP,
+      entityId: `global-json-${new Date().getTime()}`,
+      metadata: { format: 'json', organizationId: orgId, totalRows },
+    });
 
     return payload;
   },

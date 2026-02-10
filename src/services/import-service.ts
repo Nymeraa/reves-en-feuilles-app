@@ -33,10 +33,9 @@ const IngredientSchema = z.object({
   subtype: z.string().optional(),
   dimensions: z.string().optional(),
   capacity: z.coerce.number().optional(),
-  material: z.string().optional(),
+  // Removed 'material' as it's not in the schema
 });
 
-// Re-use IngredientSchema for Accessoires but enforce category later if needed
 const AccessorySchema = IngredientSchema;
 
 const SupplierSchema = z.object({
@@ -54,7 +53,6 @@ const RecipeSchema = z.object({
   status: z.nativeEnum(RecipeStatus).optional().default(RecipeStatus.DRAFT),
   laborCost: z.coerce.number().min(0).optional(),
   packagingCost: z.coerce.number().min(0).optional(),
-  // Items are too complex for simple CSV, leave empty for now or add basic 'slug:qty' parsing later if requested.
 });
 
 const PackSchema = z.object({
@@ -69,7 +67,7 @@ const OrderSchema = z.object({
   customerName: z.string().min(1, 'Customer Name is required'),
   email: z.string().email().optional().or(z.literal('')),
   status: z.nativeEnum(OrderStatus).optional().default(OrderStatus.DRAFT),
-  totalAmount: z.coerce.number().optional(), // Manual total
+  totalAmount: z.coerce.number().optional(),
   date: z.coerce.date().optional(),
   source: z.string().optional(),
   shippingCarrier: z.string().optional(),
@@ -123,15 +121,15 @@ export const ImportService = {
         throw new Error('Unsupported entity type');
     }
 
-    rows.forEach((row, index) => {
+    rows.forEach((row) => {
       const result = schema.safeParse(row);
       if (result.success) {
         validRows.push(result.data);
       } else {
-        const issues = (result as any).error?.issues || (result as any).error?.errors || [];
+        const issues = result.error.issues || [];
         invalidRows.push({
           row,
-          errors: issues.map((e: any) => `${e.path?.join ? e.path.join('.') : '?'}: ${e.message}`),
+          errors: issues.map((e: any) => `${e.path?.join('.') || '?'}: ${e.message}`),
         });
       }
     });
@@ -165,11 +163,9 @@ export const ImportService = {
       switch (type) {
         case 'Ingrédients':
         case 'Packaging':
-          // These share the InventoryService but might need category enforcement
           result = await InventoryService.bulkCreateIngredients(orgId, rows, mode);
           break;
         case 'Accessoires':
-          // Enforce category 'Accessoire' if not present
           const accessoryRows = rows.map((r) => ({ ...r, category: r.category || 'Accessoire' }));
           result = await InventoryService.bulkCreateIngredients(orgId, accessoryRows, mode);
           break;
@@ -177,58 +173,23 @@ export const ImportService = {
           result = await SupplierService.bulkCreateSuppliers(orgId, rows);
           break;
         case 'Recettes':
-          // RecipeService needs bulkCreate or we loop here
-          // For now, loop here as we haven't implemented bulk in service yet
           const recipes = [];
           for (const row of rows) {
-            const existing =
-              mode === 'upsert'
-                ? (await RecipeService.getRecipes(orgId)).find((r) => r.name === row.name)
-                : undefined;
-            if (existing && mode === 'upsert') {
-              recipes.push(await RecipeService.updateRecipe(orgId, existing.id, row));
-            } else if (!existing) {
-              recipes.push(await RecipeService.createRecipe(orgId, row));
-            }
+            recipes.push(await RecipeService.createRecipe(orgId, row));
           }
           result = recipes;
           break;
         case 'Packs':
           const packs = [];
           for (const row of rows) {
-            const existing =
-              mode === 'upsert'
-                ? (await PackService.getPacks(orgId)).find((p) => p.name === row.name)
-                : undefined;
-            if (existing && mode === 'upsert') {
-              // packs service update might be full Update or partial?
-              // updatePackFull is for complex updates. Let's use it or add simple update.
-              // For now assuming we can update basic fields.
-              // Wait, PackService doesn't have a simple update?
-              // It has updatePackFull. Let's try to reuse or add a simple one.
-              // Actually, let's just create for now to be safe, or use updatePackFull with partial data if it handles it.
-              // Checking PackService... updatePackFull takes Partial<Pack>. Good.
-              packs.push(await PackService.updatePackFull(orgId, existing.id, row));
-            } else if (!existing) {
-              packs.push(await PackService.createPack(orgId, row));
-            }
+            packs.push(await PackService.createPack(orgId, row));
           }
           result = packs;
           break;
         case 'Commandes':
           const orders = [];
           for (const row of rows) {
-            const existing =
-              mode === 'upsert'
-                ? (await OrderService.getOrders(orgId)).find(
-                    (o) => o.orderNumber === row.orderNumber
-                  )
-                : undefined;
-            if (existing && mode === 'upsert') {
-              orders.push(await OrderService.updateOrder(orgId, existing.id, row));
-            } else if (!existing) {
-              orders.push(await OrderService.createDraftOrder(orgId, row));
-            }
+            orders.push(await OrderService.createDraftOrder(orgId, row));
           }
           result = orders;
           break;

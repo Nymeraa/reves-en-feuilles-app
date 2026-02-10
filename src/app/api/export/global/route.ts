@@ -13,14 +13,6 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Log the export
-    void AuditService.log({
-      action: AuditAction.EXPORT,
-      entity: AuditEntity.BACKUP,
-      entityId: `global-${format}-${new Date().getTime()}`,
-      metadata: { format, organizationId },
-    });
-
     if (format === 'json') {
       const data = await BackupService.createGlobalExportJson(organizationId);
       return NextResponse.json(data);

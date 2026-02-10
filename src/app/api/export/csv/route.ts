@@ -16,14 +16,6 @@ export async function GET(request: NextRequest) {
     const csv = await BackupService.getCsvData(organizationId, entity);
     const filename = `${entity}_${new Date().toISOString().split('T')[0]}.csv`;
 
-    // Log the export
-    void AuditService.log({
-      action: AuditAction.EXPORT,
-      entity: AuditEntity.BACKUP,
-      entityId: `csv-${entity}-${new Date().getTime()}`,
-      metadata: { entity, organizationId },
-    });
-
     return new NextResponse(csv, {
       headers: {
         'Content-Type': 'text/csv; charset=utf-8',

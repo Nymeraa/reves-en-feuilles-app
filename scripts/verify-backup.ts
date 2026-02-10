@@ -1,34 +1,24 @@
+import 'dotenv/config';
 import { BackupService } from '../src/services/backup-service';
-import fs from 'fs';
-import path from 'path';
 import AdmZip from 'adm-zip';
-import { DATA_DIR } from '../src/lib/db-json';
+
+const ORG = 'org-1';
 
 async function runBackupVerification() {
-  console.log('--- Starting Backup Verification ---');
+  console.log('--- Starting Backup Verification (SQL/CSV) ---');
 
-  // 1. Check Data Directory
-  console.log(`Data Directory: ${DATA_DIR}`);
-  if (!fs.existsSync(DATA_DIR)) {
-    console.error('❌ Data directory does not exist!');
-    return;
-  }
-
-  const jsonFiles = fs.readdirSync(DATA_DIR).filter((f) => f.endsWith('.json'));
-  console.log(`Found ${jsonFiles.length} JSON files to backup:`, jsonFiles.join(', '));
-
-  // 2. Create Backup
+  // 1. Create Backup
   console.log('\n--- creating backup... ---');
   let backupBuffer: Buffer;
   try {
-    backupBuffer = await BackupService.createBackup();
+    backupBuffer = await BackupService.createGlobalExportZip(ORG);
     console.log(`✅ Backup created. Size: ${backupBuffer.length} bytes`);
   } catch (e: any) {
     console.error('❌ Failed to create backup:', e.message);
     return;
   }
 
-  // 3. Verify Zip Content
+  // 2. Verify Zip Content
   console.log('\n--- Verifying Zip Content ---');
   const zip = new AdmZip(backupBuffer);
   const zipEntries = zip.getEntries();
@@ -36,42 +26,40 @@ async function runBackupVerification() {
 
   console.log(`Zip contains ${zipEntries.length} entries.`);
 
+  const expectedEntities = [
+    'suppliers.csv',
+    'ingredients.csv',
+    'packaging.csv',
+    'accessories.csv',
+    'recipes.csv',
+    'recipe_items.csv',
+    'packs.csv',
+    'pack_items.csv',
+    'orders.csv',
+    'order_items.csv',
+    'stock_movements.csv',
+  ];
+
   let missingFiles: string[] = [];
-  jsonFiles.forEach((f) => {
+  expectedEntities.forEach((f) => {
     if (!zipFileNames.includes(f)) {
       missingFiles.push(f);
     }
   });
 
   if (missingFiles.length > 0) {
-    console.error('❌ Missing files in backup:', missingFiles.join(', '));
+    console.warn(
+      '⚠️ Missing or empty entities in backup (might be expected if no data exists):',
+      missingFiles.join(', ')
+    );
   } else {
-    console.log('✅ All JSON files present in backup.');
+    console.log('✅ All expected entity CSVs present in backup.');
   }
 
-  if (!zipFileNames.includes('manifest.json')) {
-    console.error('❌ Missing manifest.json');
-  } else {
-    console.log('✅ manifest.json present.');
-  }
-
-  // 4. Test Restore (Simulation)
-  // We won't actually restore to overwrite data, but we'll call a safe restore test if possible,
-  // or just verify the logic by "restoring" to a temp dir?
-  // The service hardcodes DATA_DIR.
-  // So we will verify the Manifest content instead.
-
-  const manifestEntry = zip.getEntry('manifest.json');
-  if (manifestEntry) {
-    const manifest = JSON.parse(manifestEntry.getData().toString('utf-8'));
-    console.log('Manifest:', JSON.stringify(manifest, null, 2));
-    if (manifest.files.length !== jsonFiles.length) {
-      console.warn(
-        '⚠️ Manifest file count mismatch with actual source files (might be race condition or filter issue).'
-      );
-    } else {
-      console.log('✅ Manifest file count matches.');
-    }
+  // Verify at least some content exists
+  if (zipEntries.length === 0) {
+    console.error('❌ Zip is empty!');
+    process.exit(1);
   }
 
   console.log('\n--- Verification Complete ---');

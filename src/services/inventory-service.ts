@@ -17,9 +17,6 @@ export const InventoryService = {
   },
 
   async getIngredientById(id: string, orgId?: string): Promise<Ingredient | undefined> {
-    // We allow fetching by ID without orgId search if orgId is optional,
-    // but db interface usually wants entity.
-    // Assuming strict filtering if orgId is passed to getById in my interface
     const result = await db.getById<Ingredient>('ingredients', id, orgId);
     return result || undefined;
   },
@@ -37,12 +34,12 @@ export const InventoryService = {
     const cost = input.initialCost || 0;
     const costPerGram = isPerUnit ? cost : cost / 1000;
 
-    const newIngredient: Ingredient = {
+    const newIngredient: any = {
       id: Math.random().toString(36).substring(7),
       organizationId: orgId,
       name: input.name,
       slug: input.name.toLowerCase().replace(/\s+/g, '-'),
-      category: input.category,
+      category: input.category || 'Ingrédient',
       status: IngredientStatus.ACTIVE,
       currentStock: input.initialStock || 0,
       weightedAverageCost: costPerGram,
@@ -54,7 +51,6 @@ export const InventoryService = {
       subtype: input.subtype || null,
       dimensions: input.dimensions || null,
       capacity: input.capacity ?? null,
-      material: input.material || null,
 
       updatedAt: new Date(),
     };
@@ -69,7 +65,7 @@ export const InventoryService = {
         MovementType.PURCHASE,
         input.initialStock,
         costPerGram,
-        'Initial Stock',
+        'Stock initial',
         EntityType.INGREDIENT,
         MovementSource.INITIAL
       );
@@ -80,241 +76,173 @@ export const InventoryService = {
 
   async bulkCreateIngredients(
     orgId: string,
-    inputs: CreateIngredientInput[],
-    mode: 'create' | 'upsert'
+    rows: any[],
+    mode: 'create' | 'upsert' = 'create'
   ): Promise<Ingredient[]> {
-    if (inputs.length === 0) return [];
-
-    // Need all ingredients to check for duplicates/updates
-    const ingredients = await db.readAll<Ingredient>('ingredients', orgId);
-    const newIngredients: Ingredient[] = [];
-
-    for (const input of inputs) {
-      const slug = input.name.toLowerCase().replace(/\s+/g, '-');
-      const existingIndex = ingredients.findIndex((i) => i.slug === slug || i.name === input.name);
-      const existing = existingIndex >= 0 ? ingredients[existingIndex] : null;
-
-      if (existing) {
-        if (mode === 'create') {
-          // Skip duplicates in create mode
-          continue;
-        } else if (mode === 'upsert') {
-          // Update existing ingredient
-          const updated: Ingredient = {
-            ...existing,
-            ...input,
-            updatedAt: new Date(),
-          };
-          // Preserve ID and sensitive fields if not fully replaced?
-          // Input is CreateIngredientInput, doesn't have ID.
-          // We merge logic.
-
-          await db.upsert('ingredients', updated, orgId);
-          newIngredients.push(updated);
-
-          // Log Update
-          await AuditService.log({
-            action: AuditAction.UPDATE,
-            entity: AuditEntity.INGREDIENT,
-            entityId: updated.id,
-            metadata: { diff: input, mode: 'upsert' },
-            correlationId: `bulk-upsert-${new Date().getTime()}`,
-          });
-        }
-      } else {
-        // Create new ingredient
-        const isPerUnit = input.category === 'Packaging' || input.category === 'Accessoire';
-        const cost = input.initialCost || 0;
-        const costPerGram = isPerUnit ? cost : cost / 1000;
-
-        const newIngredient: Ingredient = {
-          id: Math.random().toString(36).substring(7),
-          organizationId: orgId,
-          name: input.name,
-          slug: slug,
-          category: input.category,
-          status: IngredientStatus.ACTIVE,
-          currentStock: 0, // Set via movement below
-          weightedAverageCost: costPerGram,
-          supplierId: input.supplierId || null,
-          supplierUrl: input.supplierUrl || null,
-          alertThreshold: input.alertThreshold ?? null,
-          notes: input.notes || null,
-          subtype: input.subtype || null,
-          dimensions: input.dimensions || null,
-          capacity: input.capacity ?? null,
-          material: input.material || null,
-          updatedAt: new Date(),
-        };
-
-        await db.upsert('ingredients', newIngredient, orgId);
-        newIngredients.push(newIngredient);
-
-        // Handle Initial Stock via consolidated logic
-        if (input.initialStock && input.initialStock > 0) {
-          await this.addMovement(
-            orgId,
-            newIngredient.id,
-            MovementType.PURCHASE,
-            input.initialStock,
-            costPerGram,
-            'Import Initial Stock',
-            EntityType.INGREDIENT,
-            MovementSource.IMPORT
-          );
-        }
-
-        // Log Create
-        await AuditService.log({
-          action: AuditAction.CREATE,
-          entity: AuditEntity.INGREDIENT,
-          entityId: newIngredient.id,
-          metadata: { initialStock: input.initialStock, import: true },
-          correlationId: `bulk-create-${new Date().getTime()}`,
-        });
-      }
+    const results = [];
+    for (const row of rows) {
+      results.push(await this.createIngredient(orgId, row));
     }
-
-    return newIngredients;
-  },
-
-  async updateIngredient(
-    orgId: string,
-    id: string,
-    updates: Partial<CreateIngredientInput> & { status?: IngredientStatus }
-  ): Promise<Ingredient> {
-    const existing = await db.getById<Ingredient>('ingredients', id, orgId);
-    if (!existing) throw new Error('Ingredient not found');
-
-    const updated: Ingredient = {
-      ...existing,
-      ...updates,
-      // SECURITY: Prevent direct stock/cost manipulation
-      currentStock: existing.currentStock,
-      weightedAverageCost: existing.weightedAverageCost,
-      updatedAt: new Date(),
-    };
-
-    await db.upsert('ingredients', updated, orgId);
-    return updated;
-  },
-
-  async getMovements(orgId: string): Promise<StockMovement[]> {
-    return db.readAll('movements', orgId);
+    return results;
   },
 
   async addMovement(
     orgId: string,
     ingredientId: string,
     type: MovementType,
-    delta: number,
-    price?: number,
+    quantity: number,
+    unitPrice?: number,
     reason?: string,
-    // New Mandatory Fields
     entityType: EntityType = EntityType.INGREDIENT,
     source: MovementSource = MovementSource.MANUAL,
     sourceId?: string
-  ) {
-    const ingredient = await db.getById<Ingredient>('ingredients', ingredientId, orgId);
-    if (!ingredient) throw new Error('Ingredient not found');
-
-    // 1. Calculate New Cost (Moving Average) ONLY for Purchases
-    if (type === MovementType.PURCHASE && delta > 0 && price !== undefined) {
-      const oldTotalValue = ingredient.currentStock * ingredient.weightedAverageCost;
-      const newTotalValue = oldTotalValue + delta * price;
-      const newTotalStock = ingredient.currentStock + delta;
-
-      if (newTotalStock > 0) {
-        ingredient.weightedAverageCost = newTotalValue / newTotalStock;
-      }
+  ): Promise<StockMovement> {
+    const ingredient = await this.getIngredientById(ingredientId, orgId);
+    if (!ingredient && entityType === EntityType.INGREDIENT) {
+      throw new Error('Ingredient not found');
     }
 
-    // 2. Update Stock
-    ingredient.currentStock += delta;
-    ingredient.updatedAt = new Date();
-    await db.upsert('ingredients', ingredient, orgId);
-
-    // 3. Record Movement
-    const movement: any = {
+    const movement: StockMovement = {
       id: Math.random().toString(36).substring(7),
       organizationId: orgId,
-      ingredientId, // Pass scalar IDs, db.upsert (via toPrismaStockMovement) handles conversion
-      type,
+      ingredientId,
       entityType,
       source,
-      sourceId,
-      deltaQuantity: delta,
-      unitPrice: price ?? null,
-      reason: reason || 'Movement',
+      sourceId: sourceId || null,
+      type,
+      deltaQuantity: quantity,
+      unitPrice: unitPrice || null,
+      totalPrice: unitPrice ? Math.abs(quantity * unitPrice) : null,
+      reason: reason || null,
       createdAt: new Date(),
-      targetStock: ingredient.currentStock,
     };
 
-    await db.upsert('movements', movement, orgId);
+    await db.append('movements', movement);
 
-    // LOG AUDIT
-    await AuditService.log({
+    if (ingredient && entityType === EntityType.INGREDIENT) {
+      const newStock = ingredient.currentStock + quantity;
+      await db.upsert(
+        'ingredients',
+        {
+          ...ingredient,
+          currentStock: newStock,
+          updatedAt: new Date(),
+        },
+        orgId
+      );
+    }
+
+    void AuditService.log({
       action: AuditAction.CREATE,
       entity: AuditEntity.STOCK_MOVEMENT,
       entityId: movement.id,
-      correlationId: sourceId || movement.id,
-      metadata: {
-        type,
-        delta,
-        ingredientId,
-        reason,
-        source,
-        newStock: ingredient.currentStock,
-      },
+      severity: AuditSeverity.INFO,
+      metadata: { type, quantity, ingredientId, reason, organizationId: orgId },
     });
 
     return movement;
   },
 
-  // REBUILD LOGIC
-  async recomputeStock(orgId: string, entityId: string): Promise<number> {
-    const movements = await this.getMovements(orgId);
-    // Sum all deltas for this entity
-    const total = movements
-      .filter((m) => m.ingredientId === entityId)
-      .reduce((sum, m) => sum + m.deltaQuantity, 0);
-    return total;
-  },
+  async updateIngredient(
+    orgId: string,
+    id: string,
+    input: CreateIngredientInput
+  ): Promise<Ingredient> {
+    const existing = await this.getIngredientById(id, orgId);
+    if (!existing) throw new Error('Ingredient not found');
 
-  async recomputeWAC(orgId: string, entityId: string): Promise<number> {
-    const movements = await this.getMovements(orgId);
-    const purchases = movements.filter(
-      (m) => m.ingredientId === entityId && m.type === MovementType.PURCHASE
-    );
+    const updated: Ingredient = {
+      ...existing,
+      name: input.name ?? existing.name,
+      slug: input.name ? input.name.toLowerCase().replace(/\s+/g, '-') : existing.slug,
+      category: input.category ?? existing.category,
+      supplierId: input.supplierId !== undefined ? input.supplierId : existing.supplierId,
+      supplierUrl: input.supplierUrl !== undefined ? input.supplierUrl : existing.supplierUrl,
+      alertThreshold:
+        input.alertThreshold !== undefined ? input.alertThreshold : existing.alertThreshold,
+      notes: input.notes !== undefined ? input.notes : existing.notes,
+      subtype: input.subtype !== undefined ? input.subtype : existing.subtype,
+      dimensions: input.dimensions !== undefined ? input.dimensions : existing.dimensions,
+      capacity: input.capacity !== undefined ? input.capacity : existing.capacity,
+      updatedAt: new Date(),
+    };
 
-    let totalQty = 0;
-    let totalCost = 0;
-
-    for (const p of purchases) {
-      const price = p.unitPrice;
-      if (price != null) {
-        totalQty += p.deltaQuantity;
-        totalCost += p.deltaQuantity * price;
-      }
+    // If currentStock or weightedAverageCost are passed (via initialStock/initialCost in API), update them
+    if (input.initialStock !== undefined) updated.currentStock = input.initialStock;
+    if (input.initialCost !== undefined) {
+      const isPerUnit = updated.category === 'Packaging' || updated.category === 'Accessoire';
+      updated.weightedAverageCost = isPerUnit ? input.initialCost : input.initialCost / 1000;
     }
 
-    if (totalQty === 0) return 0;
-    return totalCost / totalQty;
+    await db.upsert('ingredients', updated, orgId);
+
+    void AuditService.log({
+      action: AuditAction.UPDATE,
+      entity: AuditEntity.INGREDIENT,
+      entityId: id,
+      severity: AuditSeverity.INFO,
+      metadata: { changes: input, organizationId: orgId },
+    });
+
+    return updated;
   },
 
-  async deleteIngredient(orgId: string, id: string): Promise<boolean> {
-    const existing = await db.getById('ingredients', id, orgId);
-    if (!existing) return false;
-
+  async deleteIngredient(orgId: string, id: string): Promise<void> {
     await db.delete('ingredients', id, orgId);
 
-    await AuditService.log({
+    void AuditService.log({
       action: AuditAction.DELETE,
       entity: AuditEntity.INGREDIENT,
       entityId: id,
       severity: AuditSeverity.WARNING,
+      metadata: { organizationId: orgId },
     });
+  },
 
-    return true;
+  async recomputeStock(orgId: string, ingredientId: string): Promise<number> {
+    const movements = await this.getMovements(orgId, ingredientId);
+    const total = movements.reduce((acc, m) => acc + m.deltaQuantity, 0);
+
+    const ingredient = await this.getIngredientById(ingredientId, orgId);
+    if (ingredient) {
+      await db.upsert(
+        'ingredients',
+        { ...ingredient, currentStock: total, updatedAt: new Date() },
+        orgId
+      );
+    }
+
+    return total;
+  },
+
+  async recomputeWAC(orgId: string, ingredientId: string): Promise<number> {
+    const movements = await this.getMovements(orgId, ingredientId);
+    const purchases = movements.filter((m) => m.type === MovementType.PURCHASE);
+
+    if (purchases.length === 0) return 0;
+
+    const totalQuantity = purchases.reduce((acc, m) => acc + m.deltaQuantity, 0);
+    const totalCost = purchases.reduce((acc, m) => acc + (m.totalPrice || 0), 0);
+
+    const wac = totalQuantity > 0 ? totalCost / totalQuantity : 0;
+
+    const ingredient = await this.getIngredientById(ingredientId, orgId);
+    if (ingredient) {
+      await db.upsert(
+        'ingredients',
+        { ...ingredient, weightedAverageCost: wac, updatedAt: new Date() },
+        orgId
+      );
+    }
+
+    return wac;
+  },
+
+  async getMovements(orgId: string, ingredientId?: string): Promise<StockMovement[]> {
+    const all = await db.readAll<StockMovement>('movements', orgId);
+    if (ingredientId) {
+      return all.filter((m) => m.ingredientId === ingredientId);
+    }
+    return all;
   },
 };
