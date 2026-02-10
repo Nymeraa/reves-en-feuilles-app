@@ -53,7 +53,7 @@ export interface Ingredient {
 }
 
 export interface CreateIngredientInput {
-  name: string;
+  name?: string;
   category?: string;
   initialStock?: number;
   initialCost?: number;

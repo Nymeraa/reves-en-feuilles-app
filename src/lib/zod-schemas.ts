@@ -96,3 +96,21 @@ export const createStockMovementSchema = z
     sourceId: z.string().nullable().optional(),
   })
   .passthrough(); // We'll manually check for unknown keys in the handler for observability
+
+export const createIngredientSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  category: z.string().optional().nullable(),
+  initialStock: z.coerce.number().min(0).default(0),
+  initialCost: z.coerce.number().min(0).default(0),
+  supplierId: z.string().optional().nullable(),
+  supplierUrl: z.string().optional().nullable().or(z.literal('')),
+  alertThreshold: z.coerce.number().min(0).optional().nullable(),
+  notes: z.string().optional().nullable(),
+  subtype: z.string().optional().nullable(),
+  dimensions: z.string().optional().nullable(),
+  capacity: z.coerce.number().optional().nullable(),
+  currentStock: z.coerce.number().optional().nullable(),
+  weightedAverageCost: z.coerce.number().optional().nullable(),
+});
+
+export const updateIngredientSchema = createIngredientSchema.partial();

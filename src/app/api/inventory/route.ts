@@ -1,9 +1,19 @@
 import { NextResponse } from 'next/server';
 import { InventoryService } from '@/services/inventory-service';
+import { createIngredientSchema, updateIngredientSchema } from '@/lib/zod-schemas';
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const json = await request.json();
+    const parse = createIngredientSchema.safeParse(json);
+
+    if (!parse.success) {
+      return NextResponse.json(
+        { success: false, error: parse.error.issues[0].message },
+        { status: 400 }
+      );
+    }
+
     const {
       name,
       category,
@@ -16,24 +26,20 @@ export async function POST(request: Request) {
       subtype,
       dimensions,
       capacity,
-    } = body;
-
-    if (!name) {
-      return NextResponse.json({ error: 'Name Required' }, { status: 400 });
-    }
+    } = parse.data;
 
     const newIngredient = await InventoryService.createIngredient('org-1', {
       name,
-      category,
-      supplierId: supplierId === 'NO_SUPPLIER' ? undefined : supplierId,
-      supplierUrl,
-      initialStock: parseFloat(initialStock) || 0,
-      initialCost: parseFloat(initialCost) || 0,
-      alertThreshold: parseFloat(alertThreshold) || 100,
-      notes,
-      subtype,
-      dimensions,
-      capacity: parseFloat(capacity) || undefined,
+      category: category ?? undefined,
+      supplierId: supplierId === 'NO_SUPPLIER' ? undefined : (supplierId ?? undefined),
+      supplierUrl: supplierUrl ?? undefined,
+      initialStock: initialStock,
+      initialCost: initialCost,
+      alertThreshold: alertThreshold ?? undefined,
+      notes: notes ?? undefined,
+      subtype: subtype ?? undefined,
+      dimensions: dimensions ?? undefined,
+      capacity: capacity ?? undefined,
     });
 
     return NextResponse.json({ success: true, data: newIngredient });

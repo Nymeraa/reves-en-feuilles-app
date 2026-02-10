@@ -1,10 +1,20 @@
 import { NextResponse } from 'next/server';
 import { InventoryService } from '@/services/inventory-service';
+import { updateIngredientSchema } from '@/lib/zod-schemas';
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const body = await request.json();
+    const json = await request.json();
+    const parse = updateIngredientSchema.safeParse(json);
+
+    if (!parse.success) {
+      return NextResponse.json(
+        { success: false, error: parse.error.issues[0].message },
+        { status: 400 }
+      );
+    }
+
     const {
       name,
       category,
@@ -15,22 +25,22 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       subtype,
       dimensions,
       capacity,
-      currentStock, // Special case for readonly/correction
+      currentStock,
       weightedAverageCost,
-    } = body;
+    } = parse.data;
 
     const updated = await InventoryService.updateIngredient('org-1', id, {
-      name,
-      category,
-      supplierId: supplierId === 'NO_SUPPLIER' ? undefined : supplierId,
-      supplierUrl,
-      alertThreshold: parseFloat(alertThreshold),
-      notes,
-      subtype,
-      dimensions,
-      capacity: parseFloat(capacity) || undefined,
-      initialStock: currentStock !== undefined ? parseFloat(currentStock) : undefined,
-      initialCost: weightedAverageCost !== undefined ? parseFloat(weightedAverageCost) : undefined,
+      name: name ?? undefined,
+      category: category ?? undefined,
+      supplierId: supplierId === 'NO_SUPPLIER' ? undefined : (supplierId ?? undefined),
+      supplierUrl: supplierUrl ?? undefined,
+      alertThreshold: alertThreshold ?? undefined,
+      notes: notes ?? undefined,
+      subtype: subtype ?? undefined,
+      dimensions: dimensions ?? undefined,
+      capacity: capacity ?? undefined,
+      initialStock: currentStock ?? undefined,
+      initialCost: weightedAverageCost ?? undefined,
     });
 
     return NextResponse.json({ success: true, data: updated });

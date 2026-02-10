@@ -4,6 +4,7 @@ import { PrismaClient } from '@prisma/client';
 import { EntityType, DbInterface } from './db/types';
 import { toPrismaOrderItem } from './prisma-mappers/order-item';
 import { toPrismaStockMovement } from './prisma-mappers/stock-movement';
+import { toPrismaIngredient } from './prisma-mappers/ingredient';
 
 const connectionString = process.env.DATABASE_URL;
 
@@ -259,6 +260,15 @@ export const sqlDb: DbInterface = {
           create: createData,
           update: updateData,
         });
+      }) as unknown as T;
+    }
+
+    if (entity === 'ingredients') {
+      const mapped = toPrismaIngredient(sanitized);
+      return (model as any).upsert({
+        where: { id: mapped.id },
+        create: mapped,
+        update: mapped,
       }) as unknown as T;
     }
 

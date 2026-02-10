@@ -37,8 +37,8 @@ export const InventoryService = {
     const newIngredient: any = {
       id: Math.random().toString(36).substring(7),
       organizationId: orgId,
-      name: input.name,
-      slug: input.name.toLowerCase().replace(/\s+/g, '-'),
+      name: input.name || 'Sans nom',
+      slug: (input.name || 'ing-tmp').toLowerCase().replace(/\s+/g, '-'),
       category: input.category || 'Ingrédient',
       status: IngredientStatus.ACTIVE,
       currentStock: 0, // Start at 0, movement will add initialStock
