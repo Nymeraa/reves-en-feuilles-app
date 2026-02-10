@@ -42,3 +42,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
+
+export async function GET() {
+  try {
+    const suppliers = await SupplierService.getSuppliers('org-1');
+    return NextResponse.json({ success: true, data: suppliers });
+  } catch (error) {
+    console.error('[API] Failed to fetch suppliers:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}

@@ -178,6 +178,7 @@ export const sqlDb: DbInterface = {
     // Include all relations by default for compatibility with JSON full-load
     // This is expensive but ensures "readData" behavior
     let include: any = undefined;
+    if (entity === 'ingredients') include = { supplier: true };
     if (entity === 'recipes') include = { items: true };
     if (entity === 'packs') include = { items: true };
     if (entity === 'orders') include = { items: true };
@@ -209,6 +210,7 @@ export const sqlDb: DbInterface = {
     }
 
     let include: any = undefined;
+    if (entity === 'ingredients') include = { supplier: true };
     if (entity === 'recipes') include = { items: true };
     if (entity === 'packs') include = { items: true };
     if (entity === 'orders') include = { items: true };

@@ -16,6 +16,7 @@ model Ingredient {
   currentStock        Float           @default(0)
   weightedAverageCost Float           @default(0)
   supplierId          String?
+  supplier            Supplier?       @relation(fields: [supplierId], references: [id])
   supplierUrl         String?
   alertThreshold      Float?
   notes               String?
@@ -46,6 +47,7 @@ model Supplier {
   leadTime            Int?
   defaultConditioning String?
   notes               String?
+  ingredients         Ingredient[]
 
   @@index([organizationId])
 }

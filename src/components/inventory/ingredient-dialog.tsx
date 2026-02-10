@@ -71,8 +71,9 @@ export function IngredientDialog({
         try {
           const res = await fetch('/api/suppliers');
           if (res.ok) {
-            const data = await res.json();
-            setLocalSuppliers(data.data || data);
+            const result = await res.json();
+            const supplierData = result.data || result;
+            setLocalSuppliers(Array.isArray(supplierData) ? supplierData : []);
           }
         } catch (err) {
           console.error('Failed to fetch suppliers', err);
