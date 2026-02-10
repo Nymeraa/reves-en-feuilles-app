@@ -41,9 +41,9 @@ export const InventoryService = {
       slug: input.name.toLowerCase().replace(/\s+/g, '-'),
       category: input.category || 'Ingrédient',
       status: IngredientStatus.ACTIVE,
-      currentStock: input.initialStock || 0,
+      currentStock: 0, // Start at 0, movement will add initialStock
       weightedAverageCost: costPerGram,
-      supplierId: input.supplierId || null,
+      supplierId: input.supplierId && input.supplierId !== '' ? input.supplierId : null,
       supplierUrl: input.supplierUrl || null,
       alertThreshold: input.alertThreshold ?? null,
       notes: input.notes || null,
@@ -57,7 +57,7 @@ export const InventoryService = {
 
     await db.upsert('ingredients', newIngredient, orgId);
 
-    // Initial movement
+    // Initial movement (This will set currentStock to initialStock via addMovement logic)
     if (input.initialStock && input.initialStock > 0) {
       await this.addMovement(
         orgId,
@@ -151,12 +151,20 @@ export const InventoryService = {
     const existing = await this.getIngredientById(id, orgId);
     if (!existing) throw new Error('Ingredient not found');
 
+    const normalizeSupplierId = (id: string | null | undefined) => {
+      if (id === undefined) return undefined;
+      if (id === null || id === '' || id === 'NO_SUPPLIER') return null;
+      return id;
+    };
+
+    const supplierId = normalizeSupplierId(input.supplierId);
+
     const updated: Ingredient = {
       ...existing,
       name: input.name ?? existing.name,
       slug: input.name ? input.name.toLowerCase().replace(/\s+/g, '-') : existing.slug,
       category: input.category ?? existing.category,
-      supplierId: input.supplierId !== undefined ? input.supplierId : existing.supplierId,
+      supplierId: supplierId !== undefined ? supplierId : existing.supplierId,
       supplierUrl: input.supplierUrl !== undefined ? input.supplierUrl : existing.supplierUrl,
       alertThreshold:
         input.alertThreshold !== undefined ? input.alertThreshold : existing.alertThreshold,

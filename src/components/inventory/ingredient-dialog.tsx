@@ -53,17 +53,36 @@ export function IngredientDialog({
   open,
   onOpenChange,
   readonly = false,
-  suppliers = [],
+  suppliers: initialSuppliers,
 }: IngredientDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [localSuppliers, setLocalSuppliers] = useState<Supplier[]>(initialSuppliers || []);
   const isEdit = !!ingredient;
-  // const action = isEdit ? updateIngredientAction.bind(null, ingredient.id) : createIngredientAction;
-  // const [state, formAction] = useActionState(action, null); // Removed for API route fix
 
   // Internal open state handling if not controlled
   const effectiveOpen = open !== undefined ? open : isOpen;
   const setEffectiveOpen = onOpenChange || setIsOpen;
+
+  // Fetch suppliers if not provided
+  useEffect(() => {
+    if (effectiveOpen && (!initialSuppliers || initialSuppliers.length === 0)) {
+      const fetchSuppliers = async () => {
+        try {
+          const res = await fetch('/api/suppliers');
+          if (res.ok) {
+            const data = await res.json();
+            setLocalSuppliers(data.data || data);
+          }
+        } catch (err) {
+          console.error('Failed to fetch suppliers', err);
+        }
+      };
+      fetchSuppliers();
+    } else if (initialSuppliers) {
+      setLocalSuppliers(initialSuppliers);
+    }
+  }, [effectiveOpen, initialSuppliers]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -72,9 +91,12 @@ export function IngredientDialog({
     const formData = new FormData(e.currentTarget);
     const data: any = Object.fromEntries(formData.entries());
 
+    // Normalize supplierId
+    if (data.supplierId === 'NO_SUPPLIER' || data.supplierId === '') {
+      data.supplierId = null;
+    }
+
     try {
-      // If Edit, we might still use Server Action or switch to PUT API later.
-      // User asked specifically for "Creation" to be fixed via API.
       if (isEdit) {
         // UPDATE via API
         const response = await fetch(`/api/inventory/${ingredient.id}`, {
@@ -95,7 +117,7 @@ export function IngredientDialog({
           console.error('Update failed network');
         }
       } else {
-        // CREATE via API (Fix for Vercel 200 OK text/x-component issue)
+        // CREATE via API
         const response = await fetch('/api/inventory', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -106,7 +128,6 @@ export function IngredientDialog({
           const result = await response.json();
           if (result.success) {
             setEffectiveOpen(false);
-            // Force refresh since we bypassed Server Action revalidate
             window.location.reload();
           }
         } else {
@@ -179,13 +200,14 @@ export function IngredientDialog({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="NO_SUPPLIER">Aucun</SelectItem>
-                  {suppliers
-                    .filter((s) => s.status === 'ACTIVE')
-                    .map((s) => (
-                      <SelectItem key={s.id} value={s.id}>
-                        {s.name}
-                      </SelectItem>
-                    ))}
+                  {localSuppliers &&
+                    localSuppliers
+                      .filter((s: Supplier) => s.status === 'ACTIVE')
+                      .map((s: Supplier) => (
+                        <SelectItem key={s.id} value={s.id}>
+                          {s.name}
+                        </SelectItem>
+                      ))}
                 </SelectContent>
               </Select>
             </div>

@@ -1,19 +1,37 @@
 import { z } from 'zod';
 import { MovementType } from '@/types/inventory';
 
+const optionalString = z
+  .string()
+  .nullable()
+  .optional()
+  .transform((v) => (v === '' ? null : v));
+
 export const createSupplierSchema = z.object({
   name: z.string().min(1, 'Name is required'),
-  contactEmail: z.string().email().nullable().optional().or(z.literal('')),
-  contactPhone: z.string().nullable().optional().or(z.literal('')),
-  website: z.string().url().nullable().optional().or(z.literal('')),
+  contactEmail: z
+    .string()
+    .email()
+    .nullable()
+    .optional()
+    .or(z.literal(''))
+    .transform((v) => (v === '' ? null : v)),
+  contactPhone: optionalString,
+  website: z
+    .string()
+    .url()
+    .nullable()
+    .optional()
+    .or(z.literal(''))
+    .transform((v) => (v === '' ? null : v)),
   leadTime: z
     .preprocess(
       (val) => (val === '' || val === null ? undefined : val),
       z.coerce.number().min(0).optional()
     )
     .optional(),
-  defaultConditioning: z.string().nullable().optional().or(z.literal('')),
-  notes: z.string().nullable().optional().or(z.literal('')),
+  defaultConditioning: optionalString,
+  notes: optionalString,
 });
 
 export const updateSupplierSchema = createSupplierSchema.partial();
