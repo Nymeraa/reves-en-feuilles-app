@@ -184,15 +184,30 @@ export const ImportService = {
                 try {
                   const dataToSave = { ...data, organizationId: orgId };
 
-                  // Handle unit cost normalization for ingredients (€/kg -> €/g)
-                  if (entity === 'ingredients' && dataToSave.initialCost !== undefined) {
+                  // --- 1. Fix Stock & Cost Mapping ---
+                  if (entity === 'ingredients') {
                     const isPerUnit =
                       dataToSave.category === 'Packaging' || dataToSave.category === 'Accessoire';
-                    if (!isPerUnit) {
+
+                    // Map initialStock to currentStock if not set
+                    if (
+                      dataToSave.initialStock !== undefined &&
+                      dataToSave.currentStock === undefined
+                    ) {
+                      dataToSave.currentStock = dataToSave.initialStock;
+                    }
+
+                    // Normalize Cost (€/kg -> €/g) if not per unit
+                    if (dataToSave.initialCost !== undefined && !isPerUnit) {
                       dataToSave.initialCost = dataToSave.initialCost / 1000;
-                      if (dataToSave.weightedAverageCost === undefined) {
-                        dataToSave.weightedAverageCost = dataToSave.initialCost;
-                      }
+                    }
+
+                    // Map initialCost to weightedAverageCost if not set
+                    if (
+                      dataToSave.initialCost !== undefined &&
+                      dataToSave.weightedAverageCost === undefined
+                    ) {
+                      dataToSave.weightedAverageCost = dataToSave.initialCost;
                     }
                   }
 
@@ -204,9 +219,52 @@ export const ImportService = {
                     dataToSave.id = Math.random().toString(36).substring(7);
                   }
 
-                  // Remove temporary fields used for lookup but not in schema
-                  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                  const { supplierName, ...finalData } = dataToSave;
+                  // --- 2. Fix Supplier Relation ---
+                  // We extract temp fields. _resolvedSupplierId comes from applyLookups.
+                  const { supplierName, _resolvedSupplierId, ...baseData } = dataToSave;
+                  // Delete invalid strict-mode fields if any left
+                  delete (baseData as any).supplierId;
+                  delete (baseData as any).fournisseur;
+
+                  const finalData: any = { ...baseData };
+
+                  // Logic to attach supplier
+                  if (
+                    entity === 'ingredients' ||
+                    entity === 'packaging' ||
+                    entity === 'accessories'
+                  ) {
+                    let targetSupplierId = _resolvedSupplierId;
+
+                    if (!targetSupplierId && supplierName) {
+                      // Lookup or Create manually because 'organizationId_name' is NOT unique in schema
+                      const existingSupplier = await tx.supplier.findFirst({
+                        where: {
+                          organizationId: orgId,
+                          name: { equals: supplierName, mode: 'insensitive' },
+                        },
+                      });
+
+                      if (existingSupplier) {
+                        targetSupplierId = existingSupplier.id;
+                      } else {
+                        // Create new supplier
+                        const newSupplier = await tx.supplier.create({
+                          data: {
+                            id: Math.random().toString(36).substring(7),
+                            organizationId: orgId,
+                            name: supplierName,
+                            status: 'ACTIVE',
+                          },
+                        });
+                        targetSupplierId = newSupplier.id;
+                      }
+                    }
+
+                    if (targetSupplierId) {
+                      finalData.supplier = { connect: { id: targetSupplierId } };
+                    }
+                  }
 
                   const model = this.getPrismaModel(tx, entity);
 
@@ -285,14 +343,20 @@ export const ImportService = {
     const lookups: any = {};
 
     if (entity === 'ingredients' || entity === 'packaging' || entity === 'accessories') {
+      // FIX A: Correctly extract supplier names from various possible headers
       const supplierNames = [
-        ...new Set(rows.map((r) => r.fournisseur || r.supplier).filter(Boolean)),
+        ...new Set(
+          rows
+            .map((r) => r.suppliername || r.supplierName || r.fournisseur || r.supplier)
+            .filter(Boolean)
+        ),
       ];
+
       if (supplierNames.length > 0) {
         const suppliers = await prisma.supplier.findMany({
           where: {
             organizationId: orgId,
-            name: { in: supplierNames as string[] },
+            name: { in: supplierNames as string[] }, // Prisma 'in' is case-sensitive usually, handled below by lookups mapping
           },
         });
         lookups.suppliers = suppliers.reduce((acc: any, s) => {
@@ -311,8 +375,14 @@ export const ImportService = {
   applyLookups(entity: string, data: any, lookups: any): any {
     const final = { ...data };
 
-    if (lookups.suppliers && data.supplierName) {
-      final.supplierId = lookups.suppliers[data.supplierName.toLowerCase()] || null;
+    // FIX B: Do NOT write supplierId (Prisma unknown arg). Write _resolvedSupplierId instead.
+    if (lookups.suppliers) {
+      const sName = data.supplierName || data.suppliername || data.fournisseur || data.supplier;
+      if (sName) {
+        final._resolvedSupplierId = lookups.suppliers[sName.toLowerCase()] || null;
+        // Ensure we keep the name for fallback creation
+        final.supplierName = sName;
+      }
     }
 
     return final;
