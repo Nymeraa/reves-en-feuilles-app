@@ -28,16 +28,6 @@ export function toPrismaIngredient(data: any) {
 
   if (data.supplierId && data.supplierId !== '' && data.supplierId !== 'NO_SUPPLIER') {
     result.supplier = { connect: { id: data.supplierId } };
-  } else if (
-    data.supplierId === null ||
-    data.supplierId === 'NO_SUPPLIER' ||
-    data.supplierId === ''
-  ) {
-    // For updates, we might want to disconnect if it was set before.
-    // However, if Prisma schema doesn't allow null on scalar but allow disconnect on relation.
-    // In our case supplierId is optional scalar, so disconnect works or setting null.
-    // Using disconnect is safer for Prisma relations.
-    result.supplier = { disconnect: true };
   }
 
   // CRITICAL: Remove scalar supplierId to avoid "Unknown argument" error
