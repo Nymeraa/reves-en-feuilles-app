@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { ImportService, ImportEntity } from '@/services/import-service';
 
 export async function POST(
@@ -44,6 +45,10 @@ export async function POST(
       dryRun,
       upsert,
     });
+
+    if (!dryRun && (result.created > 0 || result.updated > 0)) {
+      revalidatePath('/inventory');
+    }
 
     return NextResponse.json(result);
   } catch (error: any) {

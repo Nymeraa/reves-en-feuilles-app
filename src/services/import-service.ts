@@ -169,70 +169,94 @@ export const ImportService = {
         return result;
       }
 
-      // 3. Execute Mutations in Transaction
-      await prisma.$transaction(async (tx) => {
-        for (const { line, data } of validatedRows) {
-          try {
-            const dataToSave = { ...data, organizationId: orgId };
+      // 3. Execute Mutations in Chunks
+      const CHUNK_SIZE = 25;
+      for (let i = 0; i < validatedRows.length; i += CHUNK_SIZE) {
+        const chunk = validatedRows.slice(i, i + CHUNK_SIZE);
 
-            // Handle unit cost normalization for ingredients (€/kg -> €/g)
-            if (entity === 'ingredients' && dataToSave.initialCost) {
-              const isPerUnit =
-                dataToSave.category === 'Packaging' || dataToSave.category === 'Accessoire';
-              if (!isPerUnit) {
-                dataToSave.initialCost = dataToSave.initialCost / 1000;
-                if (dataToSave.weightedAverageCost === undefined) {
-                  dataToSave.weightedAverageCost = dataToSave.initialCost;
+        try {
+          await prisma
+            .$transaction(async (tx) => {
+              let chunkCreated = 0;
+              let chunkUpdated = 0;
+
+              for (const { line, data } of chunk) {
+                try {
+                  const dataToSave = { ...data, organizationId: orgId };
+
+                  // Handle unit cost normalization for ingredients (€/kg -> €/g)
+                  if (entity === 'ingredients' && dataToSave.initialCost !== undefined) {
+                    const isPerUnit =
+                      dataToSave.category === 'Packaging' || dataToSave.category === 'Accessoire';
+                    if (!isPerUnit) {
+                      dataToSave.initialCost = dataToSave.initialCost / 1000;
+                      if (dataToSave.weightedAverageCost === undefined) {
+                        dataToSave.weightedAverageCost = dataToSave.initialCost;
+                      }
+                    }
+                  }
+
+                  // Handle specific entity logic (slugs, etc.)
+                  if (dataToSave.name && !dataToSave.slug) {
+                    dataToSave.slug = dataToSave.name.toLowerCase().replace(/\s+/g, '-');
+                  }
+                  if (!dataToSave.id) {
+                    dataToSave.id = Math.random().toString(36).substring(7);
+                  }
+
+                  // Remove temporary fields used for lookup but not in schema
+                  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                  const { supplierName, ...finalData } = dataToSave;
+
+                  const model = this.getPrismaModel(tx, entity);
+
+                  if (upsert) {
+                    const existing = await (model as any).findFirst({
+                      where: {
+                        name: finalData.name,
+                        organizationId: orgId,
+                      },
+                    });
+
+                    if (existing) {
+                      await (model as any).update({
+                        where: { id: existing.id },
+                        data: finalData,
+                      });
+                      chunkUpdated++;
+                    } else {
+                      await (model as any).create({ data: finalData });
+                      chunkCreated++;
+                    }
+                  } else {
+                    await (model as any).create({ data: finalData });
+                    chunkCreated++;
+                  }
+                } catch (rowError: any) {
+                  // Fail the chunk explicitly if a row fails
+                  throw new Error(`Line ${line}: ${rowError.message}`);
                 }
               }
-            }
 
-            // Handle specific entity logic (slugs, etc.)
-            if (dataToSave.name && !dataToSave.slug) {
-              dataToSave.slug = dataToSave.name.toLowerCase().replace(/\s+/g, '-');
-            }
-            if (!dataToSave.id) {
-              dataToSave.id = Math.random().toString(36).substring(7);
-            }
-
-            // Remove temporary fields used for lookup but not in schema
-            const { supplierName, ...finalData } = dataToSave;
-
-            const model = this.getPrismaModel(tx, entity);
-            if (upsert) {
-              // For upsert, we need a unique identifier.
-              // Usually name or id. If ID is random, it's not very useful for matching.
-              // We'll try to match by name+orgId if possible.
-              // Note: Prisma upsert requires a unique filter.
-              // We'll use findFirst + update or create for flex matching.
-              const existing = await (model as any).findFirst({
-                where: {
-                  name: finalData.name,
-                  organizationId: orgId,
-                },
-              });
-
-              if (existing) {
-                await (model as any).update({
-                  where: { id: existing.id },
-                  data: finalData,
-                });
-                result.updated++;
-              } else {
-                await (model as any).create({ data: finalData });
-                result.created++;
-              }
-            } else {
-              await (model as any).create({ data: finalData });
-              result.created++;
-            }
-          } catch (err: any) {
-            result.errors.push({ line, message: err.message });
-          }
+              return { chunkCreated, chunkUpdated };
+            })
+            .then(({ chunkCreated, chunkUpdated }) => {
+              // Only update global counters if the chunk committed successfully
+              result.created += chunkCreated;
+              result.updated += chunkUpdated;
+            });
+        } catch (chunkError: any) {
+          // Record generic error for the whole chunk range
+          const start = chunk[0].line;
+          const end = chunk[chunk.length - 1].line;
+          result.errors.push({
+            line: start,
+            message: `Erreur import lot ${start}-${end}: ${chunkError.message}`,
+          });
         }
-      });
+      }
 
-      result.success = true; // Overall success if we finished the transaction (even with some row errors handled inside if any)
+      result.success = true;
 
       // 4. Audit Log
       void AuditService.log({
