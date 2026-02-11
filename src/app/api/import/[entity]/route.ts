@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ImportService, ImportEntity } from '@/services/import-service';
 
-export async function POST(request: NextRequest, { params }: { params: { entity: string } }) {
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<{ entity: string }> }
+) {
   try {
-    // START FIX: Direct access to params without Promise
-    const { entity } = params;
-    // END FIX
+    const { entity } = await params;
 
     const body = await request.json();
     const { orgId = 'org-1', csvText, dryRun = false, upsert = true } = body;
