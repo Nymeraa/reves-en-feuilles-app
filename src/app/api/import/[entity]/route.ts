@@ -1,19 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ImportService, ImportEntity } from '@/services/import-service';
 
-/**
- * Helper to extract entity from context.params, handling Next.js 15+ Promise requirements.
- */
-async function getEntity(context: any): Promise<string | null> {
-  if (!context || !context.params) return null;
-  const p = context.params;
-  const params = p instanceof Promise ? await p : p;
-  return params?.entity || null;
-}
-
-export async function POST(request: NextRequest, context: any) {
+export async function POST(request: NextRequest, { params }: { params: { entity: string } }) {
   try {
-    const entity = await getEntity(context);
+    // START FIX: Direct access to params without Promise
+    const { entity } = params;
+    // END FIX
+
     const body = await request.json();
     const { orgId = 'org-1', csvText, dryRun = false, upsert = true } = body;
 
@@ -59,4 +52,9 @@ export async function POST(request: NextRequest, context: any) {
       { status: 500 }
     );
   }
+}
+
+// Optional fallback to avoid HTML 405/404
+export async function GET() {
+  return NextResponse.json({ error: 'Method Not Allowed' }, { status: 405 });
 }
