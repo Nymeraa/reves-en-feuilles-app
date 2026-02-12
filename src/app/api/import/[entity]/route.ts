@@ -1,66 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { revalidatePath } from 'next/cache';
-import { ImportService, ImportEntity } from '@/services/import-service';
+import { NextResponse } from 'next/server';
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ entity: string }> }
-) {
-  try {
-    const { entity } = await params;
+const disabledResponse = () =>
+  NextResponse.json({ success: false, error: 'Feature disabled' }, { status: 410 });
 
-    const body = await request.json();
-    const { orgId = 'org-1', csvText, dryRun = false, upsert = true } = body;
-
-    if (!entity) {
-      return NextResponse.json(
-        { success: false, error: 'Entity parameter is missing' },
-        { status: 400 }
-      );
-    }
-
-    if (!csvText) {
-      return NextResponse.json({ success: false, error: 'csvText is required' }, { status: 400 });
-    }
-
-    // Validate entity type
-    const validEntities: ImportEntity[] = [
-      'ingredients',
-      'recipes',
-      'packs',
-      'packaging',
-      'accessories',
-      'orders',
-      'suppliers',
-    ];
-
-    if (!validEntities.includes(entity as ImportEntity)) {
-      return NextResponse.json(
-        { success: false, error: `Invalid entity type: ${entity}` },
-        { status: 400 }
-      );
-    }
-
-    const result = await ImportService.executeImport(orgId, entity as ImportEntity, csvText, {
-      dryRun,
-      upsert,
-    });
-
-    if (!dryRun && (result.created > 0 || result.updated > 0)) {
-      revalidatePath('/inventory');
-    }
-
-    return NextResponse.json(result);
-  } catch (error: any) {
-    console.error('[API] Import failed:', error);
-    return NextResponse.json(
-      { success: false, error: error.message || 'Internal Server Error' },
-      { status: 500 }
-    );
-  }
+export async function GET() {
+  return disabledResponse();
 }
 
-// Optional fallback to avoid HTML 405/404
-export async function GET() {
-  return NextResponse.json({ error: 'Method Not Allowed' }, { status: 405 });
+export async function POST() {
+  return disabledResponse();
 }

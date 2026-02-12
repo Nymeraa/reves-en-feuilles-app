@@ -1,19 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { BackupService } from '@/services/backup-service';
+import { NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest) {
-  try {
-    const zipBuffer = await BackupService.createGlobalExportZip('org-1');
-    const filename = `backup-${new Date().toISOString().split('T')[0]}.zip`;
+const disabledResponse = () =>
+  NextResponse.json({ success: false, error: 'Feature disabled' }, { status: 410 });
 
-    return new NextResponse(zipBuffer as any, {
-      headers: {
-        'Content-Type': 'application/zip',
-        'Content-Disposition': `attachment; filename="${filename}"`,
-      },
-    });
-  } catch (error) {
-    console.error('Backup Download Failed', error);
-    return NextResponse.json({ error: 'Backup failed' }, { status: 500 });
-  }
+export async function GET() {
+  return disabledResponse();
+}
+
+export async function POST() {
+  return disabledResponse();
 }
