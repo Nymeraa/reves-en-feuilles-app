@@ -1,3 +1,4 @@
+'use client';
 import React, { useState } from 'react';
 import styles from '../LabelStudio.module.css';
 import { useLabelStudio, Batch } from '../context/LabelContext';

@@ -1,3 +1,4 @@
+'use client';
 import React, { useMemo } from 'react';
 import styles from '../LabelStudio.module.css';
 import { LabelDesign } from '../context/LabelContext';

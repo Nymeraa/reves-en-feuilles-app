@@ -1,3 +1,4 @@
+'use client';
 import React from 'react';
 import { LabelProvider } from './context/LabelContext';
 import SidebarLeft from './components/SidebarLeft';
