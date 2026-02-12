@@ -194,6 +194,7 @@ model Order {
   manualTotal     Boolean         @default(false)
   notes           String?
   items           OrderItem[]
+  parcelWeightGrams Int?
   movements       StockMovement[]
 
   @@index([organizationId])

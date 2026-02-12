@@ -108,6 +108,10 @@ export function OrderDetailView({
               <span className="text-slate-500 block">N° Suivi:</span> {order.trackingNumber || '-'}
             </div>
             <div>
+              <span className="text-slate-500 block">Poids colis:</span>{' '}
+              {order.parcelWeightGrams ? `${(order.parcelWeightGrams / 1000).toFixed(3)} kg` : '-'}
+            </div>
+            <div>
               <span className="text-slate-500 block">Coût (Payé par nous):</span>{' '}
               {order.shippingCost?.toFixed(2)} €
             </div>

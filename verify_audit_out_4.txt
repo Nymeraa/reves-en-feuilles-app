@@ -1,0 +1,21 @@
+[DB] Driver: SQL (Prisma)
+--- START AUDIT LOG VERIFICATION ---
+[1] Inventory Movement
+[2] Recipe Version
+[3] Order Confirm/Cancel
+[4] Import
+[5] Backup
+--- CHECKING LOGS ---
+ÔöîÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö¼ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö¼ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÉ
+Ôöé (index) Ôöé name                    Ôöé passed Ôöé
+Ôö£ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöñ
+Ôöé 0       Ôöé 'Stock Movement Create' Ôöé true   Ôöé
+Ôöé 1       Ôöé 'Recipe Create'         Ôöé true   Ôöé
+Ôöé 2       Ôöé 'Recipe Version Create' Ôöé true   Ôöé
+Ôöé 3       Ôöé 'Order Confirm'         Ôöé false  Ôöé
+Ôöé 4       Ôöé 'Order Cancel'          Ôöé true   Ôöé
+Ôöé 5       Ôöé 'Import Start'          Ôöé true   Ôöé
+Ôöé 6       Ôöé 'Import Complete'       Ôöé true   Ôöé
+Ôöé 7       Ôöé 'Backup Export'         Ôöé true   Ôöé
+ÔööÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö┤ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö┤ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÿ
+FAILED CHECKS: [ { name: 'Order Confirm', passed: false } ]

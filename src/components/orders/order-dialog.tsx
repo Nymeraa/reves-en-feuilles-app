@@ -511,6 +511,20 @@ export function OrderDialog({
               <Input name="trackingNumber" defaultValue={initialData?.trackingNumber ?? ''} />
             </div>
             <div className="space-y-2 col-span-1">
+              <Label>Poids colis (kg)</Label>
+              <Input
+                name="parcelWeightKg"
+                type="number"
+                step="0.001"
+                placeholder="ex: 1.250"
+                defaultValue={
+                  initialData?.parcelWeightGrams
+                    ? (initialData.parcelWeightGrams / 1000).toFixed(3)
+                    : ''
+                }
+              />
+            </div>
+            <div className="space-y-2 col-span-1">
               <Label>Coût livraison</Label>
               <Input
                 name="shippingCost"

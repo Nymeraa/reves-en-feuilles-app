@@ -60,6 +60,7 @@ export const OrderService = {
       discountPercent: input.discountPercent ?? null,
       feesOther: input.feesOther ?? 0,
       notes: input.notes || null,
+      parcelWeightGrams: input.parcelWeightGrams ?? null,
 
       // Init financials
       cogsMaterials: 0,
@@ -456,6 +457,9 @@ export const OrderService = {
     order.discountPercent = input.discountPercent ?? null;
     order.feesOther = input.feesOther ?? null;
     order.notes = input.notes || null;
+    if (input.parcelWeightGrams !== undefined) {
+      order.parcelWeightGrams = input.parcelWeightGrams;
+    }
     order.updatedAt = new Date();
 
     if (itemsInput) {

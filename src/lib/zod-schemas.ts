@@ -80,6 +80,17 @@ export const createOrderSchema = z.object({
   discountCode: z.string().optional(),
   discountPercent: z.coerce.number().min(0).optional(),
   feesOther: z.coerce.number().min(0).optional(),
+  parcelWeightKg: z
+    .union([z.string(), z.number()])
+    .optional()
+    .nullable()
+    .transform((val) => {
+      if (val === null || val === undefined || val === '') return null;
+      const num = Number(val);
+      if (isNaN(num)) return null;
+      const clamped = Math.max(0, Math.min(50, num));
+      return Math.round(clamped * 1000);
+    }),
 });
 
 export const updateOrderSchema = createOrderSchema.partial();

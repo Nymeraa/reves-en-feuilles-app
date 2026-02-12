@@ -32,6 +32,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       notes,
       items,
       site,
+      parcelWeightKg,
     } = parseResult.data;
 
     const input: Partial<CreateOrderInput> = {
@@ -52,6 +53,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       feesOther,
       notes,
       site,
+      parcelWeightGrams: parcelWeightKg,
     };
 
     await OrderService.updateOrder('org-1', id, input, items as any);

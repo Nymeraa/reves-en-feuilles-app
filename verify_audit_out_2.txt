@@ -1,0 +1,92 @@
+[DB] Driver: SQL (Prisma)
+--- START AUDIT LOG VERIFICATION ---
+[1] Inventory Movement
+[DEBUG] createIngredient newIngredient: {
+  "id": "63la4d",
+  "organizationId": "org-1",
+  "name": "Audit Ing",
+  "slug": "audit-ing",
+  "category": "Ingr├®dient",
+  "status": "ACTIVE",
+  "currentStock": 100,
+  "weightedAverageCost": 0.005,
+  "supplierId": null,
+  "supplierUrl": null,
+  "alertThreshold": null,
+  "notes": null,
+  "subtype": null,
+  "dimensions": null,
+  "capacity": null,
+  "material": null,
+  "updatedAt": "2026-02-10T16:53:58.375Z"
+}
+PrismaClientValidationError: 
+Invalid `any).upsert()` invocation in
+C:\Users\S├®bastien\.gemini\antigravity\scratch\src\lib\db-sql.ts:353:27
+
+  350     }, {});
+  351 }
+  352 
+ÔåÆ 353 return (model as any).upsert({
+        where: {
+          id: "63la4d"
+        },
+        create: {
+          id: "63la4d",
+          organizationId: "org-1",
+          name: "Audit Ing",
+          slug: "audit-ing",
+          category: "Ingr├®dient",
+          status: "ACTIVE",
+          currentStock: 100,
+          weightedAverageCost: 0.005,
+          supplierId: null,
+          supplierUrl: null,
+          alertThreshold: null,
+          notes: null,
+          subtype: null,
+          dimensions: null,
+          capacity: null,
+          material: null,
+          ~~~~~~~~
+          updatedAt: new Date("2026-02-10T16:53:58.375Z"),
+      ?   capacityUnit?: String | Null,
+      ?   unit?: String | Null,
+      ?   initialStock?: Float | Null,
+      ?   initialCost?: Float | Null,
+      ?   packItems?: PackItemCreateNestedManyWithoutIngredientInput,
+      ?   recipeItems?: RecipeItemCreateNestedManyWithoutIngredientInput,
+      ?   movements?: StockMovementCreateNestedManyWithoutIngredientInput
+        },
+        update: {
+          id: "63la4d",
+          organizationId: "org-1",
+          name: "Audit Ing",
+          slug: "audit-ing",
+          category: "Ingr├®dient",
+          status: "ACTIVE",
+          currentStock: 100,
+          weightedAverageCost: 0.005,
+          supplierId: null,
+          supplierUrl: null,
+          alertThreshold: null,
+          notes: null,
+          subtype: null,
+          dimensions: null,
+          capacity: null,
+          material: null,
+          updatedAt: new Date("2026-02-10T16:53:58.375Z")
+        }
+      })
+
+Unknown argument `material`. Available options are marked with ?.
+    at throwValidationException (C:\Users\S├®bastien\.gemini\antigravity\scratch\node_modules\@prisma\client\src\runtime\core\errorRendering\throwValidationException.ts:46:9)
+    at Vr.handleRequestError (C:\Users\S├®bastien\.gemini\antigravity\scratch\node_modules\@prisma\client\src\runtime\RequestHandler.ts:202:7)
+    at Vr.handleAndLogRequestError (C:\Users\S├®bastien\.gemini\antigravity\scratch\node_modules\@prisma\client\src\runtime\RequestHandler.ts:174:12)
+    at Vr.request (C:\Users\S├®bastien\.gemini\antigravity\scratch\node_modules\@prisma\client\src\runtime\RequestHandler.ts:143:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async a (C:\Users\S├®bastien\.gemini\antigravity\scratch\node_modules\@prisma\client\src\runtime\getPrismaClient.ts:805:24)
+    at async Object.createIngredient (C:\Users\S├®bastien\.gemini\antigravity\scratch\src\services\inventory-service.ts:64:5)
+    at async verify (C:\Users\S├®bastien\.gemini\antigravity\scratch\scripts\verify-audit-logs.ts:24:15) {
+  clientVersion: '7.3.0'
+}

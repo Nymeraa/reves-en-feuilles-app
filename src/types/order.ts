@@ -70,6 +70,7 @@ export interface Order {
   discountPercent?: number | null;
 
   notes?: string | null;
+  parcelWeightGrams?: number | null;
 
   // Financial Snapshot (Fees)
   feesUrssaf?: number | null;
@@ -104,6 +105,7 @@ export interface CreateOrderInput {
   feesOther?: number;
   notes?: string;
   site?: string;
+  parcelWeightGrams?: number | null;
 }
 
 export interface AddOrderItemInput {

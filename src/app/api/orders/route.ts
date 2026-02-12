@@ -30,6 +30,7 @@ export async function POST(request: Request) {
       notes,
       items,
       site,
+      parcelWeightKg,
     } = parseResult.data;
 
     const input: CreateOrderInput = {
@@ -49,6 +50,7 @@ export async function POST(request: Request) {
       feesOther: feesOther || 0,
       notes,
       site,
+      parcelWeightGrams: parcelWeightKg,
     };
 
     // 1. Create Draft Order

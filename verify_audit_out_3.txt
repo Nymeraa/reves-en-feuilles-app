@@ -1,0 +1,77 @@
+[DB] Driver: SQL (Prisma)
+--- START AUDIT LOG VERIFICATION ---
+[1] Inventory Movement
+[2] Recipe Version
+PrismaClientValidationError: 
+Invalid `any)[getModelName(entity)].upsert()` invocation in
+C:\Users\S├®bastien\.gemini\antigravity\scratch\src\lib\db-sql.ts:331:52
+
+  328 createData.items = { create: itemsWithMappedData };
+  329 updateData.items = { deleteMany: {}, create: itemsWithMappedData };
+  330 
+ÔåÆ 331 return (tx as any)[getModelName(entity)].upsert({
+        where: {
+          id: "uxlnd"
+        },
+        create: {
+          id: "uxlnd",
+          recipeId: "76xf45",
+          organizationId: "org-1",
+          name: "Audit Recipe",
+          slug: "audit-recipe",
+          description: "Test",
+          versionNumber: 1,
+          snapshotDate: new Date("2026-02-10T16:56:28.319Z"),
+          status: "VERSION",
+          laborCost: 0,
+          packagingCost: 0,
+          totalIngredientCost: 0,
+          totalCost: 0,
+          prices: {},
+          updatedAt: new Date("2026-02-10T16:56:28.319Z"),
+          items: {
+            create: []
+          }
+        },
+        update: {
+          id: "uxlnd",
+          recipeId: "76xf45",
+          organizationId: "org-1",
+          name: "Audit Recipe",
+          slug: "audit-recipe",
+          description: "Test",
+          versionNumber: 1,
+          snapshotDate: new Date("2026-02-10T16:56:28.319Z"),
+          status: "VERSION",
+          laborCost: 0,
+          packagingCost: 0,
+          totalIngredientCost: 0,
+          totalCost: 0,
+          prices: {},
+          updatedAt: new Date("2026-02-10T16:56:28.319Z"),
+          items: {
+            deleteMany: {},
+            create: []
+          }
+        },
+        include: {
+          items: true,
+          ~~~~~
+      ?   recipe?: true
+        }
+      })
+
+Invalid scalar field `items` for include statement on model RecipeVersion. Available options are marked with ?.
+Note that include statements only accept relation fields.
+    at throwValidationException (C:\Users\S├®bastien\.gemini\antigravity\scratch\node_modules\@prisma\client\src\runtime\core\errorRendering\throwValidationException.ts:46:9)
+    at e.throwValidationError (C:\Users\S├®bastien\.gemini\antigravity\scratch\node_modules\@prisma\client\src\runtime\core\jsonProtocol\serializeJsonQuery.ts:450:5)
+    at addIncludedRelations (C:\Users\S├®bastien\.gemini\antigravity\scratch\node_modules\@prisma\client\src\runtime\core\jsonProtocol\serializeJsonQuery.ts:192:15)
+    at createImplicitSelection (C:\Users\S├®bastien\.gemini\antigravity\scratch\node_modules\@prisma\client\src\runtime\core\jsonProtocol\serializeJsonQuery.ts:170:5)
+    at serializeSelectionSet (C:\Users\S├®bastien\.gemini\antigravity\scratch\node_modules\@prisma\client\src\runtime\core\jsonProtocol\serializeJsonQuery.ts:154:10)
+    at serializeFieldSelection (C:\Users\S├®bastien\.gemini\antigravity\scratch\node_modules\@prisma\client\src\runtime\core\jsonProtocol\serializeJsonQuery.ts:125:16)
+    at serializeJsonQuery (C:\Users\S├®bastien\.gemini\antigravity\scratch\node_modules\@prisma\client\src\runtime\core\jsonProtocol\serializeJsonQuery.ts:113:12)
+    at callback (C:\Users\S├®bastien\.gemini\antigravity\scratch\node_modules\@prisma\client\src\runtime\getPrismaClient.ts:852:11)
+    at Object.runInChildSpan (C:\Users\S├®bastien\.gemini\antigravity\scratch\node_modules\@prisma\client\src\runtime\core\tracing\TracingHelper.ts:28:12)
+    at ri.runInChildSpan (C:\Users\S├®bastien\.gemini\antigravity\scratch\node_modules\@prisma\client\src\runtime\core\tracing\TracingHelper.ts:53:36) {
+  clientVersion: '7.3.0'
+}
