@@ -138,6 +138,7 @@ const PRISMA_ORDER_FIELDS = [
   'cogsPackaging',
   'netProfit',
   'margin',
+  'parcelWeightGrams',
 ];
 
 const PRISMA_ORDER_ITEM_FIELDS = [
