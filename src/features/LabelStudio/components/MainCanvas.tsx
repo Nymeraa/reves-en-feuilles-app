@@ -43,11 +43,13 @@ const MainCanvas: React.FC = () => {
 
     return (
       <div className={format === 'small' ? styles.gridSmall : styles.gridLarge}>
-        {cells.map((_, index) => (
-          <div key={index} className={styles.labelCell}>
-            {index < quantity && <SingleLabel design={activeBatch.design} format={format} />}
-          </div>
-        ))}
+        {cells.map((_, index) =>
+          index < quantity ? (
+            <SingleLabel key={index} design={activeBatch.design} format={format} />
+          ) : (
+            <div key={index} className={styles.labelSlot}></div>
+          )
+        )}
       </div>
     );
   };

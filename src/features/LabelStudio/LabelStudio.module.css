@@ -170,6 +170,91 @@
   /* Dimensions set via inline styles for zoom */
 }
 
+/* Grid Systems (A4 is 210mm x 297mm) */
+.gridSmall {
+  display: grid;
+  grid-template-columns: repeat(2, 105mm);
+  grid-template-rows: repeat(4, 74.25mm);
+  width: 210mm;
+  height: 297mm;
+}
+
+.gridLarge {
+  display: grid;
+  grid-template-columns: repeat(2, 105mm);
+  grid-template-rows: repeat(2, 148.5mm);
+  width: 210mm;
+  height: 297mm;
+}
+
+/* --- GEOMETRIC REFACTOR (BRUTE FORCE) --- */
+
+/* Niveau 1 : Le trou dans la grille */
+.labelSlot {
+  position: relative;
+  overflow: hidden;
+  border: 1px dashed #ccc; /* Debug border */
+  box-sizing: border-box;
+}
+
+.labelSlot.small {
+  width: 105mm;
+  height: 74.25mm;
+}
+
+.labelSlot.large {
+  width: 105mm;
+  height: 148.5mm;
+}
+
+/* Niveau 2 : Le wrapper (S'occupe de la rotation/centrage) */
+.labelWrapper {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform-origin: center center;
+}
+
+.small .labelWrapper {
+  width: 74.25mm;
+  height: 105mm;
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+
+.large .labelWrapper {
+  width: 100%;
+  height: 100%;
+  transform: translate(-50%, -50%); /* Simple center if needed but width/height match */
+}
+
+/* Niveau 3 : Le contenu réel */
+.labelContent {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.labelText {
+  position: absolute;
+  white-space: pre-wrap;
+  line-height: 1.2;
+  z-index: 10;
+}
+
+.debugInfo {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  font-size: 8px;
+  color: purple;
+  pointer-events: none;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 2px;
+  z-index: 20;
+}
+
 /* Modal Overlay */
 .modalOverlay {
   position: fixed;
@@ -181,7 +266,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 50; /* Ensure it's on top */
+  z-index: 50;
 }
 
 .modalContent {
