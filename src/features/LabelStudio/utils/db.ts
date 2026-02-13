@@ -1,8 +1,10 @@
 export type MediaCategory = 'triman' | 'logos' | 'backgrounds' | 'illustrations';
+export type LabelFormat = 'small' | 'large';
 
 export interface MediaItem {
   id: string;
   category: MediaCategory;
+  format: LabelFormat;
   name: string;
   data: string; // Base64 DataURL
   timestamp: number;
@@ -10,7 +12,7 @@ export interface MediaItem {
 
 const DB_NAME = 'LabelStudioDB';
 const STORE_NAME = 'mediaLibrary';
-const DB_VERSION = 1;
+const DB_VERSION = 2; // Increment version for new index
 
 export const initDB = (): Promise<IDBDatabase> => {
   return new Promise((resolve, reject) => {
@@ -27,10 +29,19 @@ export const initDB = (): Promise<IDBDatabase> => {
 
     request.onupgradeneeded = (event) => {
       const db = (event.target as IDBOpenDBRequest).result;
+
+      let store: IDBObjectStore;
       if (!db.objectStoreNames.contains(STORE_NAME)) {
-        const store = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+        store = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
         store.createIndex('category', 'category', { unique: false });
         store.createIndex('timestamp', 'timestamp', { unique: false });
+      } else {
+        store = (event.target as IDBOpenDBRequest).transaction!.objectStore(STORE_NAME);
+      }
+
+      // Add format index if not exists (handling version upgrade)
+      if (!store.indexNames.contains('format')) {
+        store.createIndex('format', 'format', { unique: false });
       }
     };
   });
@@ -60,21 +71,12 @@ export const deleteMedia = async (id: string): Promise<void> => {
   });
 };
 
-export const getMediaByCategory = async (category: MediaCategory): Promise<MediaItem[]> => {
-  const db = await initDB();
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction([STORE_NAME], 'readonly');
-    const store = transaction.objectStore(STORE_NAME);
-    const index = store.index('category');
-    const request = index.getAll(category);
-
-    request.onsuccess = () => {
-      // Sort by timestamp desc (newest first)
-      const results = (request.result as MediaItem[]).sort((a, b) => b.timestamp - a.timestamp);
-      resolve(results);
-    };
-    request.onerror = () => reject('Error fetching media');
-  });
+export const getMediaByCategoryAndFormat = async (
+  category: MediaCategory,
+  format: LabelFormat
+): Promise<MediaItem[]> => {
+  const all = await getAllMedia();
+  return all.filter((item) => item.category === category && item.format === format);
 };
 
 export const getAllMedia = async (): Promise<MediaItem[]> => {

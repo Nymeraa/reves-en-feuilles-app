@@ -6,6 +6,7 @@ import {
   deleteMedia as deleteMediaFromDB,
   MediaItem,
   MediaCategory,
+  LabelFormat,
 } from '../utils/db';
 
 // Define types for our domain
@@ -53,26 +54,49 @@ export interface Batch {
   labels: LabelData[]; // Array of independent label configs
 }
 
+// Triman Config Interface
+export interface TrimanSettings {
+  url: string | null;
+  x: number;
+  y: number;
+  enabled: boolean;
+}
+
+export interface GlobalTrimanConfig {
+  small: TrimanSettings;
+  large: TrimanSettings;
+}
+
 interface LabelContextType {
   batches: Batch[];
   activeBatchId: string | null;
+  activeBatchFormat: 'small' | 'large' | null;
   selectedLabelId: string | null;
   selectedElementId: string | null;
   zoomLevel: number;
   activeTab: 'production' | 'media' | 'config';
   isModalOpen: boolean;
+  trimanConfig: GlobalTrimanConfig;
+
   addBatch: (batch: Omit<Batch, 'id' | 'labels'>) => void;
   setActiveBatchId: (id: string) => void;
   setSelectedLabelId: (id: string | null) => void;
-  setSelectedElementId: (id: string | null) => void; // Keeps simple ID, but we might need labelId too later in Consumer
+  setSelectedElementId: (id: string | null) => void;
   setZoomLevel: (level: number) => void;
   setActiveTab: (tab: 'production' | 'media' | 'config') => void;
   setIsModalOpen: (isOpen: boolean) => void;
+
   addElementToLabel: (labelId: string, element: LabelElement) => void;
-  updateTriman: (labelId: string, updates: Partial<TrimanConfig>) => void;
   updateLabelElement: (labelId: string, elementId: string, updates: Partial<LabelElement>) => void;
+
+  updateGlobalTriman: (format: 'small' | 'large', updates: Partial<TrimanSettings>) => void;
+
   mediaLibrary: MediaItem[];
-  addMediaToLibrary: (file: File, category: MediaCategory) => Promise<void>;
+  addMediaToLibrary: (
+    file: File,
+    category: MediaCategory,
+    format: 'small' | 'large'
+  ) => Promise<void>;
   removeMediaFromLibrary: (id: string) => Promise<void>;
 }
 
@@ -86,7 +110,18 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
   const [zoomLevel, setZoomLevel] = useState(1);
   const [activeTab, setActiveTab] = useState<'production' | 'media' | 'config'>('production');
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Global Triman State
+  const [trimanConfig, setTrimanConfig] = useState<GlobalTrimanConfig>({
+    small: { url: null, x: 5, y: 5, enabled: true },
+    large: { url: null, x: 5, y: 5, enabled: true },
+  });
+
   const [mediaLibrary, setMediaLibrary] = useState<MediaItem[]>([]);
+
+  // Derived state
+  const activeBatch = batches.find((b) => b.id === activeBatchId);
+  const activeBatchFormat = activeBatch?.format || null;
 
   // Load media on mount
   React.useEffect(() => {
@@ -94,6 +129,14 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
       try {
         const items = await getAllMedia();
         setMediaLibrary(items);
+
+        const trimanSmall = items.find((i) => i.category === 'triman' && i.format === 'small');
+        const trimanLarge = items.find((i) => i.category === 'triman' && i.format === 'large');
+
+        setTrimanConfig((prev) => ({
+          small: { ...prev.small, url: trimanSmall ? trimanSmall.data : null },
+          large: { ...prev.large, url: trimanLarge ? trimanLarge.data : null },
+        }));
       } catch (error) {
         console.error('Failed to load media library:', error);
       }
@@ -104,8 +147,6 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
   const addBatch = (newBatch: Omit<Batch, 'id' | 'labels'>) => {
     const batchId = Math.random().toString(36).substr(2, 9);
 
-    // Master Design Template
-    // Master Design Template
     const masterDesign: LabelDesign = {
       backgroundColor: '#e8be6a',
       triman: { enabled: false, x: 5, y: 5, format: 'standard' },
@@ -139,7 +180,6 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
 
     // Generate N independent labels
     const labels: LabelData[] = Array.from({ length: newBatch.quantity }).map((_, index) => {
-      // Deep clone elements
       const clonedElements = masterDesign.elements.map((el) => ({
         ...el,
         id: `el_${batchId}_${index}_${el.id}`,
@@ -218,43 +258,47 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
-  const updateTriman = (labelId: string, updates: Partial<TrimanConfig>) => {
-    if (!activeBatchId) return;
-    setBatches((prev) =>
-      prev.map((b) => {
-        if (b.id !== activeBatchId) return b;
-        return {
-          ...b,
-          labels: b.labels.map((l) => {
-            if (l.id !== labelId) return l;
-            return {
-              ...l,
-              design: {
-                ...l.design,
-                triman: { ...l.design.triman, ...updates },
-              },
-            };
-          }),
-        };
-      })
-    );
+  const updateGlobalTriman = (format: 'small' | 'large', updates: Partial<TrimanSettings>) => {
+    const newConfig = { ...trimanConfig, [format]: { ...trimanConfig[format], ...updates } };
+    setTrimanConfig(newConfig);
   };
 
-  const addMediaToLibrary = async (file: File, category: MediaCategory) => {
+  const addMediaToLibrary = async (file: File, category: MediaCategory, format: LabelFormat) => {
     return new Promise<void>((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = async (event) => {
         try {
           const content = event.target?.result as string;
+
+          if (category === 'triman') {
+            const existing = mediaLibrary.find(
+              (m) => m.category === 'triman' && m.format === format
+            );
+            if (existing) {
+              await deleteMediaFromDB(existing.id);
+            }
+            updateGlobalTriman(format, { url: content });
+          }
+
           const newItem: MediaItem = {
             id: `media_${Date.now()}`,
             category,
+            format,
             name: file.name,
             data: content,
             timestamp: Date.now(),
           };
           await saveMedia(newItem);
-          setMediaLibrary((prev) => [newItem, ...prev]);
+
+          if (category === 'triman') {
+            setMediaLibrary((prev) => [
+              newItem,
+              ...prev.filter((i) => !(i.category === 'triman' && i.format === format)),
+            ]);
+          } else {
+            setMediaLibrary((prev) => [newItem, ...prev]);
+          }
+
           resolve();
         } catch (err) {
           console.error('Error saving media:', err);
@@ -269,6 +313,15 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
   const removeMediaFromLibrary = async (id: string) => {
     try {
       await deleteMediaFromDB(id);
+
+      const item = mediaLibrary.find((i) => i.id === id);
+      if (item && item.category === 'triman') {
+        setTrimanConfig((prev) => ({
+          ...prev,
+          [item.format]: { ...prev[item.format as 'small' | 'large'], url: null },
+        }));
+      }
+
       setMediaLibrary((prev) => prev.filter((item) => item.id !== id));
     } catch (error) {
       console.error('Error deleting media:', error);
@@ -280,11 +333,13 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
       value={{
         batches,
         activeBatchId,
+        activeBatchFormat,
         selectedLabelId,
         selectedElementId,
         zoomLevel,
         activeTab,
         isModalOpen,
+        trimanConfig,
         addBatch,
         setActiveBatchId,
         setSelectedLabelId,
@@ -294,7 +349,7 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
         setIsModalOpen,
         updateLabelElement,
         addElementToLabel,
-        updateTriman,
+        updateGlobalTriman,
         mediaLibrary,
         addMediaToLibrary,
         removeMediaFromLibrary,
