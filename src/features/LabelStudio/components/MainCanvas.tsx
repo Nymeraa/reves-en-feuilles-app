@@ -152,7 +152,12 @@ const MainCanvas: React.FC = () => {
         {cells.map((_, index) => {
           const labelData = activeBatch.labels[index];
           return index < quantity && labelData ? (
-            <SingleLabel key={index} design={labelData.design} format={format} />
+            <SingleLabel
+              key={index}
+              labelId={labelData.id}
+              design={labelData.design}
+              format={format}
+            />
           ) : (
             <div key={index} className={styles.labelSlot}></div>
           );

@@ -4,19 +4,34 @@ import styles from '../LabelStudio.module.css';
 import { LabelDesign, useLabelStudio } from '../context/LabelContext';
 
 interface SingleLabelProps {
+  labelId: string;
   design: LabelDesign | undefined;
   format: 'small' | 'large';
 }
 
-const SingleLabel: React.FC<SingleLabelProps> = ({ design, format }) => {
-  const { selectedElementId, setSelectedElementId } = useLabelStudio();
+const SingleLabel: React.FC<SingleLabelProps> = ({ labelId, design, format }) => {
+  const { selectedElementId, setSelectedElementId, selectedLabelId, setSelectedLabelId } =
+    useLabelStudio();
 
   if (!design) return null;
+
+  const isLabelSelected = selectedLabelId === labelId;
 
   return (
     <div className={`${styles.labelSlot} ${format === 'small' ? styles.small : styles.large}`}>
       <div className={styles.labelWrapper}>
-        <div className={styles.labelContent} style={{ backgroundColor: design.backgroundColor }}>
+        <div
+          className={styles.labelContent}
+          style={{
+            backgroundColor: design.backgroundColor,
+            cursor: 'pointer',
+            border: isLabelSelected ? '2px solid #10b981' : '1px solid #e5e7eb',
+            boxSizing: 'border-box',
+          }}
+          onClick={() => {
+            setSelectedLabelId(labelId);
+          }}
+        >
           {/* Elements Rendering */}
           {design.elements.map((el) => {
             const isSelected = selectedElementId === el.id;
