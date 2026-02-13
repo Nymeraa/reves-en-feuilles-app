@@ -244,9 +244,10 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
 
       if (side === 'front') {
         // ÉLÉMENTS DE LA FACE AVANT
-        addText('title', 'NOM DE LA RECETTE', 35, 14, true); // Y+20: 15→35
-        addText('blend', 'Mélange de...', 50, 10); // Y+20: 30→50
-        addText('weight', batchData.poids, 80, 10, true); // Y+20: 60→80
+        addText('weight_1', batchData.poids, 20, 10, true); // Poids 1 (en haut)
+        addText('title', 'NOM DE LA RECETTE', 45, 14, true); // Y+20: 15→35→45
+        addText('blend', 'Mélange de...', 60, 10); // Y+20: 30→50→60
+        addText('weight_2', batchData.poids, 90, 10, true); // Poids 2 (en bas)
       } else {
         // ÉLÉMENTS DE LA FACE ARRIÈRE
         addText('tagline', "Une phrase d'accroche...", 30, 10, true); // Y+20: 10→30

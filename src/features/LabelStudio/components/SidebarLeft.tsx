@@ -240,7 +240,7 @@ const SidebarLeft: React.FC = () => {
                 >
                   <div className={styles.batchModel}>{batch.model}</div>
                   <div className={styles.batchMeta}>
-                    Qté: {batch.quantity} • {batch.format}
+                    Format: {batch.format === 'small' ? 'Petit (2x4)' : 'Grand (2x2)'}
                   </div>
                   <button
                     onClick={(e) => {
