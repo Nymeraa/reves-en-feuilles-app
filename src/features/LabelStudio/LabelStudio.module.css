@@ -483,12 +483,13 @@
   }
 
   /* 5. Afficher tout le contenu interne de la feuille */
-  .a4Paper * {
+  .paperA4 * {
     visibility: visible !important;
   }
 
   /* 6. Force l'impression des couleurs d'arrière-plan */
-  * {
+  .paperA4,
+  .paperA4 * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
