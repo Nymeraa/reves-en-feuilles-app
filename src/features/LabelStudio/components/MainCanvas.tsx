@@ -201,6 +201,10 @@ const MainCanvas: React.FC = () => {
           <Grid size={18} />
           <span>Guides</span>
         </button>
+
+        <button className={styles.printBtn} onClick={() => window.print()}>
+          🖨️ Imprimer / PDF
+        </button>
       </div>
 
       <div className={styles.canvasArea}>
