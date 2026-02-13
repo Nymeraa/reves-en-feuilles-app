@@ -7,6 +7,10 @@ import {
   MediaItem,
   MediaCategory,
   LabelFormat,
+  getAllBatches,
+  saveBatch as saveBatchToDB,
+  deleteBatch as deleteBatchFromDB,
+  BatchData,
 } from '../utils/db';
 
 // Define types for our domain
@@ -79,6 +83,7 @@ interface LabelContextType {
   trimanConfig: GlobalTrimanConfig;
 
   addBatch: (batch: Omit<Batch, 'id' | 'labels'>) => void;
+  deleteBatch: (id: string) => Promise<void>;
   setActiveBatchId: (id: string) => void;
   setSelectedLabelId: (id: string | null) => void;
   setSelectedElementId: (id: string | null) => void;
@@ -123,10 +128,11 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
   const activeBatch = batches.find((b) => b.id === activeBatchId);
   const activeBatchFormat = activeBatch?.format || null;
 
-  // Load media on mount
+  // Load media and batches on mount
   React.useEffect(() => {
-    const loadMedia = async () => {
+    const loadData = async () => {
       try {
+        // Load media
         const items = await getAllMedia();
         setMediaLibrary(items);
 
@@ -137,12 +143,34 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
           small: { ...prev.small, url: trimanSmall ? trimanSmall.data : null },
           large: { ...prev.large, url: trimanLarge ? trimanLarge.data : null },
         }));
+
+        // Load batches
+        const savedBatches = await getAllBatches();
+        if (savedBatches.length > 0) {
+          setBatches(savedBatches as Batch[]);
+        }
       } catch (error) {
-        console.error('Failed to load media library:', error);
+        console.error('Failed to load data:', error);
       }
     };
-    loadMedia();
+    loadData();
   }, []);
+
+  // Auto-save batches whenever they change
+  React.useEffect(() => {
+    const saveBatches = async () => {
+      try {
+        for (const batch of batches) {
+          await saveBatchToDB({ ...batch, timestamp: Date.now() });
+        }
+      } catch (error) {
+        console.error('Failed to save batches:', error);
+      }
+    };
+    if (batches.length > 0) {
+      saveBatches();
+    }
+  }, [batches]);
 
   const addBatch = (newBatch: Omit<Batch, 'id' | 'labels'>) => {
     const batchId = Math.random().toString(36).substr(2, 9);
@@ -263,6 +291,18 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
     setTrimanConfig(newConfig);
   };
 
+  const deleteBatch = async (id: string) => {
+    try {
+      await deleteBatchFromDB(id);
+      setBatches((prev) => prev.filter((b) => b.id !== id));
+      if (activeBatchId === id) {
+        setActiveBatchId(null);
+      }
+    } catch (error) {
+      console.error('Error deleting batch:', error);
+    }
+  };
+
   const addMediaToLibrary = async (file: File, category: MediaCategory, format: LabelFormat) => {
     return new Promise<void>((resolve, reject) => {
       const reader = new FileReader();
@@ -341,6 +381,7 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
         isModalOpen,
         trimanConfig,
         addBatch,
+        deleteBatch,
         setActiveBatchId,
         setSelectedLabelId,
         setSelectedElementId,

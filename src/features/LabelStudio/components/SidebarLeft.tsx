@@ -21,6 +21,7 @@ const SidebarLeft: React.FC = () => {
     removeMediaFromLibrary,
     trimanConfig,
     updateTriman,
+    deleteBatch,
   } = useLabelStudio();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -233,6 +234,7 @@ const SidebarLeft: React.FC = () => {
                   style={{
                     borderColor: activeBatchId === batch.id ? '#f59e0b' : '#e5e7eb',
                     backgroundColor: activeBatchId === batch.id ? '#fffbeb' : '#fff',
+                    position: 'relative',
                   }}
                   onClick={() => setActiveBatchId(batch.id)}
                 >
@@ -240,6 +242,26 @@ const SidebarLeft: React.FC = () => {
                   <div className={styles.batchMeta}>
                     Qté: {batch.quantity} • {batch.format}
                   </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (confirm(`Supprimer le lot "${batch.model}" ?`)) {
+                        deleteBatch(batch.id);
+                      }
+                    }}
+                    style={{
+                      position: 'absolute',
+                      top: '8px',
+                      right: '8px',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: '2px',
+                    }}
+                    title="Supprimer ce lot"
+                  >
+                    <Trash2 size={14} color="#ef4444" />
+                  </button>
                 </div>
               ))
             )}

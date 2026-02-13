@@ -12,7 +12,7 @@ export interface MediaItem {
 
 const DB_NAME = 'LabelStudioDB';
 const STORE_NAME = 'mediaLibrary';
-const DB_VERSION = 2; // Increment version for new index
+const DB_VERSION = 3; // Increment version for batches store
 
 export const initDB = (): Promise<IDBDatabase> => {
   return new Promise((resolve, reject) => {
@@ -42,6 +42,12 @@ export const initDB = (): Promise<IDBDatabase> => {
       // Add format index if not exists (handling version upgrade)
       if (!store.indexNames.contains('format')) {
         store.createIndex('format', 'format', { unique: false });
+      }
+
+      // Create batches store
+      if (!db.objectStoreNames.contains('batches')) {
+        const batchStore = db.createObjectStore('batches', { keyPath: 'id' });
+        batchStore.createIndex('timestamp', 'timestamp', { unique: false });
       }
     };
   });
@@ -91,5 +97,56 @@ export const getAllMedia = async (): Promise<MediaItem[]> => {
       resolve(results);
     };
     request.onerror = () => reject('Error fetching all media');
+  });
+};
+
+// Batch persistence
+export interface BatchData {
+  id: string;
+  model: string;
+  quantity: number;
+  format: 'small' | 'large';
+  labels: any[]; // Full label data structure
+  timestamp: number;
+}
+
+const BATCH_STORE = 'batches';
+
+export const saveBatch = async (batch: BatchData): Promise<void> => {
+  const db = await initDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction([BATCH_STORE], 'readwrite');
+    const store = transaction.objectStore(BATCH_STORE);
+    const request = store.put(batch);
+
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject('Error saving batch');
+  });
+};
+
+export const deleteBatch = async (id: string): Promise<void> => {
+  const db = await initDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction([BATCH_STORE], 'readwrite');
+    const store = transaction.objectStore(BATCH_STORE);
+    const request = store.delete(id);
+
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject('Error deleting batch');
+  });
+};
+
+export const getAllBatches = async (): Promise<BatchData[]> => {
+  const db = await initDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction([BATCH_STORE], 'readonly');
+    const store = transaction.objectStore(BATCH_STORE);
+    const request = store.getAll();
+
+    request.onsuccess = () => {
+      const results = (request.result as BatchData[]).sort((a, b) => b.timestamp - a.timestamp);
+      resolve(results);
+    };
+    request.onerror = () => reject('Error fetching batches');
   });
 };
