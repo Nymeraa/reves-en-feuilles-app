@@ -89,7 +89,7 @@ interface LabelContextType {
   addElementToLabel: (labelId: string, element: LabelElement) => void;
   updateLabelElement: (labelId: string, elementId: string, updates: Partial<LabelElement>) => void;
 
-  updateGlobalTriman: (format: 'small' | 'large', updates: Partial<TrimanSettings>) => void;
+  updateTriman: (format: 'small' | 'large', updates: Partial<TrimanSettings>) => void;
 
   mediaLibrary: MediaItem[];
   addMediaToLibrary: (
@@ -258,7 +258,7 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
-  const updateGlobalTriman = (format: 'small' | 'large', updates: Partial<TrimanSettings>) => {
+  const updateTriman = (format: 'small' | 'large', updates: Partial<TrimanSettings>) => {
     const newConfig = { ...trimanConfig, [format]: { ...trimanConfig[format], ...updates } };
     setTrimanConfig(newConfig);
   };
@@ -277,7 +277,7 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
             if (existing) {
               await deleteMediaFromDB(existing.id);
             }
-            updateGlobalTriman(format, { url: content });
+            updateTriman(format, { url: content });
           }
 
           const newItem: MediaItem = {
@@ -349,7 +349,7 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
         setIsModalOpen,
         updateLabelElement,
         addElementToLabel,
-        updateGlobalTriman,
+        updateTriman,
         mediaLibrary,
         addMediaToLibrary,
         removeMediaFromLibrary,

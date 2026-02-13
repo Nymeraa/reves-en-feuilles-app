@@ -11,6 +11,7 @@ const SidebarLeft: React.FC = () => {
     setActiveTab,
     batches,
     activeBatchId,
+    activeBatchFormat,
     setActiveBatchId,
     setIsModalOpen,
     selectedLabelId,
@@ -18,6 +19,7 @@ const SidebarLeft: React.FC = () => {
     mediaLibrary,
     addMediaToLibrary,
     removeMediaFromLibrary,
+    trimanConfig,
     updateTriman,
   } = useLabelStudio();
 
@@ -41,13 +43,19 @@ const SidebarLeft: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Safety check: must have active batch to know format
+    if (!activeBatchId || !activeBatchFormat) {
+      alert('Aucun lot sélectionné. Impossible de déterminer le format.');
+      return;
+    }
+
     if (file.type === 'image/svg+xml' && file.name.endsWith('.svgz')) {
       alert('SVGZ format is not supported. Please use standard SVG.');
       return;
     }
 
     try {
-      await addMediaToLibrary(file, category);
+      await addMediaToLibrary(file, category, activeBatchFormat);
     } catch (error) {
       console.error('Upload failed', error);
       alert("Erreur lors de l'upload de l'image.");
@@ -78,7 +86,12 @@ const SidebarLeft: React.FC = () => {
   };
 
   const renderCategorySection = (title: string, category: MediaCategory) => {
-    const items = mediaLibrary.filter((m) => m.category === category);
+    if (!activeBatchFormat) return null;
+
+    // Filter by category AND format
+    const items = mediaLibrary.filter(
+      (m) => m.category === category && m.format === activeBatchFormat
+    );
     const isExpanded = expandedCategories[category];
 
     return (
@@ -96,7 +109,9 @@ const SidebarLeft: React.FC = () => {
           }}
         >
           {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-          <span style={{ marginLeft: '0.5rem' }}>{title}</span>
+          <span style={{ marginLeft: '0.5rem' }}>
+            {title} <span style={{ fontSize: '0.7em', color: '#999' }}>({activeBatchFormat})</span>
+          </span>
         </div>
 
         {isExpanded && (
@@ -164,14 +179,9 @@ const SidebarLeft: React.FC = () => {
                 }}
                 onClick={() => {
                   setActiveCategory(category);
-                  // We need to trigger a fresh click, so simple ref usage might be tricky if we share one ref.
-                  // But here we set activeCategory state first.
-                  // Ideally we should use distinct inputs or wait for state update.
-                  // For simplicity, we use one input and the state is used in onChange.
-                  // However, state update is async.
                   setTimeout(() => fileInputRef.current?.click(), 0);
                 }}
-                title="Ajouter une image"
+                title={`Ajouter une image (${activeBatchFormat})`}
               >
                 <Plus size={20} color="#9ca3af" />
               </div>
@@ -181,6 +191,8 @@ const SidebarLeft: React.FC = () => {
       </div>
     );
   };
+
+  const activeTriman = activeBatchFormat ? trimanConfig[activeBatchFormat] : null;
 
   return (
     <aside className={styles.sidebarLeft}>
@@ -236,115 +248,154 @@ const SidebarLeft: React.FC = () => {
 
         {activeTab === 'media' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', overflowY: 'auto' }}>
-            {/* Overlays Triman Section */}
-            <div className={styles.categorySection}>
-              <div
-                className={styles.categoryHeader}
-                onClick={() => toggleCategory('triman')}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  cursor: 'pointer',
-                  padding: '0.5rem 0',
-                  fontWeight: 600,
-                  userSelect: 'none',
-                }}
-              >
-                {expandedCategories['triman'] ? (
-                  <ChevronDown size={16} />
-                ) : (
-                  <ChevronRight size={16} />
-                )}
-                <span style={{ marginLeft: '0.5rem' }}>Overlays Triman</span>
+            {!activeBatchId ? (
+              <div className={styles.emptyState}>
+                Sélectionnez un lot dans l'onglet Production pour voir les médias associés à son
+                format.
               </div>
-
-              {expandedCategories['triman'] && (
-                <div className={styles.categoryContent} style={{ paddingLeft: '1rem' }}>
-                  <div style={{ marginBottom: '1rem' }}>
-                    <label
-                      style={{
-                        fontSize: '0.8rem',
-                        display: 'block',
-                        marginBottom: '0.25rem',
-                        color: '#4b5563',
-                      }}
-                    >
-                      Triman Standard
-                    </label>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                      <div
-                        style={{
-                          width: '40px',
-                          height: '40px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          border: '1px solid #eee',
-                          borderRadius: '4px',
-                          backgroundColor: '#fff',
-                        }}
-                      >
-                        <img
-                          src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Triman_logo.svg/1200px-Triman_logo.svg.png"
-                          style={{ maxWidth: '100%', maxHeight: '100%' }}
-                          alt="Triman"
-                        />
-                      </div>
-                      <button
-                        className={styles.buttonSecondary}
-                        style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
-                        onClick={() => {
-                          if (selectedLabelId)
-                            updateTriman(selectedLabelId, { enabled: true, format: 'standard' });
-                          else alert("Sélectionnez une étiquette d'abord");
-                        }}
-                      >
-                        Appliquer
-                      </button>
-                    </div>
+            ) : (
+              <>
+                {/* Overlays Triman Section */}
+                <div className={styles.categorySection}>
+                  <div
+                    className={styles.categoryHeader}
+                    onClick={() => toggleCategory('triman')}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      cursor: 'pointer',
+                      padding: '0.5rem 0',
+                      fontWeight: 600,
+                      userSelect: 'none',
+                    }}
+                  >
+                    {expandedCategories['triman'] ? (
+                      <ChevronDown size={16} />
+                    ) : (
+                      <ChevronRight size={16} />
+                    )}
+                    <span style={{ marginLeft: '0.5rem' }}>
+                      Overlays Triman ({activeBatchFormat})
+                    </span>
                   </div>
 
-                  {selectedLabelId && (
-                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                      <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>Pos:</span>
-                      <input
-                        type="number"
-                        placeholder="X"
-                        className={styles.input}
-                        style={{ width: '50px', padding: '2px 4px', fontSize: '0.75rem' }}
-                        onChange={(e) =>
-                          updateTriman(selectedLabelId, { x: parseFloat(e.target.value) })
-                        }
-                      />
-                      <input
-                        type="number"
-                        placeholder="Y"
-                        className={styles.input}
-                        style={{ width: '50px', padding: '2px 4px', fontSize: '0.75rem' }}
-                        onChange={(e) =>
-                          updateTriman(selectedLabelId, { y: parseFloat(e.target.value) })
-                        }
-                      />
-                      <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>mm</span>
+                  {expandedCategories['triman'] && activeTriman && (
+                    <div className={styles.categoryContent} style={{ paddingLeft: '1rem' }}>
+                      <div style={{ marginBottom: '1rem' }}>
+                        <label
+                          style={{
+                            fontSize: '0.8rem',
+                            display: 'block',
+                            marginBottom: '0.25rem',
+                            color: '#4b5563',
+                          }}
+                        >
+                          Triman Global
+                        </label>
+
+                        {/* Triman Display / Upload */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                          <div
+                            style={{
+                              width: '60px',
+                              height: '60px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              border: '1px solid #eee',
+                              borderRadius: '4px',
+                              backgroundColor: '#f9f9f9',
+                              overflow: 'hidden',
+                              cursor: 'pointer',
+                            }}
+                            onClick={() => {
+                              setActiveCategory('triman');
+                              setTimeout(() => fileInputRef.current?.click(), 0);
+                            }}
+                            title="Changer le Triman"
+                          >
+                            {activeTriman.url ? (
+                              <img
+                                src={activeTriman.url}
+                                style={{ maxWidth: '100%', maxHeight: '100%' }}
+                                alt="Triman"
+                              />
+                            ) : (
+                              <span
+                                style={{ fontSize: '0.7em', color: '#999', textAlign: 'center' }}
+                              >
+                                + Ajouter
+                              </span>
+                            )}
+                          </div>
+
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                              <input
+                                type="checkbox"
+                                checked={activeTriman.enabled}
+                                onChange={(e) =>
+                                  activeBatchFormat &&
+                                  updateTriman(activeBatchFormat, { enabled: e.target.checked })
+                                }
+                              />
+                              <span style={{ fontSize: '0.8rem' }}>Activé</span>
+                            </div>
+
+                            {activeTriman.enabled && (
+                              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>Pos:</span>
+                                <input
+                                  type="number"
+                                  placeholder="X"
+                                  value={activeTriman.x}
+                                  className={styles.input}
+                                  style={{ width: '50px', padding: '2px 4px', fontSize: '0.75rem' }}
+                                  onChange={(e) =>
+                                    activeBatchFormat &&
+                                    updateTriman(activeBatchFormat, {
+                                      x: parseFloat(e.target.value),
+                                    })
+                                  }
+                                />
+                                <input
+                                  type="number"
+                                  placeholder="Y"
+                                  value={activeTriman.y}
+                                  className={styles.input}
+                                  style={{ width: '50px', padding: '2px 4px', fontSize: '0.75rem' }}
+                                  onChange={(e) =>
+                                    activeBatchFormat &&
+                                    updateTriman(activeBatchFormat, {
+                                      y: parseFloat(e.target.value),
+                                    })
+                                  }
+                                />
+                                <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>mm</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
-              )}
-            </div>
 
-            {/* Dynamic Categories */}
-            {renderCategorySection('Logos', 'logos')}
-            {renderCategorySection('Fonds / Cadres', 'backgrounds')}
-            {renderCategorySection('Illustrations', 'illustrations')}
+                {/* Dynamic Categories */}
+                {renderCategorySection('Logos', 'logos')}
+                {renderCategorySection('Fonds / Cadres', 'backgrounds')}
+                {renderCategorySection('Illustrations', 'illustrations')}
 
-            {/* Hidden Input for Uploads */}
-            <input
-              type="file"
-              ref={fileInputRef}
-              style={{ display: 'none' }}
-              accept="image/png, image/jpeg, image/svg+xml"
-              onChange={(e) => handleFileUpload(e, activeCategory as MediaCategory)}
-            />
+                {/* Hidden Input for Uploads */}
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  style={{ display: 'none' }}
+                  accept="image/png, image/jpeg, image/svg+xml"
+                  onChange={(e) => handleFileUpload(e, activeCategory as MediaCategory)}
+                />
+              </>
+            )}
           </div>
         )}
       </div>
