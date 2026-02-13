@@ -141,27 +141,18 @@ const MainCanvas: React.FC = () => {
       );
     }
 
-    const { format, quantity } = activeBatch;
-    const labelsPerPage = format === 'small' ? 8 : 4;
-    // For now, we only visualize the first page or up to quantity
-    const count = Math.min(quantity, labelsPerPage);
-    const cells = Array.from({ length: labelsPerPage }); // Always render full page grid
+    const { format } = activeBatch;
 
     return (
       <div className={format === 'small' ? styles.gridSmall : styles.gridLarge}>
-        {cells.map((_, index) => {
-          const labelData = activeBatch.labels[index];
-          return index < quantity && labelData ? (
-            <SingleLabel
-              key={index}
-              labelId={labelData.id}
-              design={labelData.design}
-              format={format}
-            />
-          ) : (
-            <div key={index} className={styles.labelSlot}></div>
-          );
-        })}
+        {activeBatch.labels.map((labelData, index) => (
+          <SingleLabel
+            key={labelData.id}
+            labelId={labelData.id}
+            design={labelData.design}
+            format={format}
+          />
+        ))}
       </div>
     );
   };

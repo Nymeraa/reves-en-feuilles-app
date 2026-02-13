@@ -213,39 +213,37 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
 
     // On force la création d'une page complète quoi qu'il arrive
     const totalSlots = newBatch.format === 'small' ? 8 : 4;
+    const labels: LabelData[] = [];
 
-    const labels: LabelData[] = Array.from({ length: totalSlots }).map((_, index) => {
+    for (let i = 0; i < totalSlots; i++) {
       let side: 'front' | 'back' = 'front';
       let pairId = 1;
 
       if (newBatch.format === 'small') {
-        // Mapping STRICT exigé par le client :
-        // Cases 1, 2, 5, 6 (Index 0, 1, 4, 5) = Arrière
-        // Cases 3, 4, 7, 8 (Index 2, 3, 6, 7) = Avant
-        const isBack = [0, 1, 4, 5].includes(index);
+        // 0, 1, 4, 5 sont l'arrière (back)
+        const isBack = i === 0 || i === 1 || i === 4 || i === 5;
         side = isBack ? 'back' : 'front';
 
-        // Assignation stricte des paires
-        if (index === 0 || index === 2) pairId = 1;
-        else if (index === 1 || index === 3) pairId = 2;
-        else if (index === 4 || index === 6) pairId = 3;
-        else if (index === 5 || index === 7) pairId = 4;
+        // Paires : (0,2)=1, (1,3)=2, (4,6)=3, (5,7)=4
+        if (i === 0 || i === 2) pairId = 1;
+        else if (i === 1 || i === 3) pairId = 2;
+        else if (i === 4 || i === 6) pairId = 3;
+        else if (i === 5 || i === 7) pairId = 4;
       } else {
-        // Pour le grand format (4 cases) : Arrière, Avant, Arrière, Avant
-        side = index % 2 === 0 ? 'back' : 'front';
-        pairId = Math.floor(index / 2) + 1;
+        side = i % 2 === 0 ? 'back' : 'front';
+        pairId = Math.floor(i / 2) + 1;
       }
 
-      return {
-        id: `label_${batchId}_${index}`,
+      labels.push({
+        id: `label_${batchId}_${i}`,
         pairId: pairId,
         side: side,
         design: {
           ...masterDesign,
           elements: [], // Vide au départ
         },
-      };
-    });
+      });
+    }
 
     const batch: Batch = {
       ...newBatch,
