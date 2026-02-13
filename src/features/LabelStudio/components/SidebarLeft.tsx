@@ -1,19 +1,60 @@
 'use client';
-import React from 'react';
+import React, { useRef } from 'react';
 import styles from '../LabelStudio.module.css';
 import { useLabelStudio } from '../context/LabelContext';
-import { Plus, Printer } from 'lucide-react';
+import { Plus, Printer, Upload, Image as ImageIcon } from 'lucide-react';
 
 const SidebarLeft: React.FC = () => {
-  const { activeTab, setActiveTab, setIsModalOpen, batches } = useLabelStudio();
+  const {
+    activeTab,
+    setActiveTab,
+    batches,
+    activeBatchId,
+    setActiveBatchId,
+    setIsModalOpen,
+    selectedLabelId,
+    addElementToLabel,
+  } = useLabelStudio();
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !selectedLabelId) return;
+
+    if (file.type === 'image/svg+xml' && file.name.endsWith('.svgz')) {
+      alert('SVGZ format is not supported. Please use standard SVG.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const content = event.target?.result as string;
+      const newImage = {
+        id: `img_${Date.now()}`,
+        type: 'image' as const,
+        content,
+        x: 50,
+        y: 50,
+        width: 20, // Default 20mm
+        height: 20,
+        rotation: 0,
+        scale: 1,
+      };
+      addElementToLabel(selectedLabelId, newImage);
+    };
+    reader.readAsDataURL(file);
+    // Reset input
+    e.target.value = '';
+  };
 
   return (
     <aside className={styles.sidebarLeft}>
       <div className={styles.sidebarHeader}>
-        <h2 className={styles.sidebarTitle}>Tea Label Studio</h2>
+        <h1 className={styles.sidebarTitle}>Studio</h1>
       </div>
 
-      <nav className={styles.tabs}>
+      <div className={styles.tabs}>
         <button
           className={`${styles.tab} ${activeTab === 'production' ? styles.activeTab : ''}`}
           onClick={() => setActiveTab('production')}
@@ -26,51 +67,85 @@ const SidebarLeft: React.FC = () => {
         >
           Médias
         </button>
-        <button
-          className={`${styles.tab} ${activeTab === 'config' ? styles.activeTab : ''}`}
-          onClick={() => setActiveTab('config')}
-        >
-          Config
-        </button>
-      </nav>
+      </div>
 
       <div className={styles.sidebarContent}>
         {activeTab === 'production' && (
           <>
+            <div style={{ marginBottom: '1rem' }}>
+              <button className={styles.buttonPrimary} onClick={() => setIsModalOpen(true)}>
+                + Nouveau Lot
+              </button>
+            </div>
             {batches.length === 0 ? (
               <div className={styles.emptyState}>Aucun lot en cours</div>
             ) : (
-              <div className="space-y-2">
-                {batches.map((batch) => (
-                  <div key={batch.id} className={styles.batchItem}>
-                    <div className={styles.batchModel}>{batch.model}</div>
-                    <div className={styles.batchMeta}>
-                      Qty: {batch.quantity} • Format: {batch.format === 'small' ? 'Petit' : 'Grand'}
-                    </div>
+              batches.map((batch) => (
+                <div
+                  key={batch.id}
+                  className={styles.batchItem}
+                  style={{
+                    borderColor: activeBatchId === batch.id ? '#f59e0b' : '#e5e7eb',
+                    backgroundColor: activeBatchId === batch.id ? '#fffbeb' : '#fff',
+                  }}
+                  onClick={() => setActiveBatchId(batch.id)}
+                >
+                  <div className={styles.batchModel}>{batch.model}</div>
+                  <div className={styles.batchMeta}>
+                    Qté: {batch.quantity} • {batch.format}
                   </div>
-                ))}
-              </div>
+                </div>
+              ))
             )}
           </>
         )}
-        {activeTab !== 'production' && <div className={styles.emptyState}>Bientôt disponible</div>}
-      </div>
 
-      <div className={styles.sidebarFooter}>
-        <button className={styles.buttonPrimary} onClick={() => setIsModalOpen(true)}>
-          <span
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-          >
-            <Plus size={16} /> Ajouter un lot
-          </span>
-        </button>
-        <button className={styles.buttonSecondary}>
-          <span
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-          >
-            <Printer size={16} /> Imprimer
-          </span>
-        </button>
+        {activeTab === 'media' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {!selectedLabelId ? (
+              <div className={styles.emptyState}>
+                Sélectionnez une étiquette pour ajouter des médias
+              </div>
+            ) : (
+              <>
+                <div
+                  style={{
+                    padding: '1rem',
+                    border: '2px dashed #e5e7eb',
+                    borderRadius: '0.5rem',
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                    backgroundColor: '#f9fafb',
+                  }}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Upload size={32} color="#9ca3af" style={{ margin: '0 auto' }} />
+                  <span
+                    style={{
+                      display: 'block',
+                      marginTop: '0.5rem',
+                      fontSize: '0.875rem',
+                      color: '#4b5563',
+                    }}
+                  >
+                    Importer une image
+                  </span>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    style={{ display: 'none' }}
+                    accept="image/png, image/jpeg, image/svg+xml"
+                    onChange={handleFileUpload}
+                  />
+                </div>
+
+                <div style={{ fontSize: '0.75rem', color: '#6b7280', textAlign: 'center' }}>
+                  Formats supportés: JPG, PNG, SVG
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </div>
     </aside>
   );

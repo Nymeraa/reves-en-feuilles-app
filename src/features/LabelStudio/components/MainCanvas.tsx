@@ -15,7 +15,7 @@ const MainCanvas: React.FC = () => {
     setSelectedLabelId,
     selectedElementId,
     setSelectedElementId,
-    updateLabelText,
+    updateLabelElement,
   } = useLabelStudio();
 
   const [isDragging, setIsDragging] = React.useState(false);
@@ -44,28 +44,28 @@ const MainCanvas: React.FC = () => {
     if (textId && activeBatch) {
       e.preventDefault();
 
-      // Find the label and text
+      // Find the label and element
       let foundLabelId = null;
-      let foundText = null;
+      let foundElement = null;
 
       for (const label of activeBatch.labels) {
-        const text = label.design.texts.find((t) => t.id === textId);
-        if (text) {
+        const element = label.design.elements.find((el) => el.id === textId);
+        if (element) {
           foundLabelId = label.id;
-          foundText = text;
+          foundElement = element;
           break;
         }
       }
 
-      if (foundText && foundLabelId) {
+      if (foundElement && foundLabelId) {
         setSelectedLabelId(foundLabelId);
         setSelectedElementId(textId);
         setIsDragging(true);
         dragStartRef.current = {
           x: e.clientX,
           y: e.clientY,
-          initialLabelX: foundText.x,
-          initialLabelY: foundText.y,
+          initialLabelX: foundElement.x,
+          initialLabelY: foundElement.y,
         };
       }
     }
@@ -110,7 +110,7 @@ const MainCanvas: React.FC = () => {
     const percentDeltaX = (effectiveDX / labelWidthPx) * 100;
     const percentDeltaY = (effectiveDY / labelHeightPx) * 100;
 
-    updateLabelText(selectedLabelId, selectedElementId, {
+    updateLabelElement(selectedLabelId, selectedElementId, {
       x: dragStartRef.current.initialLabelX + percentDeltaX,
       y: dragStartRef.current.initialLabelY + percentDeltaY,
     });

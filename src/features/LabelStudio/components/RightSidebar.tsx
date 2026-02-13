@@ -4,12 +4,12 @@ import styles from '../LabelStudio.module.css';
 import { useLabelStudio } from '../context/LabelContext';
 
 const RightSidebar: React.FC = () => {
-  const { selectedLabelId, selectedElementId, activeBatchId, batches, updateLabelText } =
+  const { selectedLabelId, selectedElementId, activeBatchId, batches, updateLabelElement } =
     useLabelStudio();
 
   const activeBatch = batches.find((b) => b.id === activeBatchId);
   const selectedLabel = activeBatch?.labels.find((l) => l.id === selectedLabelId);
-  const selectedElement = selectedLabel?.design.texts.find((t) => t.id === selectedElementId);
+  const selectedElement = selectedLabel?.design.elements.find((t) => t.id === selectedElementId);
 
   if (!selectedElement) {
     return (
@@ -41,7 +41,7 @@ const RightSidebar: React.FC = () => {
 
   const handleChange = (field: string, value: any) => {
     if (selectedLabel) {
-      updateLabelText(selectedLabel.id, selectedElement.id, { [field]: value });
+      updateLabelElement(selectedLabel.id, selectedElement.id, { [field]: value });
     }
   };
 
@@ -54,7 +54,7 @@ const RightSidebar: React.FC = () => {
     const percent = (val / maxMM) * 100;
 
     if (selectedLabel) {
-      updateLabelText(selectedLabel.id, selectedElement.id, { [axis]: percent });
+      updateLabelElement(selectedLabel.id, selectedElement.id, { [axis]: percent });
     }
   };
 
@@ -73,15 +73,48 @@ const RightSidebar: React.FC = () => {
       </div>
 
       <div className={styles.sidebarContent}>
-        <div className={styles.formGroup}>
-          <label className={styles.label}>Contenu</label>
-          <textarea
-            className={styles.input}
-            rows={3}
-            value={selectedElement.content}
-            onChange={(e) => handleChange('content', e.target.value)}
-          />
-        </div>
+        {selectedElement.type === 'text' && (
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Contenu</label>
+            <textarea
+              className={styles.input}
+              rows={3}
+              value={selectedElement.content}
+              onChange={(e) => handleChange('content', e.target.value)}
+            />
+          </div>
+        )}
+
+        {selectedElement.type === 'image' && (
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Dimensions (mm)</label>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <div style={{ flex: 1 }}>
+                <span className={styles.label} style={{ fontSize: '0.75rem' }}>
+                  Largeur
+                </span>
+                <input
+                  type="number"
+                  className={styles.input}
+                  value={selectedElement.width || 20}
+                  onChange={(e) => handleChange('width', parseFloat(e.target.value))}
+                />
+              </div>
+              <div style={{ flex: 1 }}>
+                <span className={styles.label} style={{ fontSize: '0.75rem' }}>
+                  Echelle
+                </span>
+                <input
+                  type="number"
+                  className={styles.input}
+                  step="0.1"
+                  value={selectedElement.scale}
+                  onChange={(e) => handleChange('scale', parseFloat(e.target.value))}
+                />
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className={styles.formGroup}>
           <label className={styles.label}>Position (mm)</label>
@@ -114,27 +147,43 @@ const RightSidebar: React.FC = () => {
         </div>
 
         <div className={styles.formGroup}>
-          <label className={styles.label}>Taille Police (px)</label>
+          <label className={styles.label}>Rotation (°)</label>
           <input
             type="number"
             className={styles.input}
-            value={selectedElement.fontSize}
-            onChange={(e) => handleChange('fontSize', parseInt(e.target.value) || 12)}
+            value={selectedElement.rotation}
+            onChange={(e) => handleChange('rotation', parseFloat(e.target.value))}
           />
         </div>
 
-        <div className={styles.formGroup}>
-          <label className={styles.label}>Couleur</label>
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-            <input
-              type="color"
-              value={selectedElement.color}
-              onChange={(e) => handleChange('color', e.target.value)}
-              style={{ width: '40px', height: '40px', padding: 0, border: 'none' }}
-            />
-            <span style={{ fontSize: '0.875rem', color: '#6b7280' }}>{selectedElement.color}</span>
-          </div>
-        </div>
+        {selectedElement.type === 'text' && (
+          <>
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Taille Police (px)</label>
+              <input
+                type="number"
+                className={styles.input}
+                value={selectedElement.fontSize}
+                onChange={(e) => handleChange('fontSize', parseInt(e.target.value) || 12)}
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Couleur</label>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <input
+                  type="color"
+                  value={selectedElement.color}
+                  onChange={(e) => handleChange('color', e.target.value)}
+                  style={{ width: '40px', height: '40px', padding: 0, border: 'none' }}
+                />
+                <span style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+                  {selectedElement.color}
+                </span>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </aside>
   );

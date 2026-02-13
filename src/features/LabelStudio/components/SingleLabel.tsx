@@ -17,39 +17,85 @@ const SingleLabel: React.FC<SingleLabelProps> = ({ design, format }) => {
     <div className={`${styles.labelSlot} ${format === 'small' ? styles.small : styles.large}`}>
       <div className={styles.labelWrapper}>
         <div className={styles.labelContent} style={{ backgroundColor: design.backgroundColor }}>
-          {/* Content Rendering */}
-          {design.texts.map((text) => {
-            const isSelected = selectedElementId === text.id;
-            return (
-              <div
-                key={text.id}
-                data-id={text.id}
-                className={styles.labelText}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSelectedElementId(text.id);
-                }}
-                style={{
-                  left: `${text.x}%`,
-                  top: `${text.y}%`,
-                  transform: 'translate(-50%, -50%)',
-                  fontSize: `${text.fontSize * 1.33}px`,
-                  color: text.color,
-                  fontFamily: text.fontFamily,
-                  fontWeight: 'bold',
-                  cursor: 'pointer',
-                  border: isSelected ? '2px solid #3b82f6' : '1px solid transparent', // Blue or transparent
-                  padding: '2px', // Touch target
-                  userSelect: 'none', // Prevent text selection while dragging
-                  whiteSpace: 'pre', // CRITICAL: No auto-wrap, respects newlines
-                  width: 'max-content',
-                  maxWidth: 'none',
-                  overflow: 'visible',
-                }}
-              >
-                {text.content}
-              </div>
-            );
+          {/* Triman Overlay */}
+          {design.triman?.enabled && (
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Triman_logo.svg/1200px-Triman_logo.svg.png"
+              style={{
+                position: 'absolute',
+                left: `${design.triman.x}mm`,
+                top: `${design.triman.y}mm`,
+                width: '10mm',
+                zIndex: 50,
+                pointerEvents: 'none',
+              }}
+              alt="Triman"
+            />
+          )}
+
+          {/* Elements Rendering */}
+          {design.elements.map((el) => {
+            const isSelected = selectedElementId === el.id;
+
+            if (el.type === 'text') {
+              return (
+                <div
+                  key={el.id}
+                  data-id={el.id}
+                  className={styles.labelText}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedElementId(el.id);
+                  }}
+                  style={{
+                    left: `${el.x}%`,
+                    top: `${el.y}%`,
+                    transform: 'translate(-50%, -50%)',
+                    fontSize: `${(el.fontSize || 12) * 1.33}px`,
+                    color: el.color,
+                    fontFamily: el.fontFamily,
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    border: isSelected ? '2px solid #3b82f6' : '1px solid transparent', // Blue or transparent
+                    padding: '2px', // Touch target
+                    userSelect: 'none', // Prevent text selection while dragging
+                    whiteSpace: 'pre', // CRITICAL: No auto-wrap
+                    width: 'max-content',
+                    maxWidth: 'none',
+                    overflow: 'visible',
+                  }}
+                >
+                  {el.content}
+                </div>
+              );
+            } else if (el.type === 'image') {
+              const widthMM = el.width || 20;
+              return (
+                <img
+                  key={el.id}
+                  data-id={el.id}
+                  src={el.content}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedElementId(el.id);
+                  }}
+                  style={{
+                    position: 'absolute',
+                    left: `${el.x}%`,
+                    top: `${el.y}%`,
+                    width: `${widthMM * el.scale}mm`,
+                    transform: `translate(-50%, -50%) rotate(${el.rotation}deg)`,
+                    border: isSelected ? '2px solid #3b82f6' : '1px solid transparent',
+                    cursor: 'move',
+                    userSelect: 'none',
+                    zIndex: 5,
+                    pointerEvents: 'auto',
+                  }}
+                  draggable={false}
+                  alt="label element"
+                />
+              );
+            }
           })}
         </div>
       </div>

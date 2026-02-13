@@ -2,20 +2,35 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 // Define types for our domain
-export interface LabelText {
+export type ElementType = 'text' | 'image';
+
+export interface LabelElement {
   id: string;
-  content: string;
-  x: number; // Percentage or mm? Let's use % for simplicity relative to container
-  y: number;
-  fontSize: number;
-  color: string;
-  fontFamily: string;
+  type: ElementType;
+  content: string; // Text content or Image URL (base64/blob)
+  x: number; // %
+  y: number; // %
+  width?: number; // mm (for images)
+  height?: number; // mm (for images)
+  rotation: number; // deg
+  scale: number; // 1 = 100%
+  fontSize?: number; // px (text only)
+  color?: string; // (text only)
+  fontFamily?: string; // (text only)
+  locked?: boolean;
+}
+
+export interface TrimanConfig {
+  enabled: boolean;
+  x: number; // mm
+  y: number; // mm
+  format: 'market' | 'standard'; // Example specific prop
 }
 
 export interface LabelDesign {
   backgroundColor: string;
-  texts: LabelText[];
-  images: any[];
+  elements: LabelElement[]; // Unified array for text & images
+  triman: TrimanConfig;
 }
 
 export interface LabelData {
@@ -46,7 +61,9 @@ interface LabelContextType {
   setZoomLevel: (level: number) => void;
   setActiveTab: (tab: 'production' | 'media' | 'config') => void;
   setIsModalOpen: (isOpen: boolean) => void;
-  updateLabelText: (labelId: string, textId: string, updates: Partial<LabelText>) => void;
+  addElementToLabel: (labelId: string, element: LabelElement) => void;
+  updateTriman: (labelId: string, updates: Partial<TrimanConfig>) => void;
+  updateLabelElement: (labelId: string, elementId: string, updates: Partial<LabelElement>) => void;
 }
 
 const LabelContext = createContext<LabelContextType | undefined>(undefined);
@@ -64,44 +81,51 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
     const batchId = Math.random().toString(36).substr(2, 9);
 
     // Master Design Template
+    // Master Design Template
     const masterDesign: LabelDesign = {
       backgroundColor: '#e8be6a',
-      texts: [
+      triman: { enabled: false, x: 5, y: 5, format: 'standard' },
+      elements: [
         {
-          id: 't1', // Template ID
+          id: 't1',
+          type: 'text',
           content: newBatch.model.toUpperCase(),
           x: 50,
           y: 40,
           fontSize: 16,
           color: '#000000',
           fontFamily: 'sans-serif',
+          rotation: 0,
+          scale: 1,
         },
         {
           id: 't2',
+          type: 'text',
           content: 'THÉ VERT BIO',
           x: 50,
           y: 55,
           fontSize: 10,
           color: '#333333',
           fontFamily: 'sans-serif',
+          rotation: 0,
+          scale: 1,
         },
       ],
-      images: [],
     };
 
     // Generate N independent labels
     const labels: LabelData[] = Array.from({ length: newBatch.quantity }).map((_, index) => {
-      // Deep clone texts to ensure independence
-      const clonedTexts = masterDesign.texts.map((t) => ({
-        ...t,
-        id: `text_${batchId}_${index}_${t.id}`,
+      // Deep clone elements
+      const clonedElements = masterDesign.elements.map((el) => ({
+        ...el,
+        id: `el_${batchId}_${index}_${el.id}`,
       }));
 
       return {
         id: `label_${batchId}_${index}`,
         design: {
           ...masterDesign,
-          texts: clonedTexts,
+          elements: clonedElements,
         },
       };
     });
@@ -117,7 +141,11 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
     setIsModalOpen(false);
   };
 
-  const updateLabelText = (labelId: string, textId: string, updates: Partial<LabelText>) => {
+  const updateLabelElement = (
+    labelId: string,
+    elementId: string,
+    updates: Partial<LabelElement>
+  ) => {
     if (!activeBatchId) return;
 
     setBatches((prevBatches) =>
@@ -133,9 +161,51 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
               ...label,
               design: {
                 ...label.design,
-                texts: label.design.texts.map((text) =>
-                  text.id === textId ? { ...text, ...updates } : text
+                elements: label.design.elements.map((el) =>
+                  el.id === elementId ? { ...el, ...updates } : el
                 ),
+              },
+            };
+          }),
+        };
+      })
+    );
+  const addElementToLabel = (labelId: string, element: LabelElement) => {
+    if (!activeBatchId) return;
+    setBatches((prev) =>
+      prev.map((b) => {
+        if (b.id !== activeBatchId) return b;
+        return {
+          ...b,
+          labels: b.labels.map((l) => {
+            if (l.id !== labelId) return l;
+            return {
+              ...l,
+              design: {
+                ...l.design,
+                elements: [...l.design.elements, element],
+              },
+            };
+          }),
+        };
+      })
+    );
+  };
+
+  const updateTriman = (labelId: string, updates: Partial<TrimanConfig>) => {
+    if (!activeBatchId) return;
+    setBatches((prev) =>
+      prev.map((b) => {
+        if (b.id !== activeBatchId) return b;
+        return {
+          ...b,
+          labels: b.labels.map((l) => {
+            if (l.id !== labelId) return l;
+            return {
+              ...l,
+              design: {
+                ...l.design,
+                triman: { ...l.design.triman, ...updates },
               },
             };
           }),
@@ -161,7 +231,9 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
         setZoomLevel,
         setActiveTab,
         setIsModalOpen,
-        updateLabelText,
+        updateLabelElement,
+        addElementToLabel,
+        updateTriman,
       }}
     >
       {children}
