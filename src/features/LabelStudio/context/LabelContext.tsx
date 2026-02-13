@@ -15,7 +15,12 @@ export interface LabelText {
 export interface LabelDesign {
   backgroundColor: string;
   texts: LabelText[];
-  images: any[]; // Placeholder
+  images: any[];
+}
+
+export interface LabelData {
+  id: string; // Unique label ID (e.g., "batchId_labelIdx")
+  design: LabelDesign;
 }
 
 export interface Batch {
@@ -23,23 +28,25 @@ export interface Batch {
   model: string;
   quantity: number;
   format: 'small' | 'large';
-  design: LabelDesign;
+  labels: LabelData[]; // Array of independent label configs
 }
 
 interface LabelContextType {
   batches: Batch[];
   activeBatchId: string | null;
+  selectedLabelId: string | null;
   selectedElementId: string | null;
   zoomLevel: number;
   activeTab: 'production' | 'media' | 'config';
   isModalOpen: boolean;
-  addBatch: (batch: Omit<Batch, 'id' | 'design'>) => void;
+  addBatch: (batch: Omit<Batch, 'id' | 'labels'>) => void;
   setActiveBatchId: (id: string) => void;
-  setSelectedElementId: (id: string | null) => void;
+  setSelectedLabelId: (id: string | null) => void;
+  setSelectedElementId: (id: string | null) => void; // Keeps simple ID, but we might need labelId too later in Consumer
   setZoomLevel: (level: number) => void;
   setActiveTab: (tab: 'production' | 'media' | 'config') => void;
   setIsModalOpen: (isOpen: boolean) => void;
-  updateLabelText: (textId: string, updates: Partial<LabelText>) => void;
+  updateLabelText: (labelId: string, textId: string, updates: Partial<LabelText>) => void;
 }
 
 const LabelContext = createContext<LabelContextType | undefined>(undefined);
@@ -47,20 +54,21 @@ const LabelContext = createContext<LabelContextType | undefined>(undefined);
 export const LabelProvider = ({ children }: { children: ReactNode }) => {
   const [batches, setBatches] = useState<Batch[]>([]);
   const [activeBatchId, setActiveBatchId] = useState<string | null>(null);
+  const [selectedLabelId, setSelectedLabelId] = useState<string | null>(null);
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [activeTab, setActiveTab] = useState<'production' | 'media' | 'config'>('production');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const addBatch = (newBatch: Omit<Batch, 'id' | 'design'>) => {
-    const id = Math.random().toString(36).substr(2, 9);
+  const addBatch = (newBatch: Omit<Batch, 'id' | 'labels'>) => {
+    const batchId = Math.random().toString(36).substr(2, 9);
 
-    // Mock Data Generation based on Model
-    const mockDesign: LabelDesign = {
-      backgroundColor: '#e8be6a', // Match request
+    // Master Design Template
+    const masterDesign: LabelDesign = {
+      backgroundColor: '#e8be6a',
       texts: [
         {
-          id: 't1',
+          id: 't1', // Template ID
           content: newBatch.model.toUpperCase(),
           x: 50,
           y: 40,
@@ -81,18 +89,35 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
       images: [],
     };
 
+    // Generate N independent labels
+    const labels: LabelData[] = Array.from({ length: newBatch.quantity }).map((_, index) => {
+      // Deep clone texts to ensure independence
+      const clonedTexts = masterDesign.texts.map((t) => ({
+        ...t,
+        id: `text_${batchId}_${index}_${t.id}`,
+      }));
+
+      return {
+        id: `label_${batchId}_${index}`,
+        design: {
+          ...masterDesign,
+          texts: clonedTexts,
+        },
+      };
+    });
+
     const batch: Batch = {
       ...newBatch,
-      id,
-      design: mockDesign,
+      id: batchId,
+      labels,
     };
 
     setBatches((prev) => [...prev, batch]);
-    setActiveBatchId(id); // Auto-select new batch
+    setActiveBatchId(batchId);
     setIsModalOpen(false);
   };
 
-  const updateLabelText = (textId: string, updates: Partial<LabelText>) => {
+  const updateLabelText = (labelId: string, textId: string, updates: Partial<LabelText>) => {
     if (!activeBatchId) return;
 
     setBatches((prevBatches) =>
@@ -101,12 +126,19 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
 
         return {
           ...batch,
-          design: {
-            ...batch.design,
-            texts: batch.design.texts.map((text) =>
-              text.id === textId ? { ...text, ...updates } : text
-            ),
-          },
+          labels: batch.labels.map((label) => {
+            if (label.id !== labelId) return label;
+
+            return {
+              ...label,
+              design: {
+                ...label.design,
+                texts: label.design.texts.map((text) =>
+                  text.id === textId ? { ...text, ...updates } : text
+                ),
+              },
+            };
+          }),
         };
       })
     );
@@ -117,12 +149,14 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
       value={{
         batches,
         activeBatchId,
+        selectedLabelId,
         selectedElementId,
         zoomLevel,
         activeTab,
         isModalOpen,
         addBatch,
         setActiveBatchId,
+        setSelectedLabelId,
         setSelectedElementId,
         setZoomLevel,
         setActiveTab,

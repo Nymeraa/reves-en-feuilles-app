@@ -11,6 +11,8 @@ const MainCanvas: React.FC = () => {
     setZoomLevel,
     activeBatchId,
     batches,
+    selectedLabelId,
+    setSelectedLabelId,
     selectedElementId,
     setSelectedElementId,
     updateLabelText,
@@ -34,26 +36,50 @@ const MainCanvas: React.FC = () => {
 
   const handleMouseDown = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
-    const id = target.dataset.id;
+    const textId = target.dataset.id;
 
-    if (id && activeBatch) {
-      e.preventDefault(); // Stop text selection
-      const text = activeBatch.design.texts.find((t) => t.id === id);
-      if (text) {
-        setSelectedElementId(id);
+    // We need to find which label this text belongs to.
+    // In the new structure, we have batch -> labels[] -> design -> texts[]
+
+    if (textId && activeBatch) {
+      e.preventDefault();
+
+      // Find the label and text
+      let foundLabelId = null;
+      let foundText = null;
+
+      for (const label of activeBatch.labels) {
+        const text = label.design.texts.find((t) => t.id === textId);
+        if (text) {
+          foundLabelId = label.id;
+          foundText = text;
+          break;
+        }
+      }
+
+      if (foundText && foundLabelId) {
+        setSelectedLabelId(foundLabelId);
+        setSelectedElementId(textId);
         setIsDragging(true);
         dragStartRef.current = {
           x: e.clientX,
           y: e.clientY,
-          initialLabelX: text.x,
-          initialLabelY: text.y,
+          initialLabelX: foundText.x,
+          initialLabelY: foundText.y,
         };
       }
     }
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging || !dragStartRef.current || !activeBatch || !selectedElementId) return;
+    if (
+      !isDragging ||
+      !dragStartRef.current ||
+      !activeBatch ||
+      !selectedElementId ||
+      !selectedLabelId
+    )
+      return;
 
     const deltaX = e.clientX - dragStartRef.current.x;
     const deltaY = e.clientY - dragStartRef.current.y;
@@ -84,7 +110,7 @@ const MainCanvas: React.FC = () => {
     const percentDeltaX = (effectiveDX / labelWidthPx) * 100;
     const percentDeltaY = (effectiveDY / labelHeightPx) * 100;
 
-    updateLabelText(selectedElementId, {
+    updateLabelText(selectedLabelId, selectedElementId, {
       x: dragStartRef.current.initialLabelX + percentDeltaX,
       y: dragStartRef.current.initialLabelY + percentDeltaY,
     });
@@ -122,13 +148,14 @@ const MainCanvas: React.FC = () => {
 
     return (
       <div className={format === 'small' ? styles.gridSmall : styles.gridLarge}>
-        {cells.map((_, index) =>
-          index < quantity ? (
-            <SingleLabel key={index} design={activeBatch.design} format={format} />
+        {cells.map((_, index) => {
+          const labelData = activeBatch.labels[index];
+          return index < quantity && labelData ? (
+            <SingleLabel key={index} design={labelData.design} format={format} />
           ) : (
             <div key={index} className={styles.labelSlot}></div>
-          )
-        )}
+          );
+        })}
       </div>
     );
   };

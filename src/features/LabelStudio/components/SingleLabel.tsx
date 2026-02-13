@@ -38,9 +38,14 @@ const SingleLabel: React.FC<SingleLabelProps> = ({ design, format }) => {
                   fontFamily: text.fontFamily,
                   fontWeight: 'bold',
                   cursor: 'pointer',
+                  cursor: 'pointer',
                   border: isSelected ? '2px solid #3b82f6' : '1px solid transparent', // Blue or transparent
                   padding: '2px', // Touch target
                   userSelect: 'none', // Prevent text selection while dragging
+                  whiteSpace: 'pre', // CRITICAL: No auto-wrap, respects newlines
+                  width: 'max-content',
+                  maxWidth: 'none',
+                  overflow: 'visible',
                 }}
               >
                 {text.content}

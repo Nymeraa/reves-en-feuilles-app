@@ -4,10 +4,12 @@ import styles from '../LabelStudio.module.css';
 import { useLabelStudio } from '../context/LabelContext';
 
 const RightSidebar: React.FC = () => {
-  const { selectedElementId, activeBatchId, batches, updateLabelText } = useLabelStudio();
+  const { selectedLabelId, selectedElementId, activeBatchId, batches, updateLabelText } =
+    useLabelStudio();
 
   const activeBatch = batches.find((b) => b.id === activeBatchId);
-  const selectedElement = activeBatch?.design.texts.find((t) => t.id === selectedElementId);
+  const selectedLabel = activeBatch?.labels.find((l) => l.id === selectedLabelId);
+  const selectedElement = selectedLabel?.design.texts.find((t) => t.id === selectedElementId);
 
   if (!selectedElement) {
     return (
@@ -38,7 +40,9 @@ const RightSidebar: React.FC = () => {
   const yMM = (selectedElement.y / 100) * heightMM;
 
   const handleChange = (field: string, value: any) => {
-    updateLabelText(selectedElement.id, { [field]: value });
+    if (selectedLabel) {
+      updateLabelText(selectedLabel.id, selectedElement.id, { [field]: value });
+    }
   };
 
   const handlePositionChange = (axis: 'x' | 'y', mmValue: string) => {
@@ -49,7 +53,9 @@ const RightSidebar: React.FC = () => {
     const maxMM = axis === 'x' ? widthMM : heightMM;
     const percent = (val / maxMM) * 100;
 
-    updateLabelText(selectedElement.id, { [axis]: percent });
+    if (selectedLabel) {
+      updateLabelText(selectedLabel.id, selectedElement.id, { [axis]: percent });
+    }
   };
 
   return (
