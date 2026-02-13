@@ -16,6 +16,7 @@ const MainCanvas: React.FC = () => {
     selectedElementId,
     setSelectedElementId,
     updateLabelElement,
+    trimanConfig,
   } = useLabelStudio();
 
   const [isDragging, setIsDragging] = React.useState(false);
@@ -215,6 +216,28 @@ const MainCanvas: React.FC = () => {
           }}
         >
           {renderGrid()}
+
+          {/* Global Triman Overlay */}
+          {activeBatch &&
+            (() => {
+              const format = activeBatch.format;
+              const triman = trimanConfig[format];
+              if (triman?.enabled && triman?.url) {
+                return (
+                  <img
+                    src={triman.url}
+                    className={styles.trimanOverlay}
+                    style={{
+                      left: `${triman.x}mm`,
+                      top: `${triman.y}mm`,
+                      width: '10mm', // Fixed width for standard Triman
+                    }}
+                    alt="Triman Overlay"
+                  />
+                );
+              }
+              return null;
+            })()}
         </div>
       </div>
     </main>

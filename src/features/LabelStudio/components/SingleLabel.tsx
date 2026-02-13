@@ -9,33 +9,14 @@ interface SingleLabelProps {
 }
 
 const SingleLabel: React.FC<SingleLabelProps> = ({ design, format }) => {
-  const { selectedElementId, setSelectedElementId, trimanConfig } = useLabelStudio();
+  const { selectedElementId, setSelectedElementId } = useLabelStudio();
 
   if (!design) return null;
-
-  // Get Triman config for this format
-  const triman = trimanConfig[format];
 
   return (
     <div className={`${styles.labelSlot} ${format === 'small' ? styles.small : styles.large}`}>
       <div className={styles.labelWrapper}>
         <div className={styles.labelContent} style={{ backgroundColor: design.backgroundColor }}>
-          {/* Triman Overlay (Global per format) */}
-          {triman.enabled && triman.url && (
-            <img
-              src={triman.url}
-              style={{
-                position: 'absolute',
-                left: `${triman.x}mm`,
-                top: `${triman.y}mm`,
-                width: '10mm',
-                zIndex: 50,
-                pointerEvents: 'none',
-              }}
-              alt="Triman"
-            />
-          )}
-
           {/* Elements Rendering */}
           {design.elements.map((el) => {
             const isSelected = selectedElementId === el.id;

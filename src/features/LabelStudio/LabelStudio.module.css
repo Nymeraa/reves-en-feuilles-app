@@ -208,6 +208,18 @@
 }
 
 /* Niveau 2 : Le wrapper (S'occupe de la rotation/centrage) */
+/* Global Triman Overlay */
+.trimanOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 999;
+  pointer-events: none;
+  object-fit: contain;
+}
+
 .labelWrapper {
   position: absolute;
   top: 50%;
