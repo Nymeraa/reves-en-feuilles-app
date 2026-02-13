@@ -211,67 +211,44 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
       ],
     };
 
-    // Generate labels following front/back pair pattern
-    // For small format (8 labels): quantity represents number of pairs
-    // Grid pattern: Pair1Back, Pair2Back, Pair1Front, Pair2Front, Pair3Back, Pair4Back, Pair3Front, Pair4Front
-    // For large format (4 labels): Back, Front, Back, Front
+    // Détermine le nombre d'emplacements selon le format (8 pour small, 4 pour large)
+    const totalSlots = newBatch.format === 'small' ? 8 : 4;
 
-    const labelsPerSheet = newBatch.format === 'small' ? 8 : 4;
-    const pairsPerSheet = labelsPerSheet / 2;
+    const labels: LabelData[] = Array.from({ length: totalSlots }).map((_, index) => {
+      let side: 'front' | 'back' = 'front';
+      let pairId = 1;
 
-    const labels: LabelData[] = [];
-
-    if (newBatch.format === 'small') {
-      // Small format pattern: [P1B, P2B, P1F, P2F, P3B, P4B, P3F, P4F]
-      const gridOrder = [
-        { pairId: 1, side: 'back' as LabelSide },
-        { pairId: 2, side: 'back' as LabelSide },
-        { pairId: 1, side: 'front' as LabelSide },
-        { pairId: 2, side: 'front' as LabelSide },
-        { pairId: 3, side: 'back' as LabelSide },
-        { pairId: 4, side: 'back' as LabelSide },
-        { pairId: 3, side: 'front' as LabelSide },
-        { pairId: 4, side: 'front' as LabelSide },
-      ];
-
-      for (let i = 0; i < labelsPerSheet; i++) {
-        const { pairId, side } = gridOrder[i];
-        const clonedElements = masterDesign.elements.map((el) => ({
-          ...el,
-          id: `el_${batchId}_${i}_${el.id}`,
-        }));
-
-        labels.push({
-          id: `label_${batchId}_${i}`,
-          pairId,
-          side,
-          design: {
-            ...masterDesign,
-            elements: clonedElements,
-          },
-        });
+      if (newBatch.format === 'small') {
+        // FORMAT PETIT (8 cases)
+        // Grille désirée :
+        // Ligne 1 (idx 0, 1): Arrière (Paire 1 & 2)
+        // Ligne 2 (idx 2, 3): Avant (Paire 1 & 2)
+        // Ligne 3 (idx 4, 5): Arrière (Paire 3 & 4)
+        // Ligne 4 (idx 6, 7): Avant (Paire 3 & 4)
+        side = index % 4 < 2 ? 'back' : 'front';
+        pairId = Math.floor(index / 4) * 2 + (index % 2) + 1;
+      } else {
+        // FORMAT GRAND (4 cases)
+        // Alternance simple : Arrière, Avant, Arrière, Avant
+        side = index % 2 === 0 ? 'back' : 'front';
+        pairId = Math.floor(index / 2) + 1;
       }
-    } else {
-      // Large format pattern: [P1B, P1F, P2B, P2F]
-      for (let i = 0; i < labelsPerSheet; i++) {
-        const pairId = Math.floor(i / 2) + 1;
-        const side: LabelSide = i % 2 === 0 ? 'back' : 'front';
-        const clonedElements = masterDesign.elements.map((el) => ({
-          ...el,
-          id: `el_${batchId}_${i}_${el.id}`,
-        }));
 
-        labels.push({
-          id: `label_${batchId}_${i}`,
-          pairId,
-          side,
-          design: {
-            ...masterDesign,
-            elements: clonedElements,
-          },
-        });
-      }
-    }
+      const clonedElements = masterDesign.elements.map((el) => ({
+        ...el,
+        id: `el_${batchId}_${index}_${el.id}`,
+      }));
+
+      return {
+        id: `label_${batchId}_${index}`,
+        pairId: pairId,
+        side: side,
+        design: {
+          ...masterDesign,
+          elements: clonedElements,
+        },
+      };
+    });
 
     const batch: Batch = {
       ...newBatch,
