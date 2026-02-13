@@ -4,14 +4,27 @@ import styles from '../LabelStudio.module.css';
 import { useLabelStudio } from '../context/LabelContext';
 
 const RightSidebar: React.FC = () => {
-  const { selectedLabelId, selectedElementId, activeBatchId, batches, updateLabelElement } =
-    useLabelStudio();
+  const {
+    selectedLabelId,
+    selectedElementId,
+    activeBatchId,
+    batches,
+    updateLabelElement,
+    duplicateLabelDesign,
+  } = useLabelStudio();
 
   const activeBatch = batches.find((b) => b.id === activeBatchId);
   const selectedLabel = activeBatch?.labels.find((l) => l.id === selectedLabelId);
   const selectedElement = selectedLabel?.design.elements.find((t) => t.id === selectedElementId);
 
-  if (!selectedElement) {
+  const handleDuplicateDesign = () => {
+    if (activeBatch && selectedLabelId) {
+      duplicateLabelDesign(activeBatch.id, selectedLabelId);
+    }
+  };
+
+  // If no label is selected, show empty state
+  if (!selectedLabelId) {
     return (
       <aside
         style={{
@@ -23,6 +36,52 @@ const RightSidebar: React.FC = () => {
       >
         <div
           style={{ color: '#9ca3af', fontSize: '0.875rem', textAlign: 'center', marginTop: '2rem' }}
+        >
+          Sélectionnez une étiquette
+        </div>
+      </aside>
+    );
+  }
+
+  // If label is selected but no element, show duplication button only
+  if (!selectedElement) {
+    return (
+      <aside
+        style={{
+          width: '250px',
+          borderLeft: '1px solid #e5e7eb',
+          backgroundColor: 'white',
+          padding: '1rem',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '1rem',
+        }}
+      >
+        <button
+          onClick={handleDuplicateDesign}
+          style={{
+            width: '100%',
+            padding: '0.75rem 1rem',
+            backgroundColor: '#3b82f6',
+            color: 'white',
+            border: 'none',
+            borderRadius: '0.375rem',
+            fontSize: '0.875rem',
+            fontWeight: '600',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.5rem',
+            transition: 'background-color 0.2s',
+          }}
+          onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#2563eb')}
+          onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#3b82f6')}
+        >
+          🔄 Appliquer ce design à tout le lot
+        </button>
+        <div
+          style={{ color: '#9ca3af', fontSize: '0.875rem', textAlign: 'center', marginTop: '1rem' }}
         >
           Sélectionnez un élément pour le modifier
         </div>
@@ -68,6 +127,31 @@ const RightSidebar: React.FC = () => {
         flexDirection: 'column',
       }}
     >
+      {/* Duplication Button */}
+      <button
+        onClick={handleDuplicateDesign}
+        style={{
+          margin: '1rem',
+          padding: '0.75rem 1rem',
+          backgroundColor: '#3b82f6',
+          color: 'white',
+          border: 'none',
+          borderRadius: '0.375rem',
+          fontSize: '0.875rem',
+          fontWeight: '600',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '0.5rem',
+          transition: 'background-color 0.2s',
+        }}
+        onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#2563eb')}
+        onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#3b82f6')}
+      >
+        🔄 Appliquer ce design à tout le lot
+      </button>
+
       <div className={styles.sidebarHeader}>
         <h2 className={styles.sidebarTitle}>Propriétés</h2>
       </div>

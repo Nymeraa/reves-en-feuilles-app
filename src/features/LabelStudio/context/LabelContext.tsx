@@ -93,6 +93,7 @@ interface LabelContextType {
 
   addElementToLabel: (labelId: string, element: LabelElement) => void;
   updateLabelElement: (labelId: string, elementId: string, updates: Partial<LabelElement>) => void;
+  duplicateLabelDesign: (batchId: string, sourceLabelId: string) => void;
 
   updateTriman: (format: 'small' | 'large', updates: Partial<TrimanSettings>) => void;
 
@@ -303,6 +304,33 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const duplicateLabelDesign = (batchId: string, sourceLabelId: string) => {
+    setBatches((prev) =>
+      prev.map((batch) => {
+        if (batch.id !== batchId) return batch;
+
+        // Find the source label
+        const sourceLabel = batch.labels.find((l) => l.id === sourceLabelId);
+        if (!sourceLabel) return batch;
+
+        // Deep clone the elements array to avoid reference issues
+        const clonedElements = structuredClone(sourceLabel.design.elements);
+
+        // Apply the cloned design to all other labels in the batch
+        return {
+          ...batch,
+          labels: batch.labels.map((label) => ({
+            ...label,
+            design: {
+              ...label.design,
+              elements: structuredClone(clonedElements),
+            },
+          })),
+        };
+      })
+    );
+  };
+
   const addMediaToLibrary = async (file: File, category: MediaCategory, format: LabelFormat) => {
     return new Promise<void>((resolve, reject) => {
       const reader = new FileReader();
@@ -390,6 +418,7 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
         setIsModalOpen,
         updateLabelElement,
         addElementToLabel,
+        duplicateLabelDesign,
         updateTriman,
         mediaLibrary,
         addMediaToLibrary,
