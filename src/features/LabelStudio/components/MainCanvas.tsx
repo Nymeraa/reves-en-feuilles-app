@@ -6,7 +6,23 @@ import { ZoomIn, ZoomOut, Grid } from 'lucide-react';
 import SingleLabel from './SingleLabel';
 
 const MainCanvas: React.FC = () => {
-  const { zoomLevel, setZoomLevel, activeBatchId, batches } = useLabelStudio();
+  const {
+    zoomLevel,
+    setZoomLevel,
+    activeBatchId,
+    batches,
+    selectedElementId,
+    setSelectedElementId,
+    updateLabelText,
+  } = useLabelStudio();
+
+  const [isDragging, setIsDragging] = React.useState(false);
+  const dragStartRef = React.useRef<{
+    x: number;
+    y: number;
+    initialLabelX: number;
+    initialLabelY: number;
+  } | null>(null);
 
   const activeBatch = batches.find((b) => b.id === activeBatchId);
 
@@ -15,6 +31,69 @@ const MainCanvas: React.FC = () => {
   const PIXELS_PER_MM = 3.78; // 96 DPI / 25.4
   const widthPx = 210 * PIXELS_PER_MM;
   const heightPx = 297 * PIXELS_PER_MM;
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    const id = target.dataset.id;
+
+    if (id && activeBatch) {
+      e.preventDefault(); // Stop text selection
+      const text = activeBatch.design.texts.find((t) => t.id === id);
+      if (text) {
+        setSelectedElementId(id);
+        setIsDragging(true);
+        dragStartRef.current = {
+          x: e.clientX,
+          y: e.clientY,
+          initialLabelX: text.x,
+          initialLabelY: text.y,
+        };
+      }
+    }
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !dragStartRef.current || !activeBatch || !selectedElementId) return;
+
+    const deltaX = e.clientX - dragStartRef.current.x;
+    const deltaY = e.clientY - dragStartRef.current.y;
+
+    const { format } = activeBatch;
+    let effectiveDX = deltaX;
+    let effectiveDY = deltaY;
+
+    // Rotation / Scale Logic
+    if (format === 'small') {
+      // Rotated 90 deg: Mouse Right (X+) -> Label Down (Y+) | Mouse Down (Y+) -> Label Left (X-)
+      effectiveDX = deltaY;
+      effectiveDY = -deltaX;
+    } else {
+      // Large format is scaled
+      const scaleFactor = 105 / 141; // ~0.744
+      effectiveDX = deltaX / scaleFactor;
+      effectiveDY = deltaY / scaleFactor;
+    }
+
+    // Convert to % of Label Dimensions
+    const widthMM = format === 'small' ? 74.25 : 141;
+    const heightMM = format === 'small' ? 105 : 148.5;
+
+    const labelWidthPx = widthMM * PIXELS_PER_MM;
+    const labelHeightPx = heightMM * PIXELS_PER_MM;
+
+    const percentDeltaX = (effectiveDX / labelWidthPx) * 100;
+    const percentDeltaY = (effectiveDY / labelHeightPx) * 100;
+
+    updateLabelText(selectedElementId, {
+      x: dragStartRef.current.initialLabelX + percentDeltaX,
+      y: dragStartRef.current.initialLabelY + percentDeltaY,
+    });
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+    dragStartRef.current = null;
+  };
 
   // Render Grid Cells based on Format
   const renderGrid = () => {
@@ -55,7 +134,13 @@ const MainCanvas: React.FC = () => {
   };
 
   return (
-    <main className={styles.mainCanvas}>
+    <main
+      className={styles.mainCanvas}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+    >
       <div className={styles.toolbar}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <span style={{ fontSize: '0.875rem', color: '#6b7280' }}>

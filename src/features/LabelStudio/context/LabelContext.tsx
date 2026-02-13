@@ -29,14 +29,17 @@ export interface Batch {
 interface LabelContextType {
   batches: Batch[];
   activeBatchId: string | null;
+  selectedElementId: string | null;
   zoomLevel: number;
   activeTab: 'production' | 'media' | 'config';
   isModalOpen: boolean;
   addBatch: (batch: Omit<Batch, 'id' | 'design'>) => void;
   setActiveBatchId: (id: string) => void;
+  setSelectedElementId: (id: string | null) => void;
   setZoomLevel: (level: number) => void;
   setActiveTab: (tab: 'production' | 'media' | 'config') => void;
   setIsModalOpen: (isOpen: boolean) => void;
+  updateLabelText: (textId: string, updates: Partial<LabelText>) => void;
 }
 
 const LabelContext = createContext<LabelContextType | undefined>(undefined);
@@ -44,6 +47,7 @@ const LabelContext = createContext<LabelContextType | undefined>(undefined);
 export const LabelProvider = ({ children }: { children: ReactNode }) => {
   const [batches, setBatches] = useState<Batch[]>([]);
   const [activeBatchId, setActiveBatchId] = useState<string | null>(null);
+  const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [activeTab, setActiveTab] = useState<'production' | 'media' | 'config'>('production');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -88,19 +92,42 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
     setIsModalOpen(false);
   };
 
+  const updateLabelText = (textId: string, updates: Partial<LabelText>) => {
+    if (!activeBatchId) return;
+
+    setBatches((prevBatches) =>
+      prevBatches.map((batch) => {
+        if (batch.id !== activeBatchId) return batch;
+
+        return {
+          ...batch,
+          design: {
+            ...batch.design,
+            texts: batch.design.texts.map((text) =>
+              text.id === textId ? { ...text, ...updates } : text
+            ),
+          },
+        };
+      })
+    );
+  };
+
   return (
     <LabelContext.Provider
       value={{
         batches,
         activeBatchId,
+        selectedElementId,
         zoomLevel,
         activeTab,
         isModalOpen,
         addBatch,
         setActiveBatchId,
+        setSelectedElementId,
         setZoomLevel,
         setActiveTab,
         setIsModalOpen,
+        updateLabelText,
       }}
     >
       {children}

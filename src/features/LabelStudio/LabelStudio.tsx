@@ -4,6 +4,7 @@ import { LabelProvider } from './context/LabelContext';
 import SidebarLeft from './components/SidebarLeft';
 import MainCanvas from './components/MainCanvas';
 import CreateBatchModal from './components/CreateBatchModal';
+import RightSidebar from './components/RightSidebar';
 import styles from './LabelStudio.module.css';
 
 const LabelStudioLayout: React.FC = () => {
@@ -12,16 +13,7 @@ const LabelStudioLayout: React.FC = () => {
       <SidebarLeft />
       <MainCanvas />
       {/* Right Sidebar Placeholder */}
-      <div
-        style={{
-          width: '250px',
-          borderLeft: '1px solid #e5e7eb',
-          backgroundColor: 'white',
-          flexShrink: 0,
-        }}
-      >
-        {/* Helper/Inspector will go here */}
-      </div>
+      <RightSidebar />
 
       <CreateBatchModal />
     </div>
