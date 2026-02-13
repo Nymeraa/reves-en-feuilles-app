@@ -1,5 +1,12 @@
 'use client';
 import React, { createContext, useContext, useState, ReactNode } from 'react';
+import {
+  getAllMedia,
+  saveMedia,
+  deleteMedia as deleteMediaFromDB,
+  MediaItem,
+  MediaCategory,
+} from '../utils/db';
 
 // Define types for our domain
 export type ElementType = 'text' | 'image';
@@ -64,6 +71,9 @@ interface LabelContextType {
   addElementToLabel: (labelId: string, element: LabelElement) => void;
   updateTriman: (labelId: string, updates: Partial<TrimanConfig>) => void;
   updateLabelElement: (labelId: string, elementId: string, updates: Partial<LabelElement>) => void;
+  mediaLibrary: MediaItem[];
+  addMediaToLibrary: (file: File, category: MediaCategory) => Promise<void>;
+  removeMediaFromLibrary: (id: string) => Promise<void>;
 }
 
 const LabelContext = createContext<LabelContextType | undefined>(undefined);
@@ -76,6 +86,20 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
   const [zoomLevel, setZoomLevel] = useState(1);
   const [activeTab, setActiveTab] = useState<'production' | 'media' | 'config'>('production');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [mediaLibrary, setMediaLibrary] = useState<MediaItem[]>([]);
+
+  // Load media on mount
+  React.useEffect(() => {
+    const loadMedia = async () => {
+      try {
+        const items = await getAllMedia();
+        setMediaLibrary(items);
+      } catch (error) {
+        console.error('Failed to load media library:', error);
+      }
+    };
+    loadMedia();
+  }, []);
 
   const addBatch = (newBatch: Omit<Batch, 'id' | 'labels'>) => {
     const batchId = Math.random().toString(36).substr(2, 9);
@@ -216,6 +240,41 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
+  const addMediaToLibrary = async (file: File, category: MediaCategory) => {
+    return new Promise<void>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        try {
+          const content = event.target?.result as string;
+          const newItem: MediaItem = {
+            id: `media_${Date.now()}`,
+            category,
+            name: file.name,
+            data: content,
+            timestamp: Date.now(),
+          };
+          await saveMedia(newItem);
+          setMediaLibrary((prev) => [newItem, ...prev]);
+          resolve();
+        } catch (err) {
+          console.error('Error saving media:', err);
+          reject(err);
+        }
+      };
+      reader.onerror = () => reject('Error reading file');
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeMediaFromLibrary = async (id: string) => {
+    try {
+      await deleteMediaFromDB(id);
+      setMediaLibrary((prev) => prev.filter((item) => item.id !== id));
+    } catch (error) {
+      console.error('Error deleting media:', error);
+    }
+  };
+
   return (
     <LabelContext.Provider
       value={{
@@ -236,6 +295,9 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
         updateLabelElement,
         addElementToLabel,
         updateTriman,
+        mediaLibrary,
+        addMediaToLibrary,
+        removeMediaFromLibrary,
       }}
     >
       {children}
