@@ -171,37 +171,44 @@
   background-color: #1f2937;
 }
 
+/* ZONE DE CANEVAS (Conteneur gris) */
 .canvasArea {
-  flex: 1;
-  /* Must be block for scroll to work properly */
-  display: block;
-  /* Enable scrollbars */
+  /* Flexbox est nécessaire pour l'astuce des marges auto */
+  display: flex;
+  /* Important : permet à l'enfant de définir sa propre taille */
+  flex-direction: column;
+  /* Active les barres de scroll */
   overflow: auto;
-  /* Take all available space */
   width: 100%;
   height: 100%;
-  background-color: #e5e7eb; /* Light gray */
-  /* Add technical padding to be able to scroll beyond edges */
-  padding: 50px;
+  background-color: #e5e7eb;
+  /* Un padding minimal pour que ça ne colle jamais aux bords */
+  padding: 20px;
+  /* Nécessaire pour que le padding soit inclus dans la taille totale */
   box-sizing: border-box;
 }
 
-/* A4 Paper Representation */
+/* LA FEUILLE A4 */
 .paperA4 {
   position: relative;
   background: white;
+  /* Dimensions fixes */
   width: 210mm;
   height: 297mm;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  /* Empêche le conteneur flex de compresser la feuille */
+  flex-shrink: 0;
 
-  /* CRITICAL FOR SCROLL: */
-  /* Zoom must start from top-left corner. */
-  /* This way, when it grows, it pushes scrollbars to the right and bottom. */
-  transform-origin: 0 0;
-
-  /* Use auto margins to center when de-zoomed, */
-  /* but parent padding ensures we never touch the edges */
+  /* L'ASTUCE DU SIÈCLE POUR LE SCROLL : */
+  /* Dans un parent flex, 'margin: auto' centre l'élément verticalement et horizontalement. */
+  /* MAIS, quand l'élément devient plus grand que le parent (zoom), */
+  /* le navigateur alloue l'espace pour les marges avant de calculer le débordement, */
+  /* ce qui permet au scroll de fonctionner dans les 4 directions. */
   margin: auto;
+
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  /* On zoome depuis le centre, et les marges auto gèrent l'expansion */
+  transform-origin: center center;
+  transition: transform 0.1s ease-out; /* Un petit lissage du zoom */
 }
 
 /* Grid Systems (A4 is 210mm x 297mm) */
@@ -424,64 +431,54 @@
 
 /* Print Styles */
 @media print {
-  /* 1. HIDE ENTIRE HOST APPLICATION */
-  /* Target body and all its direct children to be sure to hide everything */
-  :global(body > *) {
-    display: none !important;
-  }
-
-  /* 2. MAKE VISIBLE ONLY OUR A4 CONTAINER */
-  /* Force display of the main studio container */
-  :global(body) > :local(.labelStudioContainer) {
-    display: block !important;
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
+  /* 1. CACHER TOUT LE CONTENU DU BODY */
+  :global(body) {
+    /* Cache visuellement tout le site, mais garde la structure */
+    visibility: hidden !important;
+    /* Enlève les barres de scroll du navigateur pendant l'impression */
+    overflow: hidden !important;
+    background: white !important;
     margin: 0 !important;
     padding: 0 !important;
-    overflow: visible !important;
-    background: white !important;
-    z-index: 9999 !important;
   }
 
-  /* 3. TARGET THE A4 SHEET FOR PRINTING */
+  /* 2. CIBLER ET AFFICHER LA FEUILLE A4 */
   .paperA4 {
-    /* Take it out of flow to stick it on the printer sheet */
+    /* Rendre visible UNIQUEMENT cet élément et ses enfants */
+    visibility: visible !important;
+    /* Le sortir du flux pour le plaquer sur la feuille de l'imprimante */
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
-    /* Exact dimensions */
+    /* Dimensions exactes */
     width: 210mm !important;
     height: 297mm !important;
-    /* Remove margins, shadows and zoom */
+    /* Suppression des marges, ombres et du zoom pour l'impression */
     margin: 0 !important;
     box-shadow: none !important;
-    transform: none !important; /* CRITICAL: Cancel zoom when printing */
-    z-index: 10000 !important;
-    visibility: visible !important;
-    display: block !important;
+    transform: none !important;
+    z-index: 99999 !important;
+    /* S'assurer que le fond est blanc */
+    background: white !important;
   }
 
-  /* 4. Hide internal studio interfaces (toolbars, sidebars) */
+  /* 3. SUPPRESSION DES INTERFACES (Sécurité supplémentaire) */
   .sidebarLeft,
   .sidebarRight,
-  .toolbar,
-  .trimanControls {
+  .toolbar {
     display: none !important;
   }
 
-  /* Force colors */
+  /* 4. FORCE LES COULEURS D'IMPRESSION */
   .paperA4,
   .paperA4 * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
-  /* Browser page configuration */
+  /* 5. CONFIGURATION DE LA PAGE */
   @page {
     size: A4 portrait;
-    margin: 0mm;
+    margin: 0; /* Aucune marge imprimante, c'est nous qui gérons */
   }
 }
