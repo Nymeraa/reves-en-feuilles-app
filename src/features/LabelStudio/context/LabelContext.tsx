@@ -211,7 +211,7 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
       ],
     };
 
-    // Détermine le nombre d'emplacements selon le format (8 pour small, 4 pour large)
+    // On force la création d'une page complète quoi qu'il arrive
     const totalSlots = newBatch.format === 'small' ? 8 : 4;
 
     const labels: LabelData[] = Array.from({ length: totalSlots }).map((_, index) => {
@@ -219,25 +219,22 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
       let pairId = 1;
 
       if (newBatch.format === 'small') {
-        // FORMAT PETIT (8 cases)
-        // Grille désirée :
-        // Ligne 1 (idx 0, 1): Arrière (Paire 1 & 2)
-        // Ligne 2 (idx 2, 3): Avant (Paire 1 & 2)
-        // Ligne 3 (idx 4, 5): Arrière (Paire 3 & 4)
-        // Ligne 4 (idx 6, 7): Avant (Paire 3 & 4)
-        side = index % 4 < 2 ? 'back' : 'front';
-        pairId = Math.floor(index / 4) * 2 + (index % 2) + 1;
+        // Mapping STRICT exigé par le client :
+        // Cases 1, 2, 5, 6 (Index 0, 1, 4, 5) = Arrière
+        // Cases 3, 4, 7, 8 (Index 2, 3, 6, 7) = Avant
+        const isBack = [0, 1, 4, 5].includes(index);
+        side = isBack ? 'back' : 'front';
+
+        // Assignation stricte des paires
+        if (index === 0 || index === 2) pairId = 1;
+        else if (index === 1 || index === 3) pairId = 2;
+        else if (index === 4 || index === 6) pairId = 3;
+        else if (index === 5 || index === 7) pairId = 4;
       } else {
-        // FORMAT GRAND (4 cases)
-        // Alternance simple : Arrière, Avant, Arrière, Avant
+        // Pour le grand format (4 cases) : Arrière, Avant, Arrière, Avant
         side = index % 2 === 0 ? 'back' : 'front';
         pairId = Math.floor(index / 2) + 1;
       }
-
-      const clonedElements = masterDesign.elements.map((el) => ({
-        ...el,
-        id: `el_${batchId}_${index}_${el.id}`,
-      }));
 
       return {
         id: `label_${batchId}_${index}`,
@@ -245,7 +242,7 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
         side: side,
         design: {
           ...masterDesign,
-          elements: clonedElements,
+          elements: [], // Vide au départ
         },
       };
     });
