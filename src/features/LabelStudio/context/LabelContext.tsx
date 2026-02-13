@@ -170,6 +170,8 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
         };
       })
     );
+  };
+
   const addElementToLabel = (labelId: string, element: LabelElement) => {
     if (!activeBatchId) return;
     setBatches((prev) =>
