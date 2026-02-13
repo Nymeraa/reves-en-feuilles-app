@@ -171,20 +171,28 @@
   background-color: #1f2937;
 }
 
-/* ZONE DE CANEVAS (Conteneur gris) */
+/* ZONE GRISE (Le scroll se fait ici) */
 .canvasArea {
-  /* Flexbox est nécessaire pour l'astuce des marges auto */
-  display: flex;
-  /* Important : permet à l'enfant de définir sa propre taille */
-  flex-direction: column;
-  /* Active les barres de scroll */
-  overflow: auto;
   width: 100%;
   height: 100%;
-  background-color: #e5e7eb;
-  /* Un padding minimal pour que ça ne colle jamais aux bords */
-  padding: 20px;
-  /* Nécessaire pour que le padding soit inclus dans la taille totale */
+  overflow: auto;
+  background: #e5e7eb;
+  /* Retrait de tout flex ou grid ici ! */
+  display: block;
+}
+
+/* LE WRAPPER QUI FORCE LES BARRES DE SCROLL */
+.zoomWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* Centre le wrapper quand le zoom est petit */
+  margin: 0 auto;
+  /* S'assure qu'il remplit l'écran minimum */
+  min-width: 100%;
+  min-height: 100%;
+  /* Padding pour ne pas coller aux bords */
+  padding: 50px;
   box-sizing: border-box;
 }
 
@@ -192,23 +200,14 @@
 .paperA4 {
   position: relative;
   background: white;
-  /* Dimensions fixes */
   width: 210mm;
   height: 297mm;
-  /* Empêche le conteneur flex de compresser la feuille */
   flex-shrink: 0;
-
-  /* L'ASTUCE DU SIÈCLE POUR LE SCROLL : */
-  /* Dans un parent flex, 'margin: auto' centre l'élément verticalement et horizontalement. */
-  /* MAIS, quand l'élément devient plus grand que le parent (zoom), */
-  /* le navigateur alloue l'espace pour les marges avant de calculer le débordement, */
-  /* ce qui permet au scroll de fonctionner dans les 4 directions. */
-  margin: auto;
-
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  /* On zoome depuis le centre, et les marges auto gèrent l'expansion */
+  /* On zoome depuis le centre strict */
   transform-origin: center center;
-  transition: transform 0.1s ease-out; /* Un petit lissage du zoom */
+  transition: transform 0.1s ease-out;
+  /* Plus de margin auto, le zoomWrapper gère le centrage */
 }
 
 /* Grid Systems (A4 is 210mm x 297mm) */

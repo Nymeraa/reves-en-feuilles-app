@@ -208,40 +208,46 @@ const MainCanvas: React.FC = () => {
       </div>
 
       <div className={styles.canvasArea}>
+        {/* CE WRAPPER GRANDIT PHYSIQUEMENT AVEC LE ZOOM */}
         <div
-          className={styles.paperA4}
+          className={styles.zoomWrapper}
           style={{
-            width: `${widthPx}px`,
-            height: `${heightPx}px`,
-            transform: `scale(${zoomLevel})`,
-            transformOrigin: 'center top',
-            transition: 'transform 0.2s ease-out',
-            // background: 'white' (already in CSS)
+            // On calcule la taille physique + une marge de sécurité de 100px
+            width: `calc(210mm * ${zoomLevel} + 100px)`,
+            height: `calc(297mm * ${zoomLevel} + 100px)`,
           }}
         >
-          {renderGrid()}
+          {/* LA FEUILLE A4 (Qui subit le scale visuel) */}
+          <div
+            className={styles.paperA4}
+            style={{
+              transform: `scale(${zoomLevel})`,
+            }}
+          >
+            {renderGrid()}
 
-          {/* Global Triman Overlay */}
-          {activeBatch &&
-            (() => {
-              const format = activeBatch.format;
-              const triman = trimanConfig[format];
-              if (triman?.enabled && triman?.url) {
-                return (
-                  <img
-                    src={triman.url}
-                    className={styles.trimanOverlay}
-                    style={{
-                      left: `${triman.x}mm`,
-                      top: `${triman.y}mm`,
-                      width: '10mm', // Fixed width for standard Triman
-                    }}
-                    alt="Triman Overlay"
-                  />
-                );
-              }
-              return null;
-            })()}
+            {/* Global Triman Overlay */}
+            {activeBatch &&
+              (() => {
+                const format = activeBatch.format;
+                const triman = trimanConfig[format];
+                if (triman?.enabled && triman?.url) {
+                  return (
+                    <img
+                      src={triman.url}
+                      className={styles.trimanOverlay}
+                      style={{
+                        left: `${triman.x}mm`,
+                        top: `${triman.y}mm`,
+                        width: '10mm', // Fixed width for standard Triman
+                      }}
+                      alt="Triman Overlay"
+                    />
+                  );
+                }
+                return null;
+              })()}
+          </div>
         </div>
       </div>
     </main>
