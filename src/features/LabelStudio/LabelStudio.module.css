@@ -419,7 +419,8 @@
   }
 
   /* Force print of background colors (critical for labels) */
-  * {
+  .paperA4,
+  .paperA4 * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
