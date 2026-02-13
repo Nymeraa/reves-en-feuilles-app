@@ -104,8 +104,10 @@ export const getAllMedia = async (): Promise<MediaItem[]> => {
 export interface BatchData {
   id: string;
   model: string;
-  quantity: number;
   format: 'small' | 'large';
+  poids: string;
+  lot: string;
+  ddm: string;
   labels: any[]; // Full label data structure
   timestamp: number;
 }

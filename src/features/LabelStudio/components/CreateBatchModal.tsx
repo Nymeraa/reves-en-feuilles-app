@@ -1,26 +1,43 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from '../LabelStudio.module.css';
 import { useLabelStudio, Batch } from '../context/LabelContext';
 
 const CreateBatchModal: React.FC = () => {
   const { isModalOpen, setIsModalOpen, addBatch } = useLabelStudio();
   const [model, setModel] = useState('Jardin Sauvage');
-  const [quantity, setQuantity] = useState(8);
+  const [poids, setPoids] = useState('50g');
+  const [lot, setLot] = useState('');
+  const [ddm, setDdm] = useState('');
   const [format, setFormat] = useState<'small' | 'large'>('small');
+
+  // Load last values from localStorage on mount
+  useEffect(() => {
+    const lastPoids = localStorage.getItem('lastPoids');
+    const lastLot = localStorage.getItem('lastLot');
+    const lastDdm = localStorage.getItem('lastDdm');
+    if (lastPoids) setPoids(lastPoids);
+    if (lastLot) setLot(lastLot);
+    if (lastDdm) setDdm(lastDdm);
+  }, []);
 
   if (!isModalOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Save values to localStorage
+    localStorage.setItem('lastPoids', poids);
+    localStorage.setItem('lastLot', lot);
+    localStorage.setItem('lastDdm', ddm);
+
     addBatch({
       model,
-      quantity,
       format,
+      poids,
+      lot,
+      ddm,
     });
-    // Reset defaults for next time
-    setQuantity(8);
-    setFormat('small');
   };
 
   return (
@@ -46,13 +63,35 @@ const CreateBatchModal: React.FC = () => {
           </div>
 
           <div className={styles.formGroup}>
-            <label className={styles.label}>Quantité</label>
+            <label className={styles.label}>Poids</label>
             <input
-              type="number"
+              type="text"
               className={styles.input}
-              value={quantity}
-              onChange={(e) => setQuantity(parseInt(e.target.value) || 0)}
-              min="1"
+              value={poids}
+              onChange={(e) => setPoids(e.target.value)}
+              placeholder="Ex: 50g"
+            />
+          </div>
+
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Lot</label>
+            <input
+              type="text"
+              className={styles.input}
+              value={lot}
+              onChange={(e) => setLot(e.target.value)}
+              placeholder="Numéro de lot"
+            />
+          </div>
+
+          <div className={styles.formGroup}>
+            <label className={styles.label}>DDM</label>
+            <input
+              type="text"
+              className={styles.input}
+              value={ddm}
+              onChange={(e) => setDdm(e.target.value)}
+              placeholder="Date de durabilité minimale"
             />
           </div>
 

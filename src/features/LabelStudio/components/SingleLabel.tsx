@@ -49,7 +49,8 @@ const SingleLabel: React.FC<SingleLabelProps> = ({ labelId, design, format }) =>
                   style={{
                     left: `${el.x}%`,
                     top: `${el.y}%`,
-                    transform: 'translate(-50%, -50%)',
+                    transform: `translate(-50%, -50%) rotate(${el.rotation || 0}deg)`,
+                    transformOrigin: 'center center',
                     fontSize: `${(el.fontSize || 12) * 1.33}px`,
                     color: el.color,
                     fontFamily: el.fontFamily,

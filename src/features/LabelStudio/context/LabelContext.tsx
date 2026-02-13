@@ -57,8 +57,10 @@ export interface LabelData {
 export interface Batch {
   id: string;
   model: string;
-  quantity: number;
   format: 'small' | 'large';
+  poids: string;
+  lot: string;
+  ddm: string;
   labels: LabelData[]; // Array of independent label configs
 }
 
@@ -212,7 +214,11 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
     };
 
     // Helper function to generate default elements based on label side
-    const generateDefaultElements = (side: 'front' | 'back', labelId: string): LabelElement[] => {
+    const generateDefaultElements = (
+      side: 'front' | 'back',
+      labelId: string,
+      batchData: { poids: string; lot: string; ddm: string }
+    ): LabelElement[] => {
       const elements: LabelElement[] = [];
       const addText = (
         idSuffix: string,
@@ -232,25 +238,25 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
           locked: false,
           fontSize,
           fontFamily: 'Arial',
-          color: '#000000',
+          color: '#6a3278', // Couleur violette par défaut
         });
       };
 
       if (side === 'front') {
         // ÉLÉMENTS DE LA FACE AVANT
-        addText('title', 'NOM DE LA RECETTE', 15, 14, true);
-        addText('blend', 'Mélange de...', 30, 10);
-        addText('weight', '50g', 60, 10, true);
+        addText('title', 'NOM DE LA RECETTE', 35, 14, true); // Y+20: 15→35
+        addText('blend', 'Mélange de...', 50, 10); // Y+20: 30→50
+        addText('weight', batchData.poids, 80, 10, true); // Y+20: 60→80
       } else {
         // ÉLÉMENTS DE LA FACE ARRIÈRE
-        addText('tagline', "Une phrase d'accroche...", 10, 10, true);
-        addText('desc', 'Description du produit...', 20, 9);
-        addText('ingredients', 'Ingrédients : ...', 35, 8);
-        addText('infusion', "Temps d'infusion : 3-5 min", 50, 8);
-        addText('temp', 'Température : 90°C', 55, 8);
-        addText('weight_back', 'Poids net : 50g', 65, 8);
-        addText('lot', 'Lot :', 70, 8);
-        addText('ddm', 'DDM :', 75, 8);
+        addText('tagline', "Une phrase d'accroche...", 30, 10, true); // Y+20: 10→30
+        addText('desc', 'Description du produit...', 40, 9); // Y+20: 20→40
+        addText('ingredients', 'Ingrédients : ...', 55, 8); // Y+20: 35→55
+        addText('infusion', "Temps d'infusion : 3-5 min", 70, 8); // Y+20: 50→70
+        addText('temp', 'Température : 90°C', 75, 8); // Y+20: 55→75
+        addText('weight_back', 'Poids net : ' + batchData.poids, 85, 8); // Y+20: 65→85
+        addText('lot', 'Lot : ' + batchData.lot, 90, 8); // Y+20: 70→90
+        addText('ddm', 'DDM : ' + batchData.ddm, 95, 8); // Y+20: 75→95
       }
 
       return elements;
@@ -287,7 +293,11 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
         side: side,
         design: {
           ...masterDesign,
-          elements: generateDefaultElements(side, labelId), // Pré-remplissage automatique
+          elements: generateDefaultElements(side, labelId, {
+            poids: newBatch.poids,
+            lot: newBatch.lot,
+            ddm: newBatch.ddm,
+          }), // Pré-remplissage automatique
         },
       });
     }
