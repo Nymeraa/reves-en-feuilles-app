@@ -211,6 +211,51 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
       ],
     };
 
+    // Helper function to generate default elements based on label side
+    const generateDefaultElements = (side: 'front' | 'back', labelId: string): LabelElement[] => {
+      const elements: LabelElement[] = [];
+      const addText = (
+        idSuffix: string,
+        content: string,
+        yPos: number,
+        fontSize = 10,
+        isBold = false
+      ) => {
+        elements.push({
+          id: `${labelId}_${idSuffix}`,
+          type: 'text',
+          content,
+          x: 10, // Marge gauche par défaut (10%)
+          y: yPos,
+          rotation: 0,
+          scale: 1,
+          locked: false,
+          fontSize,
+          fontFamily: 'Arial',
+          color: '#000000',
+        });
+      };
+
+      if (side === 'front') {
+        // ÉLÉMENTS DE LA FACE AVANT
+        addText('title', 'NOM DE LA RECETTE', 15, 14, true);
+        addText('blend', 'Mélange de...', 30, 10);
+        addText('weight', '50g', 60, 10, true);
+      } else {
+        // ÉLÉMENTS DE LA FACE ARRIÈRE
+        addText('tagline', "Une phrase d'accroche...", 10, 10, true);
+        addText('desc', 'Description du produit...', 20, 9);
+        addText('ingredients', 'Ingrédients : ...', 35, 8);
+        addText('infusion', "Temps d'infusion : 3-5 min", 50, 8);
+        addText('temp', 'Température : 90°C', 55, 8);
+        addText('weight_back', 'Poids net : 50g', 65, 8);
+        addText('lot', 'Lot :', 70, 8);
+        addText('ddm', 'DDM :', 75, 8);
+      }
+
+      return elements;
+    };
+
     // On force la création d'une page complète quoi qu'il arrive
     const totalSlots = newBatch.format === 'small' ? 8 : 4;
     const labels: LabelData[] = [];
@@ -234,13 +279,15 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
         pairId = Math.floor(i / 2) + 1;
       }
 
+      const labelId = `label_${batchId}_${i}`;
+
       labels.push({
-        id: `label_${batchId}_${i}`,
+        id: labelId,
         pairId: pairId,
         side: side,
         design: {
           ...masterDesign,
-          elements: [], // Vide au départ
+          elements: generateDefaultElements(side, labelId), // Pré-remplissage automatique
         },
       });
     }
