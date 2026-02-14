@@ -286,6 +286,8 @@
   position: relative;
   overflow: hidden;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: #ffffff; /* Force white by default */
+  background-image: none; /* No background image by default */
 }
 
 .labelText {

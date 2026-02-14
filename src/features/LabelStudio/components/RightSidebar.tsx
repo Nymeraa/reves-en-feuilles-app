@@ -125,8 +125,13 @@ const RightSidebar: React.FC = () => {
         {/* Clear Label Button */}
         <button
           onClick={() => {
-            if (selectedLabelId && confirm('Vider cette étiquette ?')) {
-              clearLabel(selectedLabelId);
+            if (selectedLabelId) {
+              // Use updateLabel to properly reset all properties
+              updateLabel(selectedLabelId, {
+                design: { elements: [] },
+                backgroundColor: '#ffffff',
+                backgroundImage: undefined,
+              });
             }
           }}
           style={{
