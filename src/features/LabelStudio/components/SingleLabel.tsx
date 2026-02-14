@@ -24,9 +24,7 @@ const SingleLabel: React.FC<SingleLabelProps> = ({ labelId, design, format }) =>
           className={styles.labelContent}
           style={{
             backgroundColor: design.backgroundColor || '#ffffff',
-            backgroundImage: (design as any).backgroundImage
-              ? `url(${(design as any).backgroundImage})`
-              : 'none',
+            backgroundImage: design.backgroundImage ? `url(${design.backgroundImage})` : 'none',
             cursor: 'pointer',
             border: isLabelSelected ? '2px solid #10b981' : '1px solid #e5e7eb',
             boxSizing: 'border-box',

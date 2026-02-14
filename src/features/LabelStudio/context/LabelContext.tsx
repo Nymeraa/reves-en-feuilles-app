@@ -41,6 +41,7 @@ export interface TrimanConfig {
 
 export interface LabelDesign {
   backgroundColor: string;
+  backgroundImage?: string | null;
   elements: LabelElement[]; // Unified array for text & images
   triman: TrimanConfig;
 }
@@ -53,6 +54,7 @@ export interface LabelData {
   side: LabelSide; // 'front' or 'back'
   design: LabelDesign;
   backgroundColor?: string; // Background color for this label
+  backgroundImage?: string | null; // Background image for this label
 }
 
 export interface Batch {

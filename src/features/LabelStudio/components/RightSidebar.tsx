@@ -128,9 +128,19 @@ const RightSidebar: React.FC = () => {
             if (selectedLabelId) {
               // Use updateLabel to properly reset all properties
               updateLabel(selectedLabelId, {
-                design: { elements: [] },
+                design: {
+                  elements: [],
+                  backgroundColor: '#ffffff',
+                  backgroundImage: null,
+                  triman: {
+                    enabled: false,
+                    x: 0,
+                    y: 0,
+                    format: 'standard',
+                  },
+                },
                 backgroundColor: '#ffffff',
-                backgroundImage: undefined,
+                backgroundImage: null,
               });
             }
           }}
