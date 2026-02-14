@@ -178,17 +178,23 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
 
         // Load custom fonts
         const fonts = await getAllFonts();
-        setCustomFonts(fonts);
-        // Inject into document
-        fonts.forEach((font) => {
-          const fontFace = new FontFace(font.name, `url(${font.data})`);
-          fontFace
-            .load()
-            .then((loadedFace) => {
-              document.fonts.add(loadedFace);
-            })
-            .catch((err) => console.error('Error loading font:', font.name, err));
-        });
+        if (fonts && fonts.length > 0) {
+          const loadedFonts: FontItem[] = [];
+
+          for (const font of fonts) {
+            try {
+              const fontFace = new FontFace(font.name, `url(${font.data})`);
+              await fontFace.load();
+              document.fonts.add(fontFace);
+              loadedFonts.push(font);
+              console.log(`Initialisation police : ${font.name}`);
+            } catch (fontErr) {
+              console.warn(`Impossible de restaurer la police ${font.name}`, fontErr);
+              // Optionnel : Supprimer la police corrompue de la DB ?
+            }
+          }
+          setCustomFonts(loadedFonts);
+        }
       } catch (error) {
         console.error('Failed to load data:', error);
       }
@@ -213,35 +219,63 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
   }, [batches]);
 
   const addCustomFont = async (file: File) => {
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      if (e.target?.result) {
-        const fontData = e.target.result as string;
-        // Remove file extension for name
-        const fontName = file.name.replace(/\.[^/.]+$/, '');
+    if (!file) return;
 
-        const font: FontItem = {
-          id: Math.random().toString(36).substr(2, 9),
+    // 1. Nettoyage du nom (pas d'espaces, pas de caractères spéciaux pour éviter les bugs CSS)
+    // On garde uniquement a-z, A-Z, 0-9 et on retire l'extension
+    const fontName = file.name.split('.')[0].replace(/[^a-zA-Z0-9]/g, '');
+
+    console.log(`Tentative d'import de la police : ${fontName}`);
+
+    const reader = new FileReader();
+
+    reader.onload = async (e) => {
+      try {
+        const result = e.target?.result;
+        if (typeof result !== 'string')
+          throw new Error('Erreur de lecture du fichier (pas une string)');
+
+        // 2. Création de l'objet FontFace
+        // Note: On passe 'result' directement dans url() car readAsDataURL inclut déjà "data:..."
+        console.log('Création de la FontFace...');
+        const fontFace = new FontFace(fontName, `url(${result})`);
+
+        // 3. Chargement explicite
+        console.log('Chargement de la FontFace (parsing)...');
+        await fontFace.load();
+
+        // 4. Ajout au document
+        document.fonts.add(fontFace);
+        console.log('Police ajoutée au document avec succès !');
+
+        // 5. Sauvegarde en Base de Données
+        const newFont: FontItem = {
+          id: `font_${Date.now()}`,
           name: fontName,
-          data: fontData,
-          type: file.type,
+          data: result, // On stocke la chaîne Base64 complète
+          type: file.type || 'font/ttf',
         };
 
-        try {
-          // Inject
-          const fontFace = new FontFace(fontName, `url(${fontData})`);
-          const loadedFace = await fontFace.load();
-          document.fonts.add(loadedFace);
+        // Sauvegarde DB
+        await saveFont(newFont);
 
-          // Save
-          await saveFont(font);
-          setCustomFonts((prev) => [...prev, font]);
-        } catch (err) {
-          console.error('Failed to add font:', err);
-          alert('Erreur lors du chargement de la police. Vérifiez que le fichier est valide.');
-        }
+        // 6. Mise à jour du State
+        setCustomFonts((prev) => [...prev, newFont]);
+
+        // Petit feedback utilisateur
+        alert(`Police "${fontName}" ajoutée avec succès !`);
+      } catch (err) {
+        console.error('ERREUR DÉTAILLÉE IMPORT POLICE :', err);
+        alert(`Erreur technique lors de l'import : ${(err as Error).message}`);
       }
     };
+
+    reader.onerror = (err) => {
+      console.error('Erreur FileReader :', err);
+      alert('Erreur lors de la lecture physique du fichier.');
+    };
+
+    // Lecture en Data URL (Base64)
     reader.readAsDataURL(file);
   };
 
