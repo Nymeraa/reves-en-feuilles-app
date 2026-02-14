@@ -500,12 +500,9 @@
   }
 }
 
-/* FORCE BRUTE POUR TUER LE JAUNE */
-.labelContent,
+/* FORCE BRUTE (Corrigée pour CSS Modules) */
 .labelContainer,
-.singleLabel,
-div[class*='label'] {
+.singleLabel {
   background-color: #ffffff !important;
   background-image: none !important;
-  background: #ffffff !important;
 }
