@@ -504,6 +504,5 @@
 .labelContent,
 .labelContainer,
 .singleLabel {
-  background-color: #ffffff;
-  background-image: none;
+  /* No background here to allow inline styles */
 }

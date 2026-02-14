@@ -17,13 +17,15 @@ const SingleLabel: React.FC<SingleLabelProps> = ({ labelId, design, format }) =>
 
   const isLabelSelected = selectedLabelId === labelId;
 
+  console.log('SingleLabel render:', { id: labelId, color: design.backgroundColor });
+
   return (
     <div className={`${styles.labelSlot} ${format === 'small' ? styles.small : styles.large}`}>
       <div className={styles.labelWrapper}>
         <div
           className={styles.labelContent}
           style={{
-            backgroundColor: design.backgroundColor || '#ffffff',
+            backgroundColor: design.backgroundColor ? design.backgroundColor : '#ffffff',
             backgroundImage: design.backgroundImage ? `url(${design.backgroundImage})` : 'none',
             cursor: 'pointer',
             border: isLabelSelected ? '2px solid #10b981' : '1px solid #e5e7eb',

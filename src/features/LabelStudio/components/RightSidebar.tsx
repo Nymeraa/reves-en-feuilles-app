@@ -195,7 +195,10 @@ const RightSidebar: React.FC = () => {
             ].map((color) => (
               <button
                 key={color}
-                onClick={() => updateLabel(selectedLabelId, { backgroundColor: color })}
+                onClick={() => {
+                  console.log('Changement couleur demandé :', color);
+                  updateLabel(selectedLabelId, { backgroundColor: color });
+                }}
                 style={{
                   width: '30px',
                   height: '30px',
