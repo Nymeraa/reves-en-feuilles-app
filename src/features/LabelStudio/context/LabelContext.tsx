@@ -620,7 +620,7 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
     setSelectedElementId(null);
   };
 
-  // Clear all element from a label
+  // Clear all elements from a label
   const clearLabel = (labelId: string) => {
     if (!activeBatchId) return;
     setBatches((prev) =>
@@ -630,7 +630,12 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
           ...batch,
           labels: batch.labels.map((label) =>
             label.id === labelId
-              ? { ...label, design: { ...label.design, elements: [] }, backgroundColor: '#ffffff' }
+              ? {
+                  ...label,
+                  design: { ...label.design, elements: [] },
+                  backgroundColor: '#ffffff', // Reset to white
+                  backgroundImage: undefined, // Remove any background image
+                }
               : label
           ),
         };
