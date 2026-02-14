@@ -220,6 +220,83 @@ const RightSidebar: React.FC = () => {
               />
             ))}
           </div>
+
+          {/* --- Bloc Couleur Personnalisée --- */}
+          <div style={{ marginTop: '15px', borderTop: '1px solid #eee', paddingTop: '10px' }}>
+            <label
+              style={{
+                fontSize: '12px',
+                fontWeight: 'bold',
+                color: '#666',
+                marginBottom: '8px',
+                display: 'block',
+              }}
+            >
+              Couleur personnalisée
+            </label>
+
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+              {/* 1. Le Sélecteur Visuel (Pipette) */}
+              <div
+                style={{
+                  position: 'relative',
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  overflow: 'hidden',
+                  border: '1px solid #ddd',
+                }}
+              >
+                <input
+                  type="color"
+                  value={selectedLabel?.design?.backgroundColor || '#ffffff'}
+                  onChange={(e) => {
+                    if (selectedLabel) {
+                      updateLabel(selectedLabelId, {
+                        backgroundColor: e.target.value,
+                        design: { ...selectedLabel.design, backgroundColor: e.target.value },
+                      });
+                    }
+                  }}
+                  style={{
+                    position: 'absolute',
+                    top: '-50%',
+                    left: '-50%',
+                    width: '200%',
+                    height: '200%',
+                    cursor: 'pointer',
+                    padding: 0,
+                    margin: 0,
+                  }}
+                  title="Choisir une couleur"
+                />
+              </div>
+
+              {/* 2. Le Champ Texte Hexadécimal */}
+              <input
+                type="text"
+                value={selectedLabel?.design?.backgroundColor || '#ffffff'}
+                onChange={(e) => {
+                  if (selectedLabel) {
+                    updateLabel(selectedLabelId, {
+                      backgroundColor: e.target.value,
+                      design: { ...selectedLabel.design, backgroundColor: e.target.value },
+                    });
+                  }
+                }}
+                placeholder="#FFFFFF"
+                style={{
+                  flex: 1,
+                  padding: '8px 12px',
+                  border: '1px solid #ddd',
+                  borderRadius: '6px',
+                  fontFamily: 'monospace',
+                  fontSize: '14px',
+                  textTransform: 'uppercase',
+                }}
+              />
+            </div>
+          </div>
         </div>
 
         <div
