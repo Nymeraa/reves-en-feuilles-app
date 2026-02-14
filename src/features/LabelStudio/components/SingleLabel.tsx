@@ -52,12 +52,14 @@ const SingleLabel: React.FC<SingleLabelProps> = ({ labelId, design, format }) =>
                   style={{
                     left: `${el.x}%`,
                     top: `${el.y}%`,
-                    transform: `translate(-50%, -50%) rotate(${el.rotation || 0}deg)`,
                     transformOrigin: 'center center',
                     fontSize: `${(el.fontSize || 12) * 1.33}px`,
                     color: el.color,
                     fontFamily: el.fontFamily,
-                    fontWeight: 'bold',
+                    fontWeight: el.fontWeight || 'normal',
+                    fontStyle: el.fontStyle || 'normal',
+                    textDecoration: el.textDecoration || 'none',
+                    transform: `rotate(${el.rotation}deg) scale(${el.scale})`,
                     cursor: 'pointer',
                     border: isSelected ? '2px solid #3b82f6' : '1px solid transparent', // Blue or transparent
                     padding: '2px', // Touch target

@@ -163,6 +163,7 @@ export const getAllBatches = async (): Promise<BatchData[]> => {
 export interface FontItem {
   id: string;
   name: string;
+  displayName: string; // Original name for UI
   data: string; // Base64 DataURL
   type: string; // font/ttf, font/otf, etc.
 }

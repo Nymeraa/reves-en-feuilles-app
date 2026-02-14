@@ -13,6 +13,7 @@ import {
   BatchData,
   FontItem,
   saveFont,
+  deleteFont,
   getAllFonts,
 } from '../utils/db';
 
@@ -32,6 +33,9 @@ export interface LabelElement {
   fontSize?: number; // px (text only)
   color?: string; // (text only)
   fontFamily?: string; // (text only)
+  fontWeight?: string; // (text only) 'normal' | 'bold'
+  fontStyle?: string; // (text only) 'normal' | 'italic'
+  textDecoration?: string; // (text only) 'none' | 'underline'
   locked?: boolean;
 }
 
@@ -128,6 +132,7 @@ interface LabelContextType {
 
   customFonts: FontItem[];
   addCustomFont: (file: File) => Promise<void>;
+  deleteCustomFont: (id: string) => Promise<void>;
 }
 
 const LabelContext = createContext<LabelContextType | undefined>(undefined);
@@ -251,7 +256,8 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
         // 5. Sauvegarde en Base de Données
         const newFont: FontItem = {
           id: `font_${Date.now()}`,
-          name: fontName,
+          name: fontName, // CSS compatible name
+          displayName: file.name.replace(/\.[^/.]+$/, ''), // Human readable name
           data: result, // On stocke la chaîne Base64 complète
           type: file.type || 'font/ttf',
         };
@@ -263,7 +269,7 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
         setCustomFonts((prev) => [...prev, newFont]);
 
         // Petit feedback utilisateur
-        alert(`Police "${fontName}" ajoutée avec succès !`);
+        alert(`Police "${newFont.displayName}" ajoutée avec succès !`);
       } catch (err) {
         console.error('ERREUR DÉTAILLÉE IMPORT POLICE :', err);
         alert(`Erreur technique lors de l'import : ${(err as Error).message}`);
@@ -277,6 +283,16 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
 
     // Lecture en Data URL (Base64)
     reader.readAsDataURL(file);
+  };
+
+  const deleteCustomFont = async (id: string) => {
+    try {
+      await deleteFont(id);
+      setCustomFonts((prev) => prev.filter((font) => font.id !== id));
+    } catch (error) {
+      console.error('Failed to delete font:', error);
+      alert('Erreur lors de la suppression de la police.');
+    }
   };
 
   const addBatch = (newBatch: Omit<Batch, 'id' | 'labels'>) => {
@@ -790,6 +806,7 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
         removeMediaFromLibrary,
         customFonts,
         addCustomFont,
+        deleteCustomFont,
       }}
     >
       {children}

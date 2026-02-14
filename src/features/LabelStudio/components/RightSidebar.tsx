@@ -18,6 +18,7 @@ const RightSidebar: React.FC = () => {
     saveAsDefaultTemplate,
     customFonts,
     addCustomFont,
+    deleteCustomFont,
   } = useLabelStudio();
 
   const activeBatch = batches.find((b) => b.id === activeBatchId);
@@ -524,12 +525,73 @@ const RightSidebar: React.FC = () => {
                   <optgroup label="Mes Polices">
                     {customFonts.map((font) => (
                       <option key={font.id} value={font.name}>
-                        {font.name}
+                        {font.displayName || font.name}
                       </option>
                     ))}
                   </optgroup>
                 )}
               </select>
+
+              {/* Custom Font Management List */}
+              {customFonts && customFonts.length > 0 && (
+                <div style={{ marginTop: '0.5rem' }}>
+                  <div
+                    style={{
+                      fontSize: '0.75rem',
+                      fontWeight: 'bold',
+                      marginBottom: '0.25rem',
+                      color: '#6b7280',
+                    }}
+                  >
+                    Gérer mes polices
+                  </div>
+                  {customFonts.map((font) => (
+                    <div
+                      key={font.id}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        marginBottom: '0.25rem',
+                        fontSize: '0.75rem',
+                        backgroundColor: '#f3f4f6',
+                        padding: '2px 6px',
+                        borderRadius: '4px',
+                      }}
+                    >
+                      <span
+                        style={{
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          maxWidth: '160px',
+                        }}
+                      >
+                        {font.displayName || font.name}
+                      </span>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (confirm(`Supprimer la police "${font.displayName || font.name}" ?`)) {
+                            deleteCustomFont(font.id);
+                          }
+                        }}
+                        style={{
+                          border: 'none',
+                          background: 'transparent',
+                          cursor: 'pointer',
+                          color: '#ef4444',
+                          padding: '0 4px',
+                          fontSize: '12px',
+                        }}
+                        title="Supprimer cette police"
+                      >
+                        ❌
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
 
               {/* Import Font Button */}
               <div style={{ marginTop: '0.5rem' }}>
@@ -554,6 +616,85 @@ const RightSidebar: React.FC = () => {
                   }}
                 >
                   📥 Importer une police (.ttf/.otf)
+                </button>
+              </div>
+            </div>
+
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Style</label>
+              <div style={{ display: 'flex', gap: '0.25rem' }}>
+                <button
+                  onClick={() =>
+                    handleChange(
+                      'fontWeight',
+                      selectedElement.fontWeight === 'bold' ? 'normal' : 'bold'
+                    )
+                  }
+                  style={{
+                    flex: 1,
+                    padding: '0.4rem',
+                    backgroundColor: selectedElement.fontWeight === 'bold' ? '#dbeafe' : 'white',
+                    border:
+                      selectedElement.fontWeight === 'bold'
+                        ? '1px solid #3b82f6'
+                        : '1px solid #d1d5db',
+                    color: selectedElement.fontWeight === 'bold' ? '#1e40af' : '#374151',
+                    borderRadius: '0.25rem',
+                    cursor: 'pointer',
+                    fontWeight: 'bold',
+                  }}
+                  title="Gras"
+                >
+                  B
+                </button>
+                <button
+                  onClick={() =>
+                    handleChange(
+                      'fontStyle',
+                      selectedElement.fontStyle === 'italic' ? 'normal' : 'italic'
+                    )
+                  }
+                  style={{
+                    flex: 1,
+                    padding: '0.4rem',
+                    backgroundColor: selectedElement.fontStyle === 'italic' ? '#dbeafe' : 'white',
+                    border:
+                      selectedElement.fontStyle === 'italic'
+                        ? '1px solid #3b82f6'
+                        : '1px solid #d1d5db',
+                    color: selectedElement.fontStyle === 'italic' ? '#1e40af' : '#374151',
+                    borderRadius: '0.25rem',
+                    cursor: 'pointer',
+                    fontStyle: 'italic',
+                  }}
+                  title="Italique"
+                >
+                  I
+                </button>
+                <button
+                  onClick={() =>
+                    handleChange(
+                      'textDecoration',
+                      selectedElement.textDecoration === 'underline' ? 'none' : 'underline'
+                    )
+                  }
+                  style={{
+                    flex: 1,
+                    padding: '0.4rem',
+                    backgroundColor:
+                      selectedElement.textDecoration === 'underline' ? '#dbeafe' : 'white',
+                    border:
+                      selectedElement.textDecoration === 'underline'
+                        ? '1px solid #3b82f6'
+                        : '1px solid #d1d5db',
+                    color: selectedElement.textDecoration === 'underline' ? '#1e40af' : '#374151',
+                    borderRadius: '0.25rem',
+                    cursor: 'pointer',
+                    textDecoration: 'underline',
+                  }}
+                  title="Souligné"
+                >
+                  U
                 </button>
               </div>
             </div>
