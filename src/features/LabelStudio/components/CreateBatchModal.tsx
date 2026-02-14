@@ -5,7 +5,6 @@ import { useLabelStudio, Batch } from '../context/LabelContext';
 
 const CreateBatchModal: React.FC = () => {
   const { isModalOpen, setIsModalOpen, addBatch } = useLabelStudio();
-  const [model, setModel] = useState('Jardin Sauvage');
   const [poids, setPoids] = useState('50g');
   const [lot, setLot] = useState('');
   const [ddm, setDdm] = useState('');
@@ -32,7 +31,7 @@ const CreateBatchModal: React.FC = () => {
     localStorage.setItem('lastDdm', ddm);
 
     addBatch({
-      model,
+      model: 'Étiquette vierge', // Default name for blank labels
       format,
       poids,
       lot,
@@ -48,20 +47,6 @@ const CreateBatchModal: React.FC = () => {
         </div>
 
         <form onSubmit={handleSubmit}>
-          <div className={styles.formGroup}>
-            <label className={styles.label}>Modèle</label>
-            <select
-              className={styles.select}
-              value={model}
-              onChange={(e) => setModel(e.target.value)}
-            >
-              <option value="Jardin Sauvage">Jardin Sauvage</option>
-              <option value="Nuit d'Orient">Nuit d'Orient</option>
-              <option value="Earl Grey Royal">Earl Grey Royal</option>
-              <option value="Menthe Fraîche">Menthe Fraîche</option>
-            </select>
-          </div>
-
           <div className={styles.formGroup}>
             <label className={styles.label}>Poids</label>
             <input

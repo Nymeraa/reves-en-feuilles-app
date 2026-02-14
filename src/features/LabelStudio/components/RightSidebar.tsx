@@ -12,6 +12,7 @@ const RightSidebar: React.FC = () => {
     updateLabelElement,
     updateLabel,
     clearLabel,
+    removeElement,
     duplicateLabelDesign,
     duplicateSideDesign,
     saveAsDefaultTemplate,
@@ -357,6 +358,35 @@ const RightSidebar: React.FC = () => {
             onChange={(e) => handleChange('rotation', parseFloat(e.target.value))}
           />
         </div>
+
+        {/* Delete Element Button */}
+        <button
+          onClick={() => {
+            if (selectedLabelId && selectedElementId) {
+              removeElement(selectedLabelId, selectedElementId);
+            }
+          }}
+          style={{
+            backgroundColor: '#ef4444',
+            color: 'white',
+            border: 'none',
+            padding: '10px',
+            width: '100%',
+            marginTop: '15px',
+            cursor: 'pointer',
+            borderRadius: '6px',
+            fontWeight: 'bold',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            transition: 'background-color 0.2s',
+          }}
+          onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#dc2626')}
+          onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#ef4444')}
+        >
+          🗑️ Supprimer l'élément
+        </button>
 
         {selectedElement.type === 'text' && (
           <>

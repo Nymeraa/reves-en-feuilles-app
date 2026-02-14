@@ -16,6 +16,7 @@ const MainCanvas: React.FC = () => {
     selectedElementId,
     setSelectedElementId,
     updateLabelElement,
+    removeElement,
     trimanConfig,
   } = useLabelStudio();
 
@@ -28,6 +29,23 @@ const MainCanvas: React.FC = () => {
   } | null>(null);
 
   const activeBatch = batches.find((b) => b.id === activeBatchId);
+
+  // Global keyboard handler for Delete/Backspace
+  React.useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      // Ignore if user is typing in an input/textarea
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
+
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedElementId && selectedLabelId) {
+        e.preventDefault();
+        removeElement(selectedLabelId, selectedElementId);
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [selectedElementId, selectedLabelId, removeElement]);
 
   // A4 dimensions in mm: 210 x 297
   // We'll use a base scale where 1mm = 3px (approx) for display
