@@ -16,6 +16,8 @@ const RightSidebar: React.FC = () => {
     duplicateLabelDesign,
     duplicateSideDesign,
     saveAsDefaultTemplate,
+    customFonts,
+    addCustomFont,
   } = useLabelStudio();
 
   const activeBatch = batches.find((b) => b.id === activeBatchId);
@@ -323,6 +325,18 @@ const RightSidebar: React.FC = () => {
     }
   };
 
+  const hiddenFileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleImportFontClick = () => {
+    hiddenFileInputRef.current?.click();
+  };
+
+  const handleFontFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      addCustomFont(e.target.files[0]);
+    }
+  };
+
   const handlePositionChange = (axis: 'x' | 'y', mmValue: string) => {
     const val = parseFloat(mmValue);
     if (isNaN(val)) return;
@@ -490,6 +504,60 @@ const RightSidebar: React.FC = () => {
 
         {selectedElement.type === 'text' && (
           <>
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Police</label>
+              <select
+                className={styles.input}
+                value={selectedElement.fontFamily || 'Arial'}
+                onChange={(e) => handleChange('fontFamily', e.target.value)}
+              >
+                <optgroup label="Standard">
+                  <option value="Arial">Arial</option>
+                  <option value="Times New Roman">Times New Roman</option>
+                  <option value="Courier New">Courier New</option>
+                  <option value="Verdana">Verdana</option>
+                  <option value="Georgia">Georgia</option>
+                  <option value="Tahoma">Tahoma</option>
+                  <option value="Trebuchet MS">Trebuchet MS</option>
+                </optgroup>
+                {customFonts && customFonts.length > 0 && (
+                  <optgroup label="Mes Polices">
+                    {customFonts.map((font) => (
+                      <option key={font.id} value={font.name}>
+                        {font.name}
+                      </option>
+                    ))}
+                  </optgroup>
+                )}
+              </select>
+
+              {/* Import Font Button */}
+              <div style={{ marginTop: '0.5rem' }}>
+                <input
+                  type="file"
+                  accept=".ttf,.otf"
+                  ref={hiddenFileInputRef}
+                  onChange={handleFontFileChange}
+                  style={{ display: 'none' }}
+                />
+                <button
+                  onClick={handleImportFontClick}
+                  style={{
+                    fontSize: '0.75rem',
+                    padding: '0.25rem 0.5rem',
+                    backgroundColor: '#e5e7eb',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '0.25rem',
+                    cursor: 'pointer',
+                    width: '100%',
+                    textAlign: 'center',
+                  }}
+                >
+                  📥 Importer une police (.ttf/.otf)
+                </button>
+              </div>
+            </div>
+
             <div className={styles.formGroup}>
               <label className={styles.label}>Taille Police (px)</label>
               <input

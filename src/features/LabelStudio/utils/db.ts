@@ -49,6 +49,12 @@ export const initDB = (): Promise<IDBDatabase> => {
         const batchStore = db.createObjectStore('batches', { keyPath: 'id' });
         batchStore.createIndex('timestamp', 'timestamp', { unique: false });
       }
+
+      // Create fonts store
+      if (!db.objectStoreNames.contains('fonts')) {
+        const fontStore = db.createObjectStore('fonts', { keyPath: 'id' });
+        fontStore.createIndex('name', 'name', { unique: true });
+      }
     };
   });
 };
@@ -150,5 +156,53 @@ export const getAllBatches = async (): Promise<BatchData[]> => {
       resolve(results);
     };
     request.onerror = () => reject('Error fetching batches');
+  });
+};
+
+// Font persistence
+export interface FontItem {
+  id: string;
+  name: string;
+  data: string; // Base64 DataURL
+  type: string; // font/ttf, font/otf, etc.
+}
+
+const FONT_STORE = 'fonts';
+
+export const saveFont = async (font: FontItem): Promise<void> => {
+  const db = await initDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction([FONT_STORE], 'readwrite');
+    const store = transaction.objectStore(FONT_STORE);
+    const request = store.put(font);
+
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject('Error saving font');
+  });
+};
+
+export const deleteFont = async (id: string): Promise<void> => {
+  const db = await initDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction([FONT_STORE], 'readwrite');
+    const store = transaction.objectStore(FONT_STORE);
+    const request = store.delete(id);
+
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject('Error deleting font');
+  });
+};
+
+export const getAllFonts = async (): Promise<FontItem[]> => {
+  const db = await initDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction([FONT_STORE], 'readonly');
+    const store = transaction.objectStore(FONT_STORE);
+    const request = store.getAll();
+
+    request.onsuccess = () => {
+      resolve(request.result as FontItem[]);
+    };
+    request.onerror = () => reject('Error fetching fonts');
   });
 };

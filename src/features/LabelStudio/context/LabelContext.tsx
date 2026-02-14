@@ -11,6 +11,9 @@ import {
   saveBatch as saveBatchToDB,
   deleteBatch as deleteBatchFromDB,
   BatchData,
+  FontItem,
+  saveFont,
+  getAllFonts,
 } from '../utils/db';
 
 // Define types for our domain
@@ -122,6 +125,9 @@ interface LabelContextType {
     format: 'small' | 'large'
   ) => Promise<void>;
   removeMediaFromLibrary: (id: string) => Promise<void>;
+
+  customFonts: FontItem[];
+  addCustomFont: (file: File) => Promise<void>;
 }
 
 const LabelContext = createContext<LabelContextType | undefined>(undefined);
@@ -142,6 +148,7 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
   });
 
   const [mediaLibrary, setMediaLibrary] = useState<MediaItem[]>([]);
+  const [customFonts, setCustomFonts] = useState<FontItem[]>([]);
 
   // Derived state
   const activeBatch = batches.find((b) => b.id === activeBatchId);
@@ -168,6 +175,20 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
         if (savedBatches.length > 0) {
           setBatches(savedBatches as Batch[]);
         }
+
+        // Load custom fonts
+        const fonts = await getAllFonts();
+        setCustomFonts(fonts);
+        // Inject into document
+        fonts.forEach((font) => {
+          const fontFace = new FontFace(font.name, `url(${font.data})`);
+          fontFace
+            .load()
+            .then((loadedFace) => {
+              document.fonts.add(loadedFace);
+            })
+            .catch((err) => console.error('Error loading font:', font.name, err));
+        });
       } catch (error) {
         console.error('Failed to load data:', error);
       }
@@ -190,6 +211,72 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
       saveBatches();
     }
   }, [batches]);
+
+  const addCustomFont = async (file: File) => {
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      if (e.target?.result) {
+        const fontData = e.target.result as string;
+        // Remove file extension for name
+        const fontName = file.name.replace(/\.[^/.]+$/, '');
+
+        const font: FontItem = {
+          id: Math.random().toString(36).substr(2, 9),
+          name: fontName,
+          data: fontData,
+          type: file.type,
+        };
+
+        try {
+          // Inject
+          const fontFace = new FontFace(fontName, `url(${fontData})`);
+          const loadedFace = await fontFace.load();
+          document.fonts.add(loadedFace);
+
+          // Save
+          await saveFont(font);
+          setCustomFonts((prev) => [...prev, font]);
+        } catch (err) {
+          console.error('Failed to add font:', err);
+          alert('Erreur lors du chargement de la police. Vérifiez que le fichier est valide.');
+        }
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const addCustomFont = async (file: File) => {
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      if (e.target?.result) {
+        const fontData = e.target.result as string;
+        // Remove file extension for name
+        const fontName = file.name.replace(/\.[^/.]+$/, '');
+
+        const font: FontItem = {
+          id: Math.random().toString(36).substr(2, 9),
+          name: fontName,
+          data: fontData,
+          type: file.type,
+        };
+
+        try {
+          // Inject
+          const fontFace = new FontFace(fontName, `url(${fontData})`);
+          const loadedFace = await fontFace.load();
+          document.fonts.add(loadedFace);
+
+          // Save
+          await saveFont(font);
+          setCustomFonts((prev) => [...prev, font]);
+        } catch (err) {
+          console.error('Failed to add font:', err);
+          alert('Erreur lors du chargement de la police. Vérifiez que le fichier est valide.');
+        }
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   const addBatch = (newBatch: Omit<Batch, 'id' | 'labels'>) => {
     const batchId = Math.random().toString(36).substr(2, 9);
@@ -700,6 +787,8 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
         mediaLibrary,
         addMediaToLibrary,
         removeMediaFromLibrary,
+        customFonts,
+        addCustomFont,
       }}
     >
       {children}
