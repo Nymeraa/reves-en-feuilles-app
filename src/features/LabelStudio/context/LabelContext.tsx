@@ -228,9 +228,16 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
 
     // 1. Nettoyage du nom (pas d'espaces, pas de caractères spéciaux pour éviter les bugs CSS)
     // On garde uniquement a-z, A-Z, 0-9 et on retire l'extension
-    const fontName = file.name.split('.')[0].replace(/[^a-zA-Z0-9]/g, '');
+    const rawName = file.name.replace(/\.[^/.]+$/, ''); // Remove extension
+    const fontName = rawName.replace(/[^a-zA-Z0-9]/g, '');
 
-    console.log(`Tentative d'import de la police : ${fontName}`);
+    console.log(`Tentative d'import de la police : ${fontName} (Original: ${file.name})`);
+
+    // Check for duplicates in state
+    if (customFonts.some((f) => f.name === fontName)) {
+      alert(`La police "${fontName}" existe déjà !`);
+      return;
+    }
 
     const reader = new FileReader();
 
@@ -241,7 +248,6 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
           throw new Error('Erreur de lecture du fichier (pas une string)');
 
         // 2. Création de l'objet FontFace
-        // Note: On passe 'result' directement dans url() car readAsDataURL inclut déjà "data:..."
         console.log('Création de la FontFace...');
         const fontFace = new FontFace(fontName, `url(${result})`);
 
@@ -257,7 +263,7 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
         const newFont: FontItem = {
           id: `font_${Date.now()}`,
           name: fontName, // CSS compatible name
-          displayName: file.name.replace(/\.[^/.]+$/, ''), // Human readable name
+          displayName: rawName, // Human readable name
           data: result, // On stocke la chaîne Base64 complète
           type: file.type || 'font/ttf',
         };
@@ -270,9 +276,17 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
 
         // Petit feedback utilisateur
         alert(`Police "${newFont.displayName}" ajoutée avec succès !`);
-      } catch (err) {
+      } catch (err: any) {
         console.error('ERREUR DÉTAILLÉE IMPORT POLICE :', err);
-        alert(`Erreur technique lors de l'import : ${(err as Error).message}`);
+        const modalMessage = err?.message || err?.name || 'Erreur inconnue';
+
+        if (modalMessage.includes('ConstraintError')) {
+          alert(
+            'Cette police semble déjà exister dans la base de données (Erreur de contrainte unique).'
+          );
+        } else {
+          alert(`Erreur technique lors de l'import : ${modalMessage}`);
+        }
       }
     };
 
