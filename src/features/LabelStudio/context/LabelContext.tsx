@@ -245,39 +245,6 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
     reader.readAsDataURL(file);
   };
 
-  const addCustomFont = async (file: File) => {
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      if (e.target?.result) {
-        const fontData = e.target.result as string;
-        // Remove file extension for name
-        const fontName = file.name.replace(/\.[^/.]+$/, '');
-
-        const font: FontItem = {
-          id: Math.random().toString(36).substr(2, 9),
-          name: fontName,
-          data: fontData,
-          type: file.type,
-        };
-
-        try {
-          // Inject
-          const fontFace = new FontFace(fontName, `url(${fontData})`);
-          const loadedFace = await fontFace.load();
-          document.fonts.add(loadedFace);
-
-          // Save
-          await saveFont(font);
-          setCustomFonts((prev) => [...prev, font]);
-        } catch (err) {
-          console.error('Failed to add font:', err);
-          alert('Erreur lors du chargement de la police. Vérifiez que le fichier est valide.');
-        }
-      }
-    };
-    reader.readAsDataURL(file);
-  };
-
   const addBatch = (newBatch: Omit<Batch, 'id' | 'labels'>) => {
     const batchId = Math.random().toString(36).substr(2, 9);
 
