@@ -11,15 +11,16 @@ const RightSidebar: React.FC = () => {
     batches,
     updateLabelElement,
     duplicateLabelDesign,
+    duplicateSideDesign,
   } = useLabelStudio();
 
   const activeBatch = batches.find((b) => b.id === activeBatchId);
   const selectedLabel = activeBatch?.labels.find((l) => l.id === selectedLabelId);
   const selectedElement = selectedLabel?.design.elements.find((t) => t.id === selectedElementId);
 
-  const handleDuplicateDesign = () => {
-    if (activeBatch && selectedLabelId) {
-      duplicateLabelDesign(activeBatch.id, selectedLabelId);
+  const handleDuplicateSideDesign = () => {
+    if (selectedLabelId) {
+      duplicateSideDesign(selectedLabelId);
     }
   };
 
@@ -58,11 +59,11 @@ const RightSidebar: React.FC = () => {
         }}
       >
         <button
-          onClick={handleDuplicateDesign}
+          onClick={handleDuplicateSideDesign}
           style={{
             width: '100%',
             padding: '0.75rem 1rem',
-            backgroundColor: '#3b82f6',
+            backgroundColor: '#10b981',
             color: 'white',
             border: 'none',
             borderRadius: '0.375rem',
@@ -75,10 +76,10 @@ const RightSidebar: React.FC = () => {
             gap: '0.5rem',
             transition: 'background-color 0.2s',
           }}
-          onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#2563eb')}
-          onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#3b82f6')}
+          onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#059669')}
+          onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#10b981')}
         >
-          🔄 Appliquer ce design à tout le lot
+          ❐ Appliquer à toutes les faces {selectedLabel?.side === 'front' ? 'Avant' : 'Arrière'}
         </button>
         <div
           style={{ color: '#9ca3af', fontSize: '0.875rem', textAlign: 'center', marginTop: '1rem' }}
@@ -129,7 +130,7 @@ const RightSidebar: React.FC = () => {
     >
       {/* Duplication Button */}
       <button
-        onClick={handleDuplicateDesign}
+        onClick={handleDuplicateSideDesign}
         style={{
           margin: '1rem',
           padding: '0.75rem 1rem',
@@ -264,6 +265,38 @@ const RightSidebar: React.FC = () => {
                 <span style={{ fontSize: '0.875rem', color: '#6b7280' }}>
                   {selectedElement.color}
                 </span>
+              </div>
+              {/* Color Presets */}
+              <div style={{ marginTop: '0.5rem' }}>
+                <span
+                  className={styles.label}
+                  style={{ fontSize: '0.75rem', marginBottom: '0.25rem', display: 'block' }}
+                >
+                  Couleurs rapides
+                </span>
+                <div style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
+                  {['#000000', '#FFFFFF', '#6a3278', '#E8D5C4', '#2F4F4F', '#8B4513'].map(
+                    (color) => (
+                      <button
+                        key={color}
+                        onClick={() => handleChange('color', color)}
+                        style={{
+                          width: '30px',
+                          height: '30px',
+                          backgroundColor: color,
+                          border:
+                            selectedElement.color === color
+                              ? '2px solid #3b82f6'
+                              : '1px solid #d1d5db',
+                          borderRadius: '0.25rem',
+                          cursor: 'pointer',
+                          padding: 0,
+                        }}
+                        title={color}
+                      />
+                    )
+                  )}
+                </div>
               </div>
             </div>
           </>

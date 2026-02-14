@@ -100,6 +100,7 @@ interface LabelContextType {
   addElementToLabel: (labelId: string, element: LabelElement) => void;
   updateLabelElement: (labelId: string, elementId: string, updates: Partial<LabelElement>) => void;
   duplicateLabelDesign: (batchId: string, sourceLabelId: string) => void;
+  duplicateSideDesign: (sourceLabelId: string) => void;
 
   updateTriman: (format: 'small' | 'large', updates: Partial<TrimanSettings>) => void;
 
@@ -257,7 +258,7 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
         addText('temp', 'Température : 90°C', 75, 8); // Y+20: 55→75
         addText('weight_back', 'Poids net : ' + batchData.poids, 85, 8); // Y+20: 65→85
         addText('lot', 'Lot : ' + batchData.lot, 90, 8); // Y+20: 70→90
-        addText('ddm', 'DDM : ' + batchData.ddm, 95, 8); // Y+20: 75→95
+        addText('ddm', batchData.ddm, 95, 8); // Y+20: 75→95 (sans préfixe)
       }
 
       return elements;
@@ -411,6 +412,50 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
+  // Duplicate a label design to all labels with the same side (front/back) in the same batch
+  const duplicateSideDesign = (sourceLabelId: string) => {
+    if (!activeBatchId) return;
+
+    setBatches((prevBatches) =>
+      prevBatches.map((batch) => {
+        if (batch.id !== activeBatchId) return batch;
+
+        // Find the source label
+        const sourceLabel = batch.labels.find((l) => l.id === sourceLabelId);
+        if (!sourceLabel) return batch;
+
+        const sourceSide = sourceLabel.side;
+
+        // Copy design to all labels with the same side
+        return {
+          ...batch,
+          labels: batch.labels.map((label) => {
+            // Skip if it's the source label or different side
+            if (label.id === sourceLabelId || label.side !== sourceSide) {
+              return label;
+            }
+
+            // Deep clone the source elements with new IDs
+            const clonedElements = structuredClone(sourceLabel.design.elements).map(
+              (el: LabelElement) => ({
+                ...el,
+                id: `${label.id}_${el.id.split('_').pop()}`, // Generate new ID
+              })
+            );
+
+            return {
+              ...label,
+              design: {
+                ...label.design,
+                elements: clonedElements,
+              },
+            };
+          }),
+        };
+      })
+    );
+  };
+
   const addMediaToLibrary = async (file: File, category: MediaCategory, format: LabelFormat) => {
     return new Promise<void>((resolve, reject) => {
       const reader = new FileReader();
@@ -499,6 +544,7 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
         updateLabelElement,
         addElementToLabel,
         duplicateLabelDesign,
+        duplicateSideDesign,
         updateTriman,
         mediaLibrary,
         addMediaToLibrary,
