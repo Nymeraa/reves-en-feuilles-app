@@ -12,7 +12,7 @@ export interface MediaItem {
 
 const DB_NAME = 'LabelStudioDB';
 const STORE_NAME = 'mediaLibrary';
-const DB_VERSION = 3; // Increment version for batches store
+const DB_VERSION = 4; // Increment version for fonts store
 
 export const initDB = (): Promise<IDBDatabase> => {
   return new Promise((resolve, reject) => {
