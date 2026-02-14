@@ -197,14 +197,19 @@ const RightSidebar: React.FC = () => {
                 key={color}
                 onClick={() => {
                   console.log('Changement couleur demandé :', color);
-                  updateLabel(selectedLabelId, { backgroundColor: color });
+                  if (selectedLabel) {
+                    updateLabel(selectedLabelId, {
+                      backgroundColor: color,
+                      design: { ...selectedLabel.design, backgroundColor: color },
+                    });
+                  }
                 }}
                 style={{
                   width: '30px',
                   height: '30px',
                   backgroundColor: color,
                   border:
-                    selectedLabel?.backgroundColor === color
+                    selectedLabel?.design?.backgroundColor === color
                       ? '2px solid #3b82f6'
                       : '1px solid #d1d5db',
                   borderRadius: '0.25rem',
