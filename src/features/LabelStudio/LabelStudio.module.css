@@ -501,8 +501,9 @@
 }
 
 /* FORCE BRUTE (Corrigée pour CSS Modules) */
+.labelContent,
 .labelContainer,
 .singleLabel {
-  background-color: #ffffff !important;
-  background-image: none !important;
+  background-color: #ffffff;
+  background-image: none;
 }
