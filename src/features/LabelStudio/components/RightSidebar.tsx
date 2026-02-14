@@ -10,8 +10,11 @@ const RightSidebar: React.FC = () => {
     activeBatchId,
     batches,
     updateLabelElement,
+    updateLabel,
+    clearLabel,
     duplicateLabelDesign,
     duplicateSideDesign,
+    saveAsDefaultTemplate,
   } = useLabelStudio();
 
   const activeBatch = batches.find((b) => b.id === activeBatchId);
@@ -81,6 +84,120 @@ const RightSidebar: React.FC = () => {
         >
           ❐ Appliquer à toutes les faces {selectedLabel?.side === 'front' ? 'Avant' : 'Arrière'}
         </button>
+
+        {/* Save as Template Button */}
+        <button
+          onClick={() => {
+            if (activeBatch && selectedLabel) {
+              saveAsDefaultTemplate(
+                activeBatch.format,
+                selectedLabel.side,
+                selectedLabel.design.elements
+              );
+              alert(
+                `Modèle sauvegardé pour ${activeBatch.format === 'small' ? 'Petit' : 'Grand'} - ${selectedLabel.side === 'front' ? 'Avant' : 'Arrière'} !`
+              );
+            }
+          }}
+          style={{
+            width: '100%',
+            padding: '0.75rem 1rem',
+            backgroundColor: '#3b82f6',
+            color: 'white',
+            border: 'none',
+            borderRadius: '0.375rem',
+            fontSize: '0.875rem',
+            fontWeight: '600',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.5rem',
+            transition: 'background-color 0.2s',
+          }}
+          onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#2563eb')}
+          onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#3b82f6')}
+        >
+          💾 Sauver comme modèle par défaut
+        </button>
+
+        {/* Clear Label Button */}
+        <button
+          onClick={() => {
+            if (selectedLabelId && confirm('Vider cette étiquette ?')) {
+              clearLabel(selectedLabelId);
+            }
+          }}
+          style={{
+            width: '100%',
+            padding: '0.75rem 1rem',
+            backgroundColor: '#ef4444',
+            color: 'white',
+            border: 'none',
+            borderRadius: '0.375rem',
+            fontSize: '0.875rem',
+            fontWeight: '600',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.5rem',
+            transition: 'background-color 0.2s',
+          }}
+          onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#dc2626')}
+          onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#ef4444')}
+        >
+          🗑️ Vider l'étiquette
+        </button>
+
+        {/* Background Color Palette */}
+        <div>
+          <label
+            style={{
+              fontSize: '0.875rem',
+              fontWeight: '600',
+              color: '#374151',
+              display: 'block',
+              marginBottom: '0.5rem',
+            }}
+          >
+            Couleur de fond
+          </label>
+          <div style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
+            {[
+              '#b8cbe6',
+              '#a1b7d8',
+              '#c4d5a9',
+              '#d9e8c0',
+              '#e8c4cf',
+              '#e8b3aa',
+              '#f39c8f',
+              '#f08474',
+              '#e8be6a',
+              '#fceebe',
+              '#ffffff',
+            ].map((color) => (
+              <button
+                key={color}
+                onClick={() => updateLabel(selectedLabelId, { backgroundColor: color })}
+                style={{
+                  width: '30px',
+                  height: '30px',
+                  backgroundColor: color,
+                  border:
+                    selectedLabel?.backgroundColor === color
+                      ? '2px solid #3b82f6'
+                      : '1px solid #d1d5db',
+                  borderRadius: '0.25rem',
+                  cursor: 'pointer',
+                  padding: 0,
+                }}
+                title={color}
+              />
+            ))}
+          </div>
+        </div>
+
         <div
           style={{ color: '#9ca3af', fontSize: '0.875rem', textAlign: 'center', marginTop: '1rem' }}
         >

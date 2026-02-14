@@ -52,6 +52,7 @@ export interface LabelData {
   pairId: number; // Pair number (1-indexed)
   side: LabelSide; // 'front' or 'back'
   design: LabelDesign;
+  backgroundColor?: string; // Background color for this label
 }
 
 export interface Batch {
@@ -99,8 +100,16 @@ interface LabelContextType {
 
   addElementToLabel: (labelId: string, element: LabelElement) => void;
   updateLabelElement: (labelId: string, elementId: string, updates: Partial<LabelElement>) => void;
+  updateLabel: (labelId: string, updates: Partial<LabelData>) => void;
+  removeElement: (labelId: string, elementId: string) => void;
+  clearLabel: (labelId: string) => void;
   duplicateLabelDesign: (batchId: string, sourceLabelId: string) => void;
   duplicateSideDesign: (sourceLabelId: string) => void;
+  saveAsDefaultTemplate: (
+    format: 'small' | 'large',
+    side: 'front' | 'back',
+    elements: LabelElement[]
+  ) => void;
 
   updateTriman: (format: 'small' | 'large', updates: Partial<TrimanSettings>) => void;
 
@@ -218,8 +227,52 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
     const generateDefaultElements = (
       side: 'front' | 'back',
       labelId: string,
-      batchData: { poids: string; lot: string; ddm: string }
+      batchData: { poids: string; lot: string; ddm: string },
+      format: 'small' | 'large'
     ): LabelElement[] => {
+      const storageKey = `template_${format}_${side}`;
+      const savedTemplate = localStorage.getItem(storageKey);
+
+      // Try to load from template
+      if (savedTemplate) {
+        try {
+          const template = JSON.parse(savedTemplate);
+          return template.map((t: any, idx: number) => {
+            // Map idSuffix to content
+            let content = '';
+            if (t.idSuffix.includes('weight')) content = batchData.poids;
+            else if (t.idSuffix === 'lot') content = 'Lot : ' + batchData.lot;
+            else if (t.idSuffix === 'ddm') content = batchData.ddm;
+            else if (t.idSuffix === 'weight_back') content = 'Poids net : ' + batchData.poids;
+            else if (t.idSuffix === 'title') content = 'NOM DE LA RECETTE';
+            else if (t.idSuffix === 'blend') content = 'Mélange de...';
+            else if (t.idSuffix === 'tagline') content = "Une phrase d'accroche...";
+            else if (t.idSuffix === 'desc') content = 'Description du produit...';
+            else if (t.idSuffix === 'ingredients') content = 'Ingrédients : ...';
+            else if (t.idSuffix === 'infusion') content = "Temps d'infusion : 3-5 min";
+            else if (t.idSuffix === 'temp') content = 'Température : 90°C';
+            else content = t.idSuffix; // Fallback
+
+            return {
+              id: `${labelId}_${t.idSuffix}`,
+              type: t.type || 'text',
+              content,
+              x: t.x,
+              y: t.y,
+              rotation: t.rotation || 0,
+              scale: t.scale || 1,
+              locked: false,
+              fontSize: t.fontSize || 10,
+              fontFamily: t.fontFamily || 'Arial',
+              color: '#6a3278', // Always violet
+            };
+          });
+        } catch (e) {
+          console.warn('Failed to load template, using defaults');
+        }
+      }
+
+      // Default generation if no template
       const elements: LabelElement[] = [];
       const addText = (
         idSuffix: string,
@@ -295,12 +348,18 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
         side: side,
         design: {
           ...masterDesign,
-          elements: generateDefaultElements(side, labelId, {
-            poids: newBatch.poids,
-            lot: newBatch.lot,
-            ddm: newBatch.ddm,
-          }), // Pré-remplissage automatique
+          elements: generateDefaultElements(
+            side,
+            labelId,
+            {
+              poids: newBatch.poids,
+              lot: newBatch.lot,
+              ddm: newBatch.ddm,
+            },
+            newBatch.format
+          ), // Pré-remplissage automatique
         },
+        backgroundColor: '#ffffff', // Default white background
       });
     }
 
@@ -521,6 +580,87 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  // Update label properties (like backgroundColor)
+  const updateLabel = (labelId: string, updates: Partial<LabelData>) => {
+    if (!activeBatchId) return;
+    setBatches((prev) =>
+      prev.map((batch) => {
+        if (batch.id !== activeBatchId) return batch;
+        return {
+          ...batch,
+          labels: batch.labels.map((label) =>
+            label.id === labelId ? { ...label, ...updates } : label
+          ),
+        };
+      })
+    );
+  };
+
+  // Remove an element from a label
+  const removeElement = (labelId: string, elementId: string) => {
+    if (!activeBatchId) return;
+    setBatches((prev) =>
+      prev.map((batch) => {
+        if (batch.id !== activeBatchId) return batch;
+        return {
+          ...batch,
+          labels: batch.labels.map((label) => {
+            if (label.id !== labelId) return label;
+            return {
+              ...label,
+              design: {
+                ...label.design,
+                elements: label.design.elements.filter((el) => el.id !== elementId),
+              },
+            };
+          }),
+        };
+      })
+    );
+    setSelectedElementId(null);
+  };
+
+  // Clear all element from a label
+  const clearLabel = (labelId: string) => {
+    if (!activeBatchId) return;
+    setBatches((prev) =>
+      prev.map((batch) => {
+        if (batch.id !== activeBatchId) return batch;
+        return {
+          ...batch,
+          labels: batch.labels.map((label) =>
+            label.id === labelId
+              ? { ...label, design: { ...label.design, elements: [] }, backgroundColor: '#ffffff' }
+              : label
+          ),
+        };
+      })
+    );
+    setSelectedElementId(null);
+  };
+
+  // Save current label elements as default template for a specific format/side combination
+  const saveAsDefaultTemplate = (
+    format: 'small' | 'large',
+    side: 'front' | 'back',
+    elements: LabelElement[]
+  ) => {
+    const storageKey = `template_${format}_${side}`;
+    // Save only style/position, not content
+    const template = elements.map((el) => ({
+      idSuffix: el.id.split('_').pop() || 'unknown',
+      type: el.type,
+      x: el.x,
+      y: el.y,
+      rotation: el.rotation,
+      scale: el.scale,
+      fontSize: el.fontSize,
+      fontFamily: el.fontFamily,
+      color: el.color,
+    }));
+    localStorage.setItem(storageKey, JSON.stringify(template));
+  };
+
   return (
     <LabelContext.Provider
       value={{
@@ -543,8 +683,12 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
         setIsModalOpen,
         updateLabelElement,
         addElementToLabel,
+        updateLabel,
+        removeElement,
+        clearLabel,
         duplicateLabelDesign,
         duplicateSideDesign,
+        saveAsDefaultTemplate,
         updateTriman,
         mediaLibrary,
         addMediaToLibrary,
