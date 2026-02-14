@@ -499,3 +499,13 @@
     margin: 0 !important;
   }
 }
+
+/* FORCE BRUTE POUR TUER LE JAUNE */
+.labelContent,
+.labelContainer,
+.singleLabel,
+div[class*='label'] {
+  background-color: #ffffff !important;
+  background-image: none !important;
+  background: #ffffff !important;
+}

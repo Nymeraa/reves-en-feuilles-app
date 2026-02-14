@@ -195,7 +195,7 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
     const batchId = Math.random().toString(36).substr(2, 9);
 
     const masterDesign: LabelDesign = {
-      backgroundColor: '#e8be6a',
+      backgroundColor: '#ffffff',
       triman: { enabled: false, x: 5, y: 5, format: 'standard' },
       elements: [
         {

@@ -1,5 +1,101 @@
-scripts/verify-implementation.ts(67,44): error TS2339: Property 'createBackup' does not exist on type '{ getDataForEntity(orgId: string, entity: ExportEntity, limit?: number): Promise<{ name: string; id: string; organizationId: string; status: string; notes: string | null; ... 4 more ...; defaultConditioning: string | null; }[] | ... 7 more ... | { ...; }[]>; ... 4 more ...; restore(orgId: string, payload: any, mode:...'.
-scripts/verify-implementation.ts(68,46): error TS18047: 'backupBuffer' is possibly 'null'.
-scripts/verify-implementation.ts(70,13): error TS18047: 'backupBuffer' is possibly 'null'.
-src/app/api/backup/download/route.ts(6,47): error TS2339: Property 'createBackupWithLog' does not exist on type '{ getDataForEntity(orgId: string, entity: ExportEntity, limit?: number): Promise<{ name: string; id: string; organizationId: string; status: string; notes: string | null; ... 4 more ...; defaultConditioning: string | null; }[] | ... 7 more ... | { ...; }[]>; ... 4 more ...; restore(orgId: string, payload: any, mode:...'.
-src/app/api/restore/route.ts(32,54): error TS2339: Property 'errors' does not exist on type 'ZodError<unknown>'.
+src/features/LabelStudio/components/SidebarLeft.tsx(3,20): error TS2792: Cannot find module '../LabelStudio.module.css'. Did you mean to set the 'moduleResolution' option to 'nodenext', or to add aliases to the 'paths' option?
+src/features/LabelStudio/components/SidebarLeft.tsx(5,74): error TS2792: Cannot find module 'lucide-react'. Did you mean to set the 'moduleResolution' option to 'nodenext', or to add aliases to the 'paths' option?
+src/features/LabelStudio/components/SidebarLeft.tsx(8,7): error TS2322: Type '() => JSX.Element' is not assignable to type 'FC<{}>'.
+  Type 'Element' is not assignable to type 'ReactNode | Promise<ReactNode>'.
+src/features/LabelStudio/components/SidebarLeft.tsx(98,7): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(99,9): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(112,11): error TS2339: Property 'span' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(113,21): error TS2339: Property 'span' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(113,93): error TS2339: Property 'span' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(114,11): error TS2339: Property 'span' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(115,9): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(118,11): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(119,13): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(129,17): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(142,19): error TS2339: Property 'img' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(148,19): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(164,19): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(165,17): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(169,15): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(187,15): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(188,13): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(189,11): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(191,7): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(198,5): error TS2339: Property 'aside' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(199,7): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(200,9): error TS2339: Property 'h2' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(200,51): error TS2339: Property 'h2' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(201,7): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(203,7): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(204,9): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(209,9): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(210,9): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(215,9): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(216,7): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(218,7): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(221,13): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(222,15): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(224,15): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(225,13): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(227,15): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(227,68): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(230,17): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(239,19): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(239,67): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(240,19): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(242,19): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(243,17): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(250,11): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(252,15): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(255,15): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(259,17): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(260,19): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(277,21): error TS2339: Property 'span' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(279,21): error TS2339: Property 'span' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(280,19): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(283,21): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(284,23): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(285,25): error TS2339: Property 'label' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(294,25): error TS2339: Property 'label' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(297,25): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(298,27): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(318,31): error TS2339: Property 'img' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(324,31): error TS2339: Property 'span' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(328,31): error TS2339: Property 'span' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(330,27): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(332,27): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(333,29): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(334,31): error TS2339: Property 'input' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(342,31): error TS2339: Property 'span' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(342,74): error TS2339: Property 'span' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(343,29): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(346,31): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(347,33): error TS2339: Property 'span' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(347,93): error TS2339: Property 'span' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(348,33): error TS2339: Property 'input' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(361,33): error TS2339: Property 'input' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(374,33): error TS2339: Property 'span' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(374,91): error TS2339: Property 'span' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(375,31): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(377,27): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(378,25): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(379,23): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(380,21): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(382,17): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(390,17): error TS2339: Property 'input' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(399,11): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(401,7): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SidebarLeft.tsx(402,5): error TS2339: Property 'aside' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SingleLabel.tsx(3,20): error TS2792: Cannot find module '../LabelStudio.module.css'. Did you mean to set the 'moduleResolution' option to 'nodenext', or to add aliases to the 'paths' option?
+src/features/LabelStudio/components/SingleLabel.tsx(11,7): error TS2322: Type '({ design, format }: SingleLabelProps) => Element' is not assignable to type 'FC<SingleLabelProps>'.
+  Type 'Element' is not assignable to type 'ReactNode | Promise<ReactNode>'.
+src/features/LabelStudio/components/SingleLabel.tsx(20,5): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SingleLabel.tsx(21,7): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SingleLabel.tsx(22,9): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SingleLabel.tsx(25,13): error TS2339: Property 'img' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SingleLabel.tsx(45,17): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SingleLabel.tsx(72,17): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SingleLabel.tsx(77,17): error TS2339: Property 'img' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SingleLabel.tsx(103,9): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SingleLabel.tsx(104,7): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SingleLabel.tsx(105,5): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.

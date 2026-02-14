@@ -1,0 +1,44 @@
+src/features/LabelStudio/components/MainCanvas.tsx(3,20): error TS2792: Cannot find module '../LabelStudio.module.css'. Did you mean to set the 'moduleResolution' option to 'nodenext', or to add aliases to the 'paths' option?
+src/features/LabelStudio/components/MainCanvas.tsx(5,39): error TS2792: Cannot find module 'lucide-react'. Did you mean to set the 'moduleResolution' option to 'nodenext', or to add aliases to the 'paths' option?
+src/features/LabelStudio/components/MainCanvas.tsx(8,7): error TS2322: Type '() => JSX.Element' is not assignable to type 'FC<{}>'.
+  Type 'Element' is not assignable to type 'ReactNode | Promise<ReactNode>'.
+src/features/LabelStudio/components/MainCanvas.tsx(129,9): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/MainCanvas.tsx(140,9): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/MainCanvas.tsx(151,7): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/MainCanvas.tsx(157,13): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/MainCanvas.tsx(157,59): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/MainCanvas.tsx(160,7): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/MainCanvas.tsx(165,5): error TS2339: Property 'main' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/MainCanvas.tsx(172,7): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/MainCanvas.tsx(173,9): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/MainCanvas.tsx(174,11): error TS2339: Property 'span' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/MainCanvas.tsx(176,11): error TS2339: Property 'span' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/MainCanvas.tsx(177,11): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/MainCanvas.tsx(182,11): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/MainCanvas.tsx(183,11): error TS2339: Property 'input' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/MainCanvas.tsx(192,11): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/MainCanvas.tsx(197,11): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/MainCanvas.tsx(198,9): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/MainCanvas.tsx(200,9): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/MainCanvas.tsx(202,11): error TS2339: Property 'span' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/MainCanvas.tsx(202,23): error TS2339: Property 'span' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/MainCanvas.tsx(203,9): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/MainCanvas.tsx(204,7): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/MainCanvas.tsx(206,7): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/MainCanvas.tsx(207,9): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/MainCanvas.tsx(227,19): error TS2339: Property 'img' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/MainCanvas.tsx(241,9): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/MainCanvas.tsx(242,7): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/MainCanvas.tsx(243,5): error TS2339: Property 'main' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SingleLabel.tsx(3,20): error TS2792: Cannot find module '../LabelStudio.module.css'. Did you mean to set the 'moduleResolution' option to 'nodenext', or to add aliases to the 'paths' option?
+src/features/LabelStudio/components/SingleLabel.tsx(11,7): error TS2322: Type '({ design, format }: SingleLabelProps) => Element' is not assignable to type 'FC<SingleLabelProps>'.
+  Type 'Element' is not assignable to type 'ReactNode | Promise<ReactNode>'.
+src/features/LabelStudio/components/SingleLabel.tsx(17,5): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SingleLabel.tsx(18,7): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SingleLabel.tsx(19,9): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SingleLabel.tsx(26,17): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SingleLabel.tsx(53,17): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SingleLabel.tsx(58,17): error TS2339: Property 'img' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SingleLabel.tsx(84,9): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SingleLabel.tsx(85,7): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+src/features/LabelStudio/components/SingleLabel.tsx(86,5): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
