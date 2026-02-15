@@ -20,6 +20,7 @@ const SidebarLeft: React.FC = () => {
     addMediaToLibrary,
     removeMediaFromLibrary,
     trimanConfig,
+    deleteBatch,
     customFonts,
     addCustomFont,
     deleteCustomFont,
