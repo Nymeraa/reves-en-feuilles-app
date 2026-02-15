@@ -104,7 +104,7 @@ interface LabelContextType {
   setSelectedLabelId: (id: string | null) => void;
   setSelectedElementId: (id: string | null) => void;
   setZoomLevel: (level: number) => void;
-  setActiveTab: (tab: 'production' | 'media' | 'config') => void;
+  setActiveTab: (tab: 'production' | 'media' | 'config' | 'settings') => void;
   setIsModalOpen: (isOpen: boolean) => void;
 
   addElementToLabel: (labelId: string, element: LabelElement) => void;
