@@ -218,6 +218,14 @@ const SidebarLeft: React.FC = () => {
         >
           Médias
         </button>
+        <button
+          className={`${styles.tab} ${activeTab === 'settings' ? styles.activeTab : ''}`}
+          onClick={() => setActiveTab('settings')}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+        >
+          <Settings size={14} />
+          Paramètres
+        </button>
       </div>
 
       <div className={styles.sidebarContent}>
