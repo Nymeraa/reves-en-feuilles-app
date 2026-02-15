@@ -1,5 +1,5 @@
 'use client';
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import {
   getAllMedia,
   saveMedia,
@@ -141,6 +141,14 @@ interface LabelContextType {
   customFonts: FontItem[];
   addCustomFont: (file: File) => Promise<void>;
   deleteCustomFont: (id: string) => Promise<void>;
+
+  libraryFolders: LibraryFolder[];
+  libraryTemplates: LibraryTemplate[];
+  addFolder: (name: string) => Promise<void>;
+  removeFolder: (id: string) => Promise<void>;
+  saveCurrentDesignAsTemplate: (name: string, folderId: string | null) => Promise<void>;
+  applyTemplateToLabel: (templateId: string) => Promise<void>;
+  removeTemplate: (id: string) => Promise<void>;
 }
 
 const LabelContext = createContext<LabelContextType | undefined>(undefined);
@@ -151,9 +159,9 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
   const [selectedLabelId, setSelectedLabelId] = useState<string | null>(null);
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
   const [zoomLevel, setZoomLevel] = useState(1);
-  const [activeTab, setActiveTab] = useState<'production' | 'media' | 'config' | 'settings'>(
-    'production'
-  );
+  const [activeTab, setActiveTab] = useState<
+    'production' | 'media' | 'config' | 'settings' | 'library'
+  >('production');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Global Triman State
@@ -233,14 +241,6 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [batches]);
 
-    };
-    if (customFonts.length === 0) {
-      // Avoid fetch every render if fonts already loaded via initial effect? 
-      // Actually we need to make sure we don't duplicate logic. Ideally this is done in mount.
-      // Let's keep it simple for now, relying on the fact that Context mounts once.
-    }
-  }, []);
-
   // --- LIBRARY LOGIC ---
   const [libraryFolders, setLibraryFolders] = useState<LibraryFolder[]>([]);
   const [libraryTemplates, setLibraryTemplates] = useState<LibraryTemplate[]>([]);
@@ -262,7 +262,7 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
   const addFolder = async (name: string) => {
     try {
       const folder = await createFolder(name);
-      setLibraryFolders(prev => [...prev, folder]);
+      setLibraryFolders((prev) => [...prev, folder]);
     } catch (err) {
       console.error('Failed to create folder:', err);
       alert('Erreur lors de la création du dossier.');
@@ -273,8 +273,8 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
     if (!confirm('Supprimer ce dossier et tous ses modèles ?')) return;
     try {
       await deleteFolderFromDB(id);
-      setLibraryFolders(prev => prev.filter(f => f.id !== id));
-      setLibraryTemplates(prev => prev.filter(t => t.folderId !== id)); // update local state
+      setLibraryFolders((prev) => prev.filter((f) => f.id !== id));
+      setLibraryTemplates((prev) => prev.filter((t) => t.folderId !== id)); // update local state
     } catch (err) {
       console.error('Failed to delete folder:', err);
       alert('Erreur lors de la suppression du dossier.');
@@ -283,14 +283,14 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
 
   const saveCurrentDesignAsTemplate = async (name: string, folderId: string | null) => {
     if (!activeBatchId || !selectedLabelId) {
-       alert("Veuillez sélectionner une étiquette à sauvegarder.");
-       return;
+      alert('Veuillez sélectionner une étiquette à sauvegarder.');
+      return;
     }
-    
+
     // Find the label data
-    const batch = batches.find(b => b.id === activeBatchId);
-    const label = batch?.labels.find(l => l.id === selectedLabelId);
-    
+    const batch = batches.find((b) => b.id === activeBatchId);
+    const label = batch?.labels.find((l) => l.id === selectedLabelId);
+
     if (!batch || !label) return;
 
     // Create deep copy of design
@@ -303,12 +303,12 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
       design: designCopy,
       format: batch.format,
       side: label.side,
-      createdAt: Date.now()
+      createdAt: Date.now(),
     };
 
     try {
       await saveTemplate(newTemplate);
-      setLibraryTemplates(prev => [...prev, newTemplate]);
+      setLibraryTemplates((prev) => [...prev, newTemplate]);
       alert('Modèle sauvegardé !');
     } catch (err) {
       console.error('Failed to save template:', err);
@@ -317,21 +317,22 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const applyTemplateToLabel = async (templateId: string) => {
-     if (!activeBatchId || !selectedLabelId) {
-       alert("Sélectionnez une étiquette cible d'abord.");
-       return;
+    if (!activeBatchId || !selectedLabelId) {
+      alert("Sélectionnez une étiquette cible d'abord.");
+      return;
     }
 
-    const template = libraryTemplates.find(t => t.id === templateId);
+    const template = libraryTemplates.find((t) => t.id === templateId);
     if (!template) return;
 
-    if (!confirm(`Appliquer le modèle "${template.name}" ? (Cela écrasera le design actuel)`)) return;
+    if (!confirm(`Appliquer le modèle "${template.name}" ? (Cela écrasera le design actuel)`))
+      return;
 
     // Apply design (Deep copy to avoid ref issues)
     const designToApply = JSON.parse(JSON.stringify(template.design));
 
     updateLabel(selectedLabelId, {
-      design: designToApply
+      design: designToApply,
     });
   };
 
@@ -339,7 +340,7 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
     if (!confirm('Supprimer ce modèle ?')) return;
     try {
       await deleteTemplateFromDB(id);
-      setLibraryTemplates(prev => prev.filter(t => t.id !== id));
+      setLibraryTemplates((prev) => prev.filter((t) => t.id !== id));
     } catch (err) {
       console.error('Failed to delete template:', err);
     }
@@ -940,7 +941,6 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
         mediaLibrary,
         addMediaToLibrary,
         removeMediaFromLibrary,
-        customFonts,
         customFonts,
         addCustomFont,
         deleteCustomFont,

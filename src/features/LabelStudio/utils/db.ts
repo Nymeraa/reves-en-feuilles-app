@@ -12,7 +12,7 @@ export interface MediaItem {
 
 const DB_NAME = 'LabelStudioDB';
 const STORE_NAME = 'mediaLibrary';
-const DB_VERSION = 4; // Increment version for fonts store
+const DB_VERSION = 5; // Increment version for library stores
 
 export const initDB = (): Promise<IDBDatabase> => {
   return new Promise((resolve, reject) => {
@@ -54,6 +54,19 @@ export const initDB = (): Promise<IDBDatabase> => {
       if (!db.objectStoreNames.contains('fonts')) {
         const fontStore = db.createObjectStore('fonts', { keyPath: 'id' });
         fontStore.createIndex('name', 'name', { unique: true });
+      }
+
+      // Create folders store
+      if (!db.objectStoreNames.contains('folders')) {
+        const folderStore = db.createObjectStore('folders', { keyPath: 'id' });
+        folderStore.createIndex('createdAt', 'createdAt', { unique: false });
+      }
+
+      // Create templates store
+      if (!db.objectStoreNames.contains('templates')) {
+        const templateStore = db.createObjectStore('templates', { keyPath: 'id' });
+        templateStore.createIndex('folderId', 'folderId', { unique: false });
+        templateStore.createIndex('createdAt', 'createdAt', { unique: false });
       }
     };
   });
@@ -205,5 +218,110 @@ export const getAllFonts = async (): Promise<FontItem[]> => {
       resolve(request.result as FontItem[]);
     };
     request.onerror = () => reject('Error fetching fonts');
+  });
+};
+
+// --- LIBRARY HELPERS (Folders & Templates) ---
+
+export interface LibraryFolder {
+  id: string;
+  name: string;
+  createdAt: number;
+}
+
+export interface LibraryTemplate {
+  id: string;
+  folderId: string | null; // null = root
+  name: string;
+  design: any; // LabelDesign (avoid circular dep if possible, or use any/interface clone)
+  format: LabelFormat;
+  side: 'front' | 'back';
+  preview?: string; // Optional base64 preview
+  createdAt: number;
+}
+
+export const createFolder = async (name: string): Promise<LibraryFolder> => {
+  const db = await initDB();
+  const folder: LibraryFolder = {
+    id: `folder_${Date.now()}`,
+    name,
+    createdAt: Date.now(),
+  };
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(['folders'], 'readwrite');
+    const store = transaction.objectStore('folders');
+    const request = store.add(folder);
+    request.onsuccess = () => resolve(folder);
+    request.onerror = () => reject('Error creating folder');
+  });
+};
+
+export const getFolders = async (): Promise<LibraryFolder[]> => {
+  const db = await initDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(['folders'], 'readonly');
+    const store = transaction.objectStore('folders');
+    const request = store.getAll();
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject('Error getting folders');
+  });
+};
+
+export const deleteFolder = async (id: string): Promise<void> => {
+  const db = await initDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(['folders', 'templates'], 'readwrite');
+    const folderStore = transaction.objectStore('folders');
+    const templateStore = transaction.objectStore('templates');
+
+    // 1. Delete folder
+    folderStore.delete(id);
+
+    // 2. Delete all templates in this folder
+    const index = templateStore.index('folderId');
+    const request = index.getAllKeys(id);
+
+    request.onsuccess = () => {
+      const keys = request.result;
+      keys.forEach((key) => {
+        templateStore.delete(key);
+      });
+    };
+
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject('Error deleting folder and contents');
+  });
+};
+
+export const saveTemplate = async (template: LibraryTemplate): Promise<void> => {
+  const db = await initDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(['templates'], 'readwrite');
+    const store = transaction.objectStore('templates');
+    const request = store.put(template);
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject('Error saving template');
+  });
+};
+
+export const getTemplates = async (): Promise<LibraryTemplate[]> => {
+  const db = await initDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(['templates'], 'readonly');
+    const store = transaction.objectStore('templates');
+    const request = store.getAll();
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject('Error getting templates');
+  });
+};
+
+export const deleteTemplate = async (id: string): Promise<void> => {
+  const db = await initDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(['templates'], 'readwrite');
+    const store = transaction.objectStore('templates');
+    const request = store.delete(id);
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject('Error deleting template');
   });
 };
