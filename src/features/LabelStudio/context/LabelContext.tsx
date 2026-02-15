@@ -15,6 +15,14 @@ import {
   saveFont,
   deleteFont,
   getAllFonts,
+  LibraryFolder,
+  LibraryTemplate,
+  createFolder,
+  getFolders,
+  deleteFolder as deleteFolderFromDB,
+  saveTemplate,
+  getTemplates,
+  deleteTemplate as deleteTemplateFromDB,
 } from '../utils/db';
 
 // Define types for our domain
@@ -94,7 +102,7 @@ interface LabelContextType {
   selectedLabelId: string | null;
   selectedElementId: string | null;
   zoomLevel: number;
-  activeTab: 'production' | 'media' | 'config' | 'settings';
+  activeTab: 'production' | 'media' | 'config' | 'settings' | 'library';
   isModalOpen: boolean;
   trimanConfig: GlobalTrimanConfig;
 
@@ -104,7 +112,7 @@ interface LabelContextType {
   setSelectedLabelId: (id: string | null) => void;
   setSelectedElementId: (id: string | null) => void;
   setZoomLevel: (level: number) => void;
-  setActiveTab: (tab: 'production' | 'media' | 'config' | 'settings') => void;
+  setActiveTab: (tab: 'production' | 'media' | 'config' | 'settings' | 'library') => void;
   setIsModalOpen: (isOpen: boolean) => void;
 
   addElementToLabel: (labelId: string, element: LabelElement) => void;
@@ -224,6 +232,118 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
       saveBatches();
     }
   }, [batches]);
+
+    };
+    if (customFonts.length === 0) {
+      // Avoid fetch every render if fonts already loaded via initial effect? 
+      // Actually we need to make sure we don't duplicate logic. Ideally this is done in mount.
+      // Let's keep it simple for now, relying on the fact that Context mounts once.
+    }
+  }, []);
+
+  // --- LIBRARY LOGIC ---
+  const [libraryFolders, setLibraryFolders] = useState<LibraryFolder[]>([]);
+  const [libraryTemplates, setLibraryTemplates] = useState<LibraryTemplate[]>([]);
+
+  useEffect(() => {
+    const loadLibrary = async () => {
+      try {
+        const folders = await getFolders();
+        const templates = await getTemplates();
+        setLibraryFolders(folders);
+        setLibraryTemplates(templates);
+      } catch (err) {
+        console.error('Failed to load library:', err);
+      }
+    };
+    loadLibrary();
+  }, []);
+
+  const addFolder = async (name: string) => {
+    try {
+      const folder = await createFolder(name);
+      setLibraryFolders(prev => [...prev, folder]);
+    } catch (err) {
+      console.error('Failed to create folder:', err);
+      alert('Erreur lors de la création du dossier.');
+    }
+  };
+
+  const removeFolder = async (id: string) => {
+    if (!confirm('Supprimer ce dossier et tous ses modèles ?')) return;
+    try {
+      await deleteFolderFromDB(id);
+      setLibraryFolders(prev => prev.filter(f => f.id !== id));
+      setLibraryTemplates(prev => prev.filter(t => t.folderId !== id)); // update local state
+    } catch (err) {
+      console.error('Failed to delete folder:', err);
+      alert('Erreur lors de la suppression du dossier.');
+    }
+  };
+
+  const saveCurrentDesignAsTemplate = async (name: string, folderId: string | null) => {
+    if (!activeBatchId || !selectedLabelId) {
+       alert("Veuillez sélectionner une étiquette à sauvegarder.");
+       return;
+    }
+    
+    // Find the label data
+    const batch = batches.find(b => b.id === activeBatchId);
+    const label = batch?.labels.find(l => l.id === selectedLabelId);
+    
+    if (!batch || !label) return;
+
+    // Create deep copy of design
+    const designCopy = JSON.parse(JSON.stringify(label.design));
+
+    const newTemplate: LibraryTemplate = {
+      id: `tpl_${Date.now()}`,
+      folderId,
+      name,
+      design: designCopy,
+      format: batch.format,
+      side: label.side,
+      createdAt: Date.now()
+    };
+
+    try {
+      await saveTemplate(newTemplate);
+      setLibraryTemplates(prev => [...prev, newTemplate]);
+      alert('Modèle sauvegardé !');
+    } catch (err) {
+      console.error('Failed to save template:', err);
+      alert('Erreur lors de la sauvegarde du modèle.');
+    }
+  };
+
+  const applyTemplateToLabel = async (templateId: string) => {
+     if (!activeBatchId || !selectedLabelId) {
+       alert("Sélectionnez une étiquette cible d'abord.");
+       return;
+    }
+
+    const template = libraryTemplates.find(t => t.id === templateId);
+    if (!template) return;
+
+    if (!confirm(`Appliquer le modèle "${template.name}" ? (Cela écrasera le design actuel)`)) return;
+
+    // Apply design (Deep copy to avoid ref issues)
+    const designToApply = JSON.parse(JSON.stringify(template.design));
+
+    updateLabel(selectedLabelId, {
+      design: designToApply
+    });
+  };
+
+  const removeTemplate = async (id: string) => {
+    if (!confirm('Supprimer ce modèle ?')) return;
+    try {
+      await deleteTemplateFromDB(id);
+      setLibraryTemplates(prev => prev.filter(t => t.id !== id));
+    } catch (err) {
+      console.error('Failed to delete template:', err);
+    }
+  };
 
   const addCustomFont = async (file: File) => {
     if (!file) return;
@@ -821,8 +941,16 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
         addMediaToLibrary,
         removeMediaFromLibrary,
         customFonts,
+        customFonts,
         addCustomFont,
         deleteCustomFont,
+        libraryFolders,
+        libraryTemplates,
+        addFolder,
+        removeFolder,
+        saveCurrentDesignAsTemplate,
+        applyTemplateToLabel,
+        removeTemplate,
       }}
     >
       {children}

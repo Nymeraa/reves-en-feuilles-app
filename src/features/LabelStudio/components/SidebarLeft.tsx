@@ -2,7 +2,19 @@
 import React, { useRef } from 'react';
 import styles from '../LabelStudio.module.css';
 import { useLabelStudio } from '../context/LabelContext';
-import { Plus, Printer, Trash2, ChevronDown, ChevronRight, Upload, Settings } from 'lucide-react';
+import {
+  Plus,
+  Printer,
+  Trash2,
+  ChevronDown,
+  ChevronRight,
+  Upload,
+  Settings,
+  Library,
+  Folder,
+  FileText,
+  Save,
+} from 'lucide-react';
 import { MediaCategory, MediaItem } from '../utils/db';
 
 const SidebarLeft: React.FC = () => {
@@ -25,6 +37,13 @@ const SidebarLeft: React.FC = () => {
     customFonts,
     addCustomFont,
     deleteCustomFont,
+    libraryFolders,
+    libraryTemplates,
+    addFolder,
+    removeFolder,
+    saveCurrentDesignAsTemplate,
+    applyTemplateToLabel,
+    removeTemplate,
   } = useLabelStudio();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -39,6 +58,15 @@ const SidebarLeft: React.FC = () => {
 
   const toggleCategory = (cat: string) => {
     setExpandedCategories((prev) => ({ ...prev, [cat]: !prev[cat] }));
+  };
+
+  // Library Local State
+  const [newTemplateName, setNewTemplateName] = React.useState('');
+  const [selectedFolderForSave, setSelectedFolderForSave] = React.useState<string>('root');
+  const [openFolders, setOpenFolders] = React.useState<Record<string, boolean>>({});
+
+  const toggleFolder = (folderId: string) => {
+    setOpenFolders((prev) => ({ ...prev, [folderId]: !prev[folderId] }));
   };
 
   const handleFileUpload = async (
@@ -217,6 +245,14 @@ const SidebarLeft: React.FC = () => {
           onClick={() => setActiveTab('media')}
         >
           Médias
+        </button>
+        <button
+          className={`${styles.tab} ${activeTab === 'library' ? styles.activeTab : ''}`}
+          onClick={() => setActiveTab('library')}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+        >
+          <Library size={14} />
+          Biblio
         </button>
         <button
           className={`${styles.tab} ${activeTab === 'settings' ? styles.activeTab : ''}`}
@@ -433,6 +469,260 @@ const SidebarLeft: React.FC = () => {
           </div>
         )}
       </div>
+      {activeTab === 'library' && (
+        <div className={styles.sidebarContent}>
+          {/* 1. SECTION SAUVEGARDER */}
+          <div className={styles.categorySection}>
+            <div className={styles.categoryHeader}>
+              <span className={styles.categoryTitle}>Bibliothèque de Modèles</span>
+            </div>
+            <div className={styles.categoryContent}>
+              <div style={{ display: 'flex', gap: '0.25rem', marginBottom: '0.5rem' }}>
+                <input
+                  type="text"
+                  placeholder="Nom du modèle"
+                  value={newTemplateName}
+                  onChange={(e) => setNewTemplateName(e.target.value)}
+                  className={styles.input}
+                  style={{ flex: 1 }}
+                />
+                <button
+                  onClick={() => {
+                    if (!newTemplateName.trim()) return alert('Nom du modèle requis');
+                    const folderId =
+                      selectedFolderForSave === 'root' ? null : selectedFolderForSave;
+                    saveCurrentDesignAsTemplate(newTemplateName, folderId);
+                    setNewTemplateName('');
+                  }}
+                  className={styles.buttonPrimary}
+                  style={{
+                    padding: '0.25rem 0.5rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                  }}
+                  title="Sauvegarder la sélection comme modèle"
+                >
+                  <Save size={14} />
+                </button>
+              </div>
+
+              <select
+                className={styles.input}
+                value={selectedFolderForSave}
+                onChange={(e) => setSelectedFolderForSave(e.target.value)}
+                style={{ width: '100%', marginBottom: '0.5rem' }}
+              >
+                <option value="root">📁 (Racine)</option>
+                {libraryFolders.map((f) => (
+                  <option key={f.id} value={f.id}>
+                    📁 {f.name}
+                  </option>
+                ))}
+              </select>
+
+              <div className={styles.divider} style={{ margin: '1rem 0' }} />
+
+              {/* 2. SECTION ORGANISATION */}
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '0.5rem',
+                }}
+              >
+                <span style={{ fontSize: '0.75rem', color: '#6b7280', fontWeight: 'bold' }}>
+                  Organiser
+                </span>
+                <button
+                  onClick={() => {
+                    const name = prompt('Nom du nouveau dossier ?');
+                    if (name) addFolder(name);
+                  }}
+                  style={{
+                    background: 'none',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '4px',
+                    fontSize: '0.75rem',
+                    padding: '2px 6px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Nouveau dossier +
+                </button>
+              </div>
+
+              {/* 3. ARBORESCENCE */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                {/* FOLDERS */}
+                {libraryFolders.map((folder) => {
+                  const isOpen = openFolders[folder.id];
+                  const folderTemplates = libraryTemplates.filter((t) => t.folderId === folder.id);
+
+                  return (
+                    <div
+                      key={folder.id}
+                      style={{
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '4px',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      {/* Folder Header */}
+                      <div
+                        style={{
+                          padding: '0.5rem',
+                          backgroundColor: '#f9fafb',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          cursor: 'pointer',
+                        }}
+                        onClick={() => toggleFolder(folder.id)}
+                      >
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            fontWeight: 600,
+                            fontSize: '0.85rem',
+                          }}
+                        >
+                          {isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                          <Folder size={14} fill="#fcd34d" color="#d97706" />
+                          {folder.name}{' '}
+                          <span style={{ fontSize: '0.7rem', color: '#9ca3af' }}>
+                            ({folderTemplates.length})
+                          </span>
+                        </div>
+                        <Trash2
+                          size={14}
+                          color="#ef4444"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeFolder(folder.id);
+                          }}
+                        />
+                      </div>
+
+                      {/* Folder Content */}
+                      {isOpen && (
+                        <div
+                          style={{
+                            padding: '0.25rem 0.25rem 0.25rem 1.5rem',
+                            backgroundColor: '#fff',
+                          }}
+                        >
+                          {folderTemplates.length === 0 && (
+                            <div
+                              style={{ fontSize: '0.75rem', color: '#d1d5db', fontStyle: 'italic' }}
+                            >
+                              Vide
+                            </div>
+                          )}
+                          {folderTemplates.map((tpl) => (
+                            <div
+                              key={tpl.id}
+                              className={styles.templateItem}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                padding: '4px 0',
+                                fontSize: '0.8rem',
+                              }}
+                            >
+                              <div
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '6px',
+                                  cursor: 'pointer',
+                                  flex: 1,
+                                }}
+                                onClick={() => applyTemplateToLabel(tpl.id)}
+                              >
+                                <FileText size={14} color="#6b7280" />
+                                <span
+                                  style={{
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                    maxWidth: '140px',
+                                  }}
+                                >
+                                  {tpl.name}
+                                </span>
+                              </div>
+                              <Trash2
+                                size={12}
+                                color="#ef4444"
+                                cursor="pointer"
+                                onClick={() => removeTemplate(tpl.id)}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+
+                {/* ROOT TEMPLATES */}
+                {libraryTemplates
+                  .filter((t) => !t.folderId)
+                  .map((tpl) => (
+                    <div
+                      key={tpl.id}
+                      className={styles.templateItem}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '0.5rem',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '4px',
+                        fontSize: '0.85rem',
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          cursor: 'pointer',
+                          flex: 1,
+                        }}
+                        onClick={() => applyTemplateToLabel(tpl.id)}
+                      >
+                        <FileText size={14} color="#6b7280" />
+                        <span
+                          style={{
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            maxWidth: '160px',
+                          }}
+                        >
+                          {tpl.name}
+                        </span>
+                      </div>
+                      <Trash2
+                        size={14}
+                        color="#ef4444"
+                        cursor="pointer"
+                        onClick={() => removeTemplate(tpl.id)}
+                      />
+                    </div>
+                  ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {activeTab === 'settings' && (
         <div className={styles.sidebarContent}>
           <div className={styles.categorySection}>
