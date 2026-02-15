@@ -738,6 +738,159 @@ interface FolderTreeProps {
   searchQuery?: string;
 }
 
+interface FolderNodeProps {
+  folder: any;
+  folders: any[];
+  templates: any[];
+  moveItem: (itemId: string, type: 'folder' | 'template', targetFolderId: string | null) => void;
+  removeFolder: (id: string) => void;
+  removeTemplate: (id: string) => void;
+  applyTemplateToLabel: (id: string) => void;
+}
+
+const FolderNode: React.FC<FolderNodeProps> = ({
+  folder,
+  folders,
+  templates,
+  moveItem,
+  removeFolder,
+  removeTemplate,
+  applyTemplateToLabel,
+}) => {
+  const [isOpen, setIsOpen] = React.useState(false);
+
+  const childFolders = folders.filter((f) => f.parentId === folder.id);
+  const childTemplates = templates.filter((t) => t.folderId === folder.id);
+
+  const handleDragStart = (e: React.DragEvent, id: string, type: 'folder' | 'template') => {
+    e.dataTransfer.setData('itemId', id);
+    e.dataTransfer.setData('itemType', type);
+    e.stopPropagation();
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent, targetFolderId: string | null) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const itemId = e.dataTransfer.getData('itemId');
+    const itemType = e.dataTransfer.getData('itemType') as 'folder' | 'template';
+
+    if (itemId && itemType) {
+      moveItem(itemId, itemType, targetFolderId);
+    }
+  };
+
+  return (
+    <div
+      draggable
+      onDragStart={(e) => handleDragStart(e, folder.id, 'folder')}
+      onDragOver={handleDragOver}
+      onDrop={(e) => handleDrop(e, folder.id)}
+      style={{
+        marginLeft: '10px',
+        borderLeft: '1px solid #e5e7eb',
+        paddingLeft: '5px',
+        marginTop: '5px',
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '6px',
+          backgroundColor: '#f9fafb',
+          borderRadius: '4px',
+          cursor: 'pointer',
+        }}
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          {isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+          <Folder size={14} fill="#fcd34d" color="#d97706" />
+          <span style={{ fontSize: '13px', fontWeight: 500 }}>{folder.name}</span>
+        </div>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            removeFolder(folder.id);
+          }}
+          style={{ border: 'none', background: 'none', cursor: 'pointer' }}
+        >
+          <Trash2 size={12} color="#9ca3af" />
+        </button>
+      </div>
+
+      {isOpen && (
+        <div>
+          {childFolders.map((childFolder) => (
+            <FolderNode
+              key={childFolder.id}
+              folder={childFolder}
+              folders={folders}
+              templates={templates}
+              moveItem={moveItem}
+              removeFolder={removeFolder}
+              removeTemplate={removeTemplate}
+              applyTemplateToLabel={applyTemplateToLabel}
+            />
+          ))}
+          {childTemplates.map((template: any) => (
+            <div
+              key={template.id}
+              draggable
+              onDragStart={(e) => handleDragStart(e, template.id, 'template')}
+              onClick={() => applyTemplateToLabel(template.id)}
+              style={{
+                padding: '5px 10px',
+                margin: '2px 0 2px 10px',
+                backgroundColor: 'white',
+                border: '1px solid #e5e7eb',
+                borderRadius: '4px',
+                fontSize: '12px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                cursor: 'grab',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <FileText size={12} color="#6b7280" />
+                <span>{template.name}</span>
+              </div>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  removeTemplate(template.id);
+                }}
+                style={{ border: 'none', background: 'none', cursor: 'pointer' }}
+              >
+                <Trash2 size={12} color="#ef4444" />
+              </button>
+            </div>
+          ))}
+          {childFolders.length === 0 && childTemplates.length === 0 && (
+            <div
+              style={{
+                fontSize: '12px',
+                color: '#9ca3af',
+                padding: '5px 0 5px 20px',
+                fontStyle: 'italic',
+              }}
+            >
+              (Vide)
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 function FolderTree({
   folders,
   templates,
@@ -846,111 +999,6 @@ function FolderTree({
   }
 
   // --- MODE ARBORESCENCE (Récursif) ---
-  const renderFolder = (folder: any) => {
-    const childFolders = folders.filter((f) => f.parentId === folder.id);
-    const childTemplates = templates.filter((t) => t.folderId === folder.id);
-
-    // Initial state: closed by default to save performance, or open? stick to closed.
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const [isOpen, setIsOpen] = React.useState(false);
-
-    return (
-      <div
-        key={folder.id}
-        draggable
-        onDragStart={(e) => handleDragStart(e, folder.id, 'folder')}
-        onDragOver={handleDragOver}
-        onDrop={(e) => handleDrop(e, folder.id)}
-        style={{
-          marginLeft: '10px',
-          borderLeft: '1px solid #e5e7eb',
-          paddingLeft: '5px',
-          marginTop: '5px',
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '6px',
-            backgroundColor: '#f9fafb',
-            borderRadius: '4px',
-            cursor: 'pointer',
-          }}
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            {isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-            <Folder size={14} fill="#fcd34d" color="#d97706" />
-            <span style={{ fontSize: '13px', fontWeight: 500 }}>{folder.name}</span>
-          </div>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              removeFolder(folder.id);
-            }}
-            style={{ border: 'none', background: 'none', cursor: 'pointer' }}
-          >
-            <Trash2 size={12} color="#9ca3af" />
-          </button>
-        </div>
-
-        {isOpen && (
-          <div>
-            {childFolders.map(renderFolder)}
-            {childTemplates.map((template: any) => (
-              <div
-                key={template.id}
-                draggable
-                onDragStart={(e) => handleDragStart(e, template.id, 'template')}
-                onClick={() => applyTemplateToLabel(template.id)}
-                style={{
-                  padding: '5px 10px',
-                  margin: '2px 0 2px 10px',
-                  backgroundColor: 'white',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '4px',
-                  fontSize: '12px',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  cursor: 'grab',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <FileText size={12} color="#6b7280" />
-                  <span>{template.name}</span>
-                </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    removeTemplate(template.id);
-                  }}
-                  style={{ border: 'none', background: 'none', cursor: 'pointer' }}
-                >
-                  <Trash2 size={12} color="#ef4444" />
-                </button>
-              </div>
-            ))}
-            {childFolders.length === 0 && childTemplates.length === 0 && (
-              <div
-                style={{
-                  fontSize: '12px',
-                  color: '#9ca3af',
-                  padding: '5px 0 5px 20px',
-                  fontStyle: 'italic',
-                }}
-              >
-                (Vide)
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    );
-  };
-
   const rootFolders = folders.filter((f) => !f.parentId);
   const rootTemplates = templates.filter((t) => !t.folderId);
 
@@ -960,7 +1008,18 @@ function FolderTree({
       onDrop={(e) => handleDrop(e, null)}
       style={{ minHeight: '100%;', paddingBottom: '30px' }}
     >
-      {rootFolders.map(renderFolder)}
+      {rootFolders.map((folder) => (
+        <FolderNode
+          key={folder.id}
+          folder={folder}
+          folders={folders}
+          templates={templates}
+          moveItem={moveItem}
+          removeFolder={removeFolder}
+          removeTemplate={removeTemplate}
+          applyTemplateToLabel={applyTemplateToLabel}
+        />
+      ))}
       {rootTemplates.map((template) => (
         <div
           key={template.id}
