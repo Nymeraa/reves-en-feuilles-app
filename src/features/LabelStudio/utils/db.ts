@@ -12,7 +12,7 @@ export interface MediaItem {
 
 const DB_NAME = 'LabelStudioDB';
 const STORE_NAME = 'mediaLibrary';
-const DB_VERSION = 5; // Increment version for library stores
+const DB_VERSION = 6; // Increment version for moveItem support (optional but good practice)
 
 export const initDB = (): Promise<IDBDatabase> => {
   return new Promise((resolve, reject) => {
@@ -226,6 +226,7 @@ export const getAllFonts = async (): Promise<FontItem[]> => {
 export interface LibraryFolder {
   id: string;
   name: string;
+  parentId: string | null;
   createdAt: number;
 }
 
@@ -240,11 +241,15 @@ export interface LibraryTemplate {
   createdAt: number;
 }
 
-export const createFolder = async (name: string): Promise<LibraryFolder> => {
+export const createFolder = async (
+  name: string,
+  parentId: string | null = null
+): Promise<LibraryFolder> => {
   const db = await initDB();
   const folder: LibraryFolder = {
     id: `folder_${Date.now()}`,
     name,
+    parentId,
     createdAt: Date.now(),
   };
   return new Promise((resolve, reject) => {
@@ -323,5 +328,41 @@ export const deleteTemplate = async (id: string): Promise<void> => {
     const request = store.delete(id);
     request.onsuccess = () => resolve();
     request.onerror = () => reject('Error deleting template');
+  });
+};
+
+export const moveItem = async (
+  itemId: string,
+  type: 'folder' | 'template',
+  targetFolderId: string | null
+): Promise<void> => {
+  const db = await initDB();
+  const storeName = type === 'folder' ? 'folders' : 'templates';
+
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction([storeName], 'readwrite');
+    const store = transaction.objectStore(storeName);
+    const getRequest = store.get(itemId);
+
+    getRequest.onsuccess = () => {
+      const item = getRequest.result;
+      if (!item) {
+        reject('Item not found');
+        return;
+      }
+
+      // Update parentId or folderId
+      if (type === 'folder') {
+        item.parentId = targetFolderId;
+      } else {
+        item.folderId = targetFolderId;
+      }
+
+      const putRequest = store.put(item);
+      putRequest.onsuccess = () => resolve();
+      putRequest.onerror = () => reject('Error moving item');
+    };
+
+    getRequest.onerror = () => reject('Error fetching item to move');
   });
 };

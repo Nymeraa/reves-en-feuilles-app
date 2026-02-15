@@ -44,6 +44,7 @@ const SidebarLeft: React.FC = () => {
     saveCurrentDesignAsTemplate,
     applyTemplateToLabel,
     removeTemplate,
+    moveItem,
   } = useLabelStudio();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -470,7 +471,7 @@ const SidebarLeft: React.FC = () => {
         )}
       </div>
       {activeTab === 'library' && (
-        <div className={styles.sidebarContent}>
+        <div className={styles.sidebarContent} style={{ display: 'flex', flexDirection: 'column' }}>
           {/* 1. SECTION SAUVEGARDER */}
           <div className={styles.categorySection}>
             <div className={styles.categoryHeader}>
@@ -484,7 +485,7 @@ const SidebarLeft: React.FC = () => {
                   value={newTemplateName}
                   onChange={(e) => setNewTemplateName(e.target.value)}
                   className={styles.input}
-                  style={{ flex: 1 }}
+                  style={{ flex: 1, minWidth: 0 }}
                 />
                 <button
                   onClick={() => {
@@ -496,14 +497,16 @@ const SidebarLeft: React.FC = () => {
                   }}
                   className={styles.buttonPrimary}
                   style={{
-                    padding: '0.25rem 0.5rem',
+                    width: '40px',
+                    padding: '0',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '4px',
+                    justifyContent: 'center',
+                    flexShrink: 0,
                   }}
                   title="Sauvegarder la sélection comme modèle"
                 >
-                  <Save size={14} />
+                  <Save size={16} />
                 </button>
               </div>
 
@@ -511,7 +514,7 @@ const SidebarLeft: React.FC = () => {
                 className={styles.input}
                 value={selectedFolderForSave}
                 onChange={(e) => setSelectedFolderForSave(e.target.value)}
-                style={{ width: '100%', marginBottom: '0.5rem' }}
+                style={{ width: '100%' }}
               >
                 <option value="root">📁 (Racine)</option>
                 {libraryFolders.map((f) => (
@@ -520,205 +523,60 @@ const SidebarLeft: React.FC = () => {
                   </option>
                 ))}
               </select>
+            </div>
+          </div>
 
-              <div className={styles.divider} style={{ margin: '1rem 0' }} />
+          <div className={styles.divider} style={{ margin: '1rem 0' }} />
 
-              {/* 2. SECTION ORGANISATION */}
-              <div
+          {/* 2. SECTION ORGANISATION (Full Height) */}
+          <div
+            style={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              minHeight: 0,
+              overflowY: 'auto',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '0.5rem',
+                padding: '0 0.25rem',
+              }}
+            >
+              <span style={{ fontSize: '0.75rem', color: '#6b7280', fontWeight: 'bold' }}>
+                Organiser
+              </span>
+              <button
+                onClick={() => {
+                  const name = prompt('Nom du nouveau dossier ?');
+                  if (name) addFolder(name);
+                }}
                 style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  marginBottom: '0.5rem',
+                  background: 'none',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '4px',
+                  fontSize: '0.75rem',
+                  padding: '2px 6px',
+                  cursor: 'pointer',
                 }}
               >
-                <span style={{ fontSize: '0.75rem', color: '#6b7280', fontWeight: 'bold' }}>
-                  Organiser
-                </span>
-                <button
-                  onClick={() => {
-                    const name = prompt('Nom du nouveau dossier ?');
-                    if (name) addFolder(name);
-                  }}
-                  style={{
-                    background: 'none',
-                    border: '1px solid #d1d5db',
-                    borderRadius: '4px',
-                    fontSize: '0.75rem',
-                    padding: '2px 6px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Nouveau dossier +
-                </button>
-              </div>
-
-              {/* 3. ARBORESCENCE */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                {/* FOLDERS */}
-                {libraryFolders.map((folder) => {
-                  const isOpen = openFolders[folder.id];
-                  const folderTemplates = libraryTemplates.filter((t) => t.folderId === folder.id);
-
-                  return (
-                    <div
-                      key={folder.id}
-                      style={{
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '4px',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {/* Folder Header */}
-                      <div
-                        style={{
-                          padding: '0.5rem',
-                          backgroundColor: '#f9fafb',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          cursor: 'pointer',
-                        }}
-                        onClick={() => toggleFolder(folder.id)}
-                      >
-                        <div
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.5rem',
-                            fontWeight: 600,
-                            fontSize: '0.85rem',
-                          }}
-                        >
-                          {isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                          <Folder size={14} fill="#fcd34d" color="#d97706" />
-                          {folder.name}{' '}
-                          <span style={{ fontSize: '0.7rem', color: '#9ca3af' }}>
-                            ({folderTemplates.length})
-                          </span>
-                        </div>
-                        <Trash2
-                          size={14}
-                          color="#ef4444"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            removeFolder(folder.id);
-                          }}
-                        />
-                      </div>
-
-                      {/* Folder Content */}
-                      {isOpen && (
-                        <div
-                          style={{
-                            padding: '0.25rem 0.25rem 0.25rem 1.5rem',
-                            backgroundColor: '#fff',
-                          }}
-                        >
-                          {folderTemplates.length === 0 && (
-                            <div
-                              style={{ fontSize: '0.75rem', color: '#d1d5db', fontStyle: 'italic' }}
-                            >
-                              Vide
-                            </div>
-                          )}
-                          {folderTemplates.map((tpl) => (
-                            <div
-                              key={tpl.id}
-                              className={styles.templateItem}
-                              style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                                padding: '4px 0',
-                                fontSize: '0.8rem',
-                              }}
-                            >
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '6px',
-                                  cursor: 'pointer',
-                                  flex: 1,
-                                }}
-                                onClick={() => applyTemplateToLabel(tpl.id)}
-                              >
-                                <FileText size={14} color="#6b7280" />
-                                <span
-                                  style={{
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    whiteSpace: 'nowrap',
-                                    maxWidth: '140px',
-                                  }}
-                                >
-                                  {tpl.name}
-                                </span>
-                              </div>
-                              <Trash2
-                                size={12}
-                                color="#ef4444"
-                                cursor="pointer"
-                                onClick={() => removeTemplate(tpl.id)}
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-
-                {/* ROOT TEMPLATES */}
-                {libraryTemplates
-                  .filter((t) => !t.folderId)
-                  .map((tpl) => (
-                    <div
-                      key={tpl.id}
-                      className={styles.templateItem}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '0.5rem',
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '4px',
-                        fontSize: '0.85rem',
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          cursor: 'pointer',
-                          flex: 1,
-                        }}
-                        onClick={() => applyTemplateToLabel(tpl.id)}
-                      >
-                        <FileText size={14} color="#6b7280" />
-                        <span
-                          style={{
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                            maxWidth: '160px',
-                          }}
-                        >
-                          {tpl.name}
-                        </span>
-                      </div>
-                      <Trash2
-                        size={14}
-                        color="#ef4444"
-                        cursor="pointer"
-                        onClick={() => removeTemplate(tpl.id)}
-                      />
-                    </div>
-                  ))}
-              </div>
+                + Dossier
+              </button>
             </div>
+
+            {/* ERROR HANDLING WRAPPER FOR DND */}
+            <LibraryTree
+              folders={libraryFolders}
+              templates={libraryTemplates}
+              moveItem={moveItem}
+              removeFolder={removeFolder}
+              removeTemplate={removeTemplate}
+              applyTemplateToLabel={applyTemplateToLabel}
+            />
           </div>
         </div>
       )}
@@ -846,5 +704,202 @@ const SidebarLeft: React.FC = () => {
     </aside>
   );
 };
+
+interface LibraryTreeProps {
+  folders: any[];
+  templates: any[];
+  moveItem: (itemId: string, type: 'folder' | 'template', targetFolderId: string | null) => void;
+  removeFolder: (id: string) => void;
+  removeTemplate: (id: string) => void;
+  applyTemplateToLabel: (id: string) => void;
+}
+
+function LibraryTree({
+  folders,
+  templates,
+  moveItem,
+  removeFolder,
+  removeTemplate,
+  applyTemplateToLabel,
+}: LibraryTreeProps) {
+  const handleDragStart = (e: React.DragEvent, id: string, type: 'folder' | 'template') => {
+    e.dataTransfer.setData('itemId', id);
+    e.dataTransfer.setData('itemType', type);
+    e.stopPropagation();
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent, targetFolderId: string | null) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const itemId = e.dataTransfer.getData('itemId');
+    const itemType = e.dataTransfer.getData('itemType') as 'folder' | 'template';
+
+    if (itemId && itemType) {
+      console.log(`Moving ${itemType} ${itemId} to folder ${targetFolderId}`);
+      moveItem(itemId, itemType, targetFolderId);
+    }
+  };
+
+  const renderFolder = (folder: any) => {
+    const childFolders = folders.filter((f) => f.parentId === folder.id);
+    const childTemplates = templates.filter((t) => t.folderId === folder.id);
+    const [isOpen, setIsOpen] = React.useState(false);
+
+    return (
+      <div
+        key={folder.id}
+        draggable
+        onDragStart={(e) => handleDragStart(e, folder.id, 'folder')}
+        onDragOver={handleDragOver}
+        onDrop={(e) => handleDrop(e, folder.id)}
+        style={{
+          marginLeft: '0.5rem',
+          borderLeft: '1px solid #e5e7eb',
+          paddingLeft: '0.25rem',
+          marginTop: '0.25rem',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '4px',
+            backgroundColor: '#f9fafb',
+            borderRadius: '4px',
+            cursor: 'pointer',
+          }}
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            {isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+            <Folder size={14} fill="#fcd34d" color="#d97706" />
+            <span style={{ fontSize: '0.85rem', fontWeight: 500 }}>{folder.name}</span>
+          </div>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              removeFolder(folder.id);
+            }}
+            style={{ border: 'none', background: 'none', cursor: 'pointer', padding: '2px' }}
+          >
+            <Trash2 size={12} color="#9ca3af" />
+          </button>
+        </div>
+
+        {isOpen && (
+          <div>
+            {childFolders.map(renderFolder)}
+            {childTemplates.map((template: any) => (
+              <div
+                key={template.id}
+                draggable
+                onDragStart={(e) => handleDragStart(e, template.id, 'template')}
+                onClick={() => applyTemplateToLabel(template.id)}
+                style={{
+                  padding: '4px 8px',
+                  margin: '2px 0 2px 0.5rem',
+                  backgroundColor: 'white',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '4px',
+                  fontSize: '0.8rem',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  cursor: 'grab',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <FileText size={12} color="#6b7280" />
+                  <span>{template.name}</span>
+                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeTemplate(template.id);
+                  }}
+                  style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 0 }}
+                >
+                  <Trash2 size={12} color="#ef4444" />
+                </button>
+              </div>
+            ))}
+            {childFolders.length === 0 && childTemplates.length === 0 && (
+              <div
+                style={{
+                  fontSize: '0.75rem',
+                  color: '#9ca3af',
+                  padding: '4px 0 4px 1rem',
+                  fontStyle: 'italic',
+                }}
+              >
+                (Vide)
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const rootFolders = folders.filter((f) => !f.parentId);
+  const rootTemplates = templates.filter((t) => !t.folderId);
+
+  return (
+    <div
+      onDragOver={handleDragOver}
+      onDrop={(e) => handleDrop(e, null)}
+      style={{ minHeight: '100px', paddingBottom: '2rem' }}
+    >
+      {rootFolders.map(renderFolder)}
+      {rootTemplates.map((template) => (
+        <div
+          key={template.id}
+          draggable
+          onDragStart={(e) => handleDragStart(e, template.id, 'template')}
+          onClick={() => applyTemplateToLabel(template.id)}
+          style={{
+            padding: '6px',
+            margin: '4px 0',
+            backgroundColor: 'white',
+            border: '1px solid #e5e7eb',
+            borderRadius: '4px',
+            fontSize: '0.85rem',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            cursor: 'grab',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <FileText size={14} color="#6b7280" />
+            <span>{template.name}</span>
+          </div>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              removeTemplate(template.id);
+            }}
+            style={{ border: 'none', background: 'none', cursor: 'pointer', padding: '2px' }}
+          >
+            <Trash2 size={14} color="#ef4444" />
+          </button>
+        </div>
+      ))}
+      {rootFolders.length === 0 && rootTemplates.length === 0 && (
+        <div style={{ padding: '1rem', textAlign: 'center', color: '#9ca3af', fontSize: '0.9rem' }}>
+          La bibliothèque est vide.
+          <br />
+          Sauvegardez un design ou créez un dossier !
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default SidebarLeft;

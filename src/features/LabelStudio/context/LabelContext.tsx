@@ -23,6 +23,7 @@ import {
   saveTemplate,
   getTemplates,
   deleteTemplate as deleteTemplateFromDB,
+  moveItem as moveItemInDB,
 } from '../utils/db';
 
 // Define types for our domain
@@ -149,6 +150,11 @@ interface LabelContextType {
   saveCurrentDesignAsTemplate: (name: string, folderId: string | null) => Promise<void>;
   applyTemplateToLabel: (templateId: string) => Promise<void>;
   removeTemplate: (id: string) => Promise<void>;
+  moveItem: (
+    itemId: string,
+    type: 'folder' | 'template',
+    targetFolderId: string | null
+  ) => Promise<void>;
 }
 
 const LabelContext = createContext<LabelContextType | undefined>(undefined);
@@ -343,6 +349,31 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
       setLibraryTemplates((prev) => prev.filter((t) => t.id !== id));
     } catch (err) {
       console.error('Failed to delete template:', err);
+    }
+  };
+
+  const moveItem = async (
+    itemId: string,
+    type: 'folder' | 'template',
+    targetFolderId: string | null
+  ) => {
+    try {
+      if (type === 'folder' && itemId === targetFolderId) return; // Cannot move folder into itself
+
+      await moveItemInDB(itemId, type, targetFolderId);
+
+      if (type === 'folder') {
+        setLibraryFolders((prev) =>
+          prev.map((f) => (f.id === itemId ? { ...f, parentId: targetFolderId } : f))
+        );
+      } else {
+        setLibraryTemplates((prev) =>
+          prev.map((t) => (t.id === itemId ? { ...t, folderId: targetFolderId } : t))
+        );
+      }
+    } catch (err) {
+      console.error('Failed to move item:', err);
+      alert("Erreur lors du déplacement de l'élément.");
     }
   };
 
@@ -951,6 +982,7 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
         saveCurrentDesignAsTemplate,
         applyTemplateToLabel,
         removeTemplate,
+        moveItem,
       }}
     >
       {children}
