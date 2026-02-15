@@ -62,6 +62,7 @@ const SidebarLeft: React.FC = () => {
   };
 
   // Library Local State
+  const [searchQuery, setSearchQuery] = React.useState('');
   const [newTemplateName, setNewTemplateName] = React.useState('');
   const [selectedFolderForSave, setSelectedFolderForSave] = React.useState<string>('root');
   const [openFolders, setOpenFolders] = React.useState<Record<string, boolean>>({});
@@ -471,84 +472,96 @@ const SidebarLeft: React.FC = () => {
         )}
       </div>
       {activeTab === 'library' && (
-        <div className={styles.sidebarContent} style={{ display: 'flex', flexDirection: 'column' }}>
-          {/* 1. SECTION SAUVEGARDER */}
-          <div className={styles.categorySection}>
-            <div className={styles.categoryHeader}>
-              <span className={styles.categoryTitle}>Bibliothèque de Modèles</span>
-            </div>
-            <div className={styles.categoryContent}>
-              <div style={{ display: 'flex', gap: '0.25rem', marginBottom: '0.5rem' }}>
-                <input
-                  type="text"
-                  placeholder="Nom du modèle"
-                  value={newTemplateName}
-                  onChange={(e) => setNewTemplateName(e.target.value)}
-                  className={styles.input}
-                  style={{ flex: 1, minWidth: 0 }}
-                />
-                <button
-                  onClick={() => {
-                    if (!newTemplateName.trim()) return alert('Nom du modèle requis');
-                    const folderId =
-                      selectedFolderForSave === 'root' ? null : selectedFolderForSave;
-                    saveCurrentDesignAsTemplate(newTemplateName, folderId);
-                    setNewTemplateName('');
-                  }}
-                  className={styles.buttonPrimary}
-                  style={{
-                    width: '40px',
-                    padding: '0',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                  }}
-                  title="Sauvegarder la sélection comme modèle"
-                >
-                  <Save size={16} />
-                </button>
-              </div>
-
-              <select
-                className={styles.input}
-                value={selectedFolderForSave}
-                onChange={(e) => setSelectedFolderForSave(e.target.value)}
-                style={{ width: '100%' }}
-              >
-                <option value="root">📁 (Racine)</option>
-                {libraryFolders.map((f) => (
-                  <option key={f.id} value={f.id}>
-                    📁 {f.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className={styles.divider} style={{ margin: '1rem 0' }} />
-
-          {/* 2. SECTION ORGANISATION (Full Height) */}
+        <div
+          className={styles.sidebarContent}
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            height: '100%',
+            overflow: 'hidden',
+          }}
+        >
+          {/* 1. Fixed Header: Search & Save */}
           <div
             style={{
-              flex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              minHeight: 0,
-              overflowY: 'auto',
+              padding: '0.5rem',
+              borderBottom: '1px solid #e5e7eb',
+              flexShrink: 0,
+              backgroundColor: '#fff',
             }}
           >
+            {/* Search Bar */}
+            <input
+              type="text"
+              placeholder="🔍 Rechercher un modèle..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className={styles.input}
+              style={{ width: '100%', marginBottom: '0.75rem' }}
+            />
+
+            {/* Save Section */}
+            <div className={styles.categoryHeader}>
+              <span className={styles.categoryTitle}>Nouveau Modèle</span>
+            </div>
+            <div style={{ display: 'flex', gap: '0.25rem', marginBottom: '0.5rem' }}>
+              <input
+                type="text"
+                placeholder="Nom du modèle"
+                value={newTemplateName}
+                onChange={(e) => setNewTemplateName(e.target.value)}
+                className={styles.input}
+                style={{ flex: 1, minWidth: 0 }}
+              />
+              <button
+                onClick={() => {
+                  if (!newTemplateName.trim()) return alert('Nom du modèle requis');
+                  const folderId = selectedFolderForSave === 'root' ? null : selectedFolderForSave;
+                  saveCurrentDesignAsTemplate(newTemplateName, folderId);
+                  setNewTemplateName('');
+                }}
+                className={styles.buttonPrimary}
+                style={{
+                  width: '40px',
+                  padding: '0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+                title="Sauvegarder"
+              >
+                <Save size={16} />
+              </button>
+            </div>
+
+            <select
+              className={styles.input}
+              value={selectedFolderForSave}
+              onChange={(e) => setSelectedFolderForSave(e.target.value)}
+              style={{ width: '100%' }}
+            >
+              <option value="root">📁 (Racine)</option>
+              {libraryFolders.map((f) => (
+                <option key={f.id} value={f.id}>
+                  📁 {f.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* 2. Scrollable Tree Area */}
+          <div style={{ flex: 1, overflowY: 'auto', minHeight: 0, padding: '0.5rem' }}>
             <div
               style={{
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 marginBottom: '0.5rem',
-                padding: '0 0.25rem',
               }}
             >
               <span style={{ fontSize: '0.75rem', color: '#6b7280', fontWeight: 'bold' }}>
-                Organiser
+                Bibliothèque
               </span>
               <button
                 onClick={() => {
@@ -562,13 +575,15 @@ const SidebarLeft: React.FC = () => {
                   fontSize: '0.75rem',
                   padding: '2px 6px',
                   cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
                 }}
               >
-                + Dossier
+                <Plus size={12} /> Dossier
               </button>
             </div>
 
-            {/* ERROR HANDLING WRAPPER FOR DND */}
             <LibraryTree
               folders={libraryFolders}
               templates={libraryTemplates}
@@ -576,6 +591,7 @@ const SidebarLeft: React.FC = () => {
               removeFolder={removeFolder}
               removeTemplate={removeTemplate}
               applyTemplateToLabel={applyTemplateToLabel}
+              searchQuery={searchQuery}
             />
           </div>
         </div>
@@ -712,6 +728,7 @@ interface LibraryTreeProps {
   removeFolder: (id: string) => void;
   removeTemplate: (id: string) => void;
   applyTemplateToLabel: (id: string) => void;
+  searchQuery?: string;
 }
 
 function LibraryTree({
@@ -721,7 +738,13 @@ function LibraryTree({
   removeFolder,
   removeTemplate,
   applyTemplateToLabel,
+  searchQuery = '',
 }: LibraryTreeProps) {
+  // Safety check
+  if (!Array.isArray(folders) || !Array.isArray(templates)) {
+    return <div style={{ padding: '1rem', color: 'red' }}>Erreur de chargement des données.</div>;
+  }
+
   const handleDragStart = (e: React.DragEvent, id: string, type: 'folder' | 'template') => {
     e.dataTransfer.setData('itemId', id);
     e.dataTransfer.setData('itemType', type);
@@ -745,9 +768,86 @@ function LibraryTree({
     }
   };
 
+  // --- SEARCH VIEW (FLAT LIST) ---
+  if (searchQuery.trim()) {
+    const query = searchQuery.toLowerCase();
+    const matchingFolders = folders.filter((f) => f.name.toLowerCase().includes(query));
+    const matchingTemplates = templates.filter((t) => t.name.toLowerCase().includes(query));
+
+    if (matchingFolders.length === 0 && matchingTemplates.length === 0) {
+      return (
+        <div
+          style={{ padding: '1rem', color: '#9ca3af', textAlign: 'center', fontSize: '0.85rem' }}
+        >
+          Aucun résultat pour "{searchQuery}"
+        </div>
+      );
+    }
+
+    return (
+      <div style={{ paddingBottom: '1rem' }}>
+        {matchingFolders.map((folder) => (
+          <div
+            key={folder.id}
+            style={{
+              padding: '6px',
+              borderBottom: '1px solid #f3f4f6',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Folder size={14} fill="#fcd34d" color="#d97706" />
+              <span style={{ fontSize: '0.85rem' }}>{folder.name}</span>
+            </div>
+            <button
+              onClick={() => removeFolder(folder.id)}
+              style={{ border: 'none', background: 'none', cursor: 'pointer' }}
+            >
+              <Trash2 size={12} color="#9ca3af" />
+            </button>
+          </div>
+        ))}
+        {matchingTemplates.map((template) => (
+          <div
+            key={template.id}
+            onClick={() => applyTemplateToLabel(template.id)}
+            style={{
+              padding: '6px',
+              borderBottom: '1px solid #f3f4f6',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              cursor: 'pointer',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <FileText size={14} color="#6b7280" />
+              <span style={{ fontSize: '0.85rem' }}>{template.name}</span>
+            </div>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                removeTemplate(template.id);
+              }}
+              style={{ border: 'none', background: 'none', cursor: 'pointer' }}
+            >
+              <Trash2 size={12} color="#ef4444" />
+            </button>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // --- TREE VIEW (RECURSIVE) ---
   const renderFolder = (folder: any) => {
     const childFolders = folders.filter((f) => f.parentId === folder.id);
     const childTemplates = templates.filter((t) => t.folderId === folder.id);
+    // Use simple state for open/close. Ideally this should be persisted or lifted, but local is fine for now.
+    // To prevent "all closed by default" annoyance, maybe default open? No, closed is standard.
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     const [isOpen, setIsOpen] = React.useState(false);
 
     return (
