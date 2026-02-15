@@ -94,7 +94,7 @@ interface LabelContextType {
   selectedLabelId: string | null;
   selectedElementId: string | null;
   zoomLevel: number;
-  activeTab: 'production' | 'media' | 'config';
+  activeTab: 'production' | 'media' | 'config' | 'settings';
   isModalOpen: boolean;
   trimanConfig: GlobalTrimanConfig;
 
@@ -143,7 +143,9 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
   const [selectedLabelId, setSelectedLabelId] = useState<string | null>(null);
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
   const [zoomLevel, setZoomLevel] = useState(1);
-  const [activeTab, setActiveTab] = useState<'production' | 'media' | 'config'>('production');
+  const [activeTab, setActiveTab] = useState<'production' | 'media' | 'config' | 'settings'>(
+    'production'
+  );
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Global Triman State
