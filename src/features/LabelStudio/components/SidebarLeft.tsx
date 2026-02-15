@@ -481,37 +481,54 @@ const SidebarLeft: React.FC = () => {
             overflow: 'hidden',
           }}
         >
-          {/* 1. Fixed Header: Search & Save */}
+          {/* 1. Zone Fixe en Haut (Recherche + Création) */}
           <div
             style={{
-              padding: '0.5rem',
-              borderBottom: '1px solid #e5e7eb',
+              padding: '10px',
+              borderBottom: '1px solid #eee',
+              background: '#fff',
               flexShrink: 0,
-              backgroundColor: '#fff',
             }}
           >
-            {/* Search Bar */}
-            <input
-              type="text"
-              placeholder="🔍 Rechercher un modèle..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className={styles.input}
-              style={{ width: '100%', marginBottom: '0.75rem' }}
-            />
-
-            {/* Save Section */}
-            <div className={styles.categoryHeader}>
-              <span className={styles.categoryTitle}>Nouveau Modèle</span>
-            </div>
-            <div style={{ display: 'flex', gap: '0.25rem', marginBottom: '0.5rem' }}>
+            {/* Barre de Recherche */}
+            <div style={{ position: 'relative', marginBottom: '10px' }}>
+              <span
+                style={{
+                  position: 'absolute',
+                  left: '8px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                }}
+              >
+                🔍
+              </span>
               <input
                 type="text"
-                placeholder="Nom du modèle"
+                placeholder="Rechercher un modèle..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '8px 8px 8px 30px',
+                  borderRadius: '6px',
+                  border: '1px solid #ddd',
+                }}
+              />
+            </div>
+
+            {/* Zone Sauvegarde Modèle Actuel */}
+            <div style={{ display: 'flex', gap: '5px', marginBottom: '10px' }}>
+              <input
+                type="text"
+                placeholder="Nom du modèle..."
                 value={newTemplateName}
                 onChange={(e) => setNewTemplateName(e.target.value)}
-                className={styles.input}
-                style={{ flex: 1, minWidth: 0 }}
+                style={{
+                  flex: 1,
+                  padding: '6px',
+                  borderRadius: '4px',
+                  border: '1px solid #ddd',
+                }}
               />
               <button
                 onClick={() => {
@@ -520,26 +537,30 @@ const SidebarLeft: React.FC = () => {
                   saveCurrentDesignAsTemplate(newTemplateName, folderId);
                   setNewTemplateName('');
                 }}
-                className={styles.buttonPrimary}
                 style={{
-                  width: '40px',
-                  padding: '0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
+                  background: '#f59e0b',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  padding: '0 10px',
+                  cursor: 'pointer',
                 }}
                 title="Sauvegarder"
               >
-                <Save size={16} />
+                💾
               </button>
             </div>
 
             <select
-              className={styles.input}
               value={selectedFolderForSave}
               onChange={(e) => setSelectedFolderForSave(e.target.value)}
-              style={{ width: '100%' }}
+              style={{
+                width: '100%',
+                marginBottom: '10px',
+                padding: '6px',
+                borderRadius: '6px',
+                border: '1px solid #ddd',
+              }}
             >
               <option value="root">📁 (Racine)</option>
               {libraryFolders.map((f) => (
@@ -548,43 +569,29 @@ const SidebarLeft: React.FC = () => {
                 </option>
               ))}
             </select>
-          </div>
 
-          {/* 2. Scrollable Tree Area */}
-          <div style={{ flex: 1, overflowY: 'auto', minHeight: 0, padding: '0.5rem' }}>
-            <div
+            {/* Bouton Nouveau Dossier */}
+            <button
+              onClick={() => {
+                const name = prompt('Nom du nouveau dossier ?');
+                if (name) addFolder(name);
+              }}
               style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '0.5rem',
+                width: '100%',
+                padding: '8px',
+                background: '#f3f4f6',
+                border: '1px dashed #ccc',
+                borderRadius: '6px',
+                cursor: 'pointer',
               }}
             >
-              <span style={{ fontSize: '0.75rem', color: '#6b7280', fontWeight: 'bold' }}>
-                Bibliothèque
-              </span>
-              <button
-                onClick={() => {
-                  const name = prompt('Nom du nouveau dossier ?');
-                  if (name) addFolder(name);
-                }}
-                style={{
-                  background: 'none',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '4px',
-                  fontSize: '0.75rem',
-                  padding: '2px 6px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                }}
-              >
-                <Plus size={12} /> Dossier
-              </button>
-            </div>
+              + 📂 Créer un dossier
+            </button>
+          </div>
 
-            <LibraryTree
+          {/* 2. Zone Scrollable (Arborescence) */}
+          <div style={{ flex: 1, overflowY: 'auto', padding: '10px' }}>
+            <FolderTree
               folders={libraryFolders}
               templates={libraryTemplates}
               moveItem={moveItem}
@@ -721,7 +728,7 @@ const SidebarLeft: React.FC = () => {
   );
 };
 
-interface LibraryTreeProps {
+interface FolderTreeProps {
   folders: any[];
   templates: any[];
   moveItem: (itemId: string, type: 'folder' | 'template', targetFolderId: string | null) => void;
@@ -731,7 +738,7 @@ interface LibraryTreeProps {
   searchQuery?: string;
 }
 
-function LibraryTree({
+function FolderTree({
   folders,
   templates,
   moveItem,
@@ -739,10 +746,10 @@ function LibraryTree({
   removeTemplate,
   applyTemplateToLabel,
   searchQuery = '',
-}: LibraryTreeProps) {
-  // Safety check
-  if (!Array.isArray(folders) || !Array.isArray(templates)) {
-    return <div style={{ padding: '1rem', color: 'red' }}>Erreur de chargement des données.</div>;
+}: FolderTreeProps) {
+  // 1. Protection contre le crash (White Screen)
+  if (!folders || !Array.isArray(folders) || !templates || !Array.isArray(templates)) {
+    return null;
   }
 
   const handleDragStart = (e: React.DragEvent, id: string, type: 'folder' | 'template') => {
@@ -763,12 +770,11 @@ function LibraryTree({
     const itemType = e.dataTransfer.getData('itemType') as 'folder' | 'template';
 
     if (itemId && itemType) {
-      console.log(`Moving ${itemType} ${itemId} to folder ${targetFolderId}`);
       moveItem(itemId, itemType, targetFolderId);
     }
   };
 
-  // --- SEARCH VIEW (FLAT LIST) ---
+  // --- MODE RECHERCHE (List à plat) ---
   if (searchQuery.trim()) {
     const query = searchQuery.toLowerCase();
     const matchingFolders = folders.filter((f) => f.name.toLowerCase().includes(query));
@@ -776,21 +782,19 @@ function LibraryTree({
 
     if (matchingFolders.length === 0 && matchingTemplates.length === 0) {
       return (
-        <div
-          style={{ padding: '1rem', color: '#9ca3af', textAlign: 'center', fontSize: '0.85rem' }}
-        >
+        <div style={{ padding: '10px', color: '#9ca3af', textAlign: 'center', fontSize: '13px' }}>
           Aucun résultat pour "{searchQuery}"
         </div>
       );
     }
 
     return (
-      <div style={{ paddingBottom: '1rem' }}>
+      <div style={{ paddingBottom: '10px' }}>
         {matchingFolders.map((folder) => (
           <div
             key={folder.id}
             style={{
-              padding: '6px',
+              padding: '8px',
               borderBottom: '1px solid #f3f4f6',
               display: 'flex',
               alignItems: 'center',
@@ -799,7 +803,7 @@ function LibraryTree({
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Folder size={14} fill="#fcd34d" color="#d97706" />
-              <span style={{ fontSize: '0.85rem' }}>{folder.name}</span>
+              <span style={{ fontSize: '13px' }}>{folder.name}</span>
             </div>
             <button
               onClick={() => removeFolder(folder.id)}
@@ -814,7 +818,7 @@ function LibraryTree({
             key={template.id}
             onClick={() => applyTemplateToLabel(template.id)}
             style={{
-              padding: '6px',
+              padding: '8px',
               borderBottom: '1px solid #f3f4f6',
               display: 'flex',
               alignItems: 'center',
@@ -824,7 +828,7 @@ function LibraryTree({
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <FileText size={14} color="#6b7280" />
-              <span style={{ fontSize: '0.85rem' }}>{template.name}</span>
+              <span style={{ fontSize: '13px' }}>{template.name}</span>
             </div>
             <button
               onClick={(e) => {
@@ -841,12 +845,12 @@ function LibraryTree({
     );
   }
 
-  // --- TREE VIEW (RECURSIVE) ---
+  // --- MODE ARBORESCENCE (Récursif) ---
   const renderFolder = (folder: any) => {
     const childFolders = folders.filter((f) => f.parentId === folder.id);
     const childTemplates = templates.filter((t) => t.folderId === folder.id);
-    // Use simple state for open/close. Ideally this should be persisted or lifted, but local is fine for now.
-    // To prevent "all closed by default" annoyance, maybe default open? No, closed is standard.
+
+    // Initial state: closed by default to save performance, or open? stick to closed.
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const [isOpen, setIsOpen] = React.useState(false);
 
@@ -858,10 +862,10 @@ function LibraryTree({
         onDragOver={handleDragOver}
         onDrop={(e) => handleDrop(e, folder.id)}
         style={{
-          marginLeft: '0.5rem',
+          marginLeft: '10px',
           borderLeft: '1px solid #e5e7eb',
-          paddingLeft: '0.25rem',
-          marginTop: '0.25rem',
+          paddingLeft: '5px',
+          marginTop: '5px',
         }}
       >
         <div
@@ -869,24 +873,24 @@ function LibraryTree({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            padding: '4px',
+            padding: '6px',
             backgroundColor: '#f9fafb',
             borderRadius: '4px',
             cursor: 'pointer',
           }}
           onClick={() => setIsOpen(!isOpen)}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             {isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
             <Folder size={14} fill="#fcd34d" color="#d97706" />
-            <span style={{ fontSize: '0.85rem', fontWeight: 500 }}>{folder.name}</span>
+            <span style={{ fontSize: '13px', fontWeight: 500 }}>{folder.name}</span>
           </div>
           <button
             onClick={(e) => {
               e.stopPropagation();
               removeFolder(folder.id);
             }}
-            style={{ border: 'none', background: 'none', cursor: 'pointer', padding: '2px' }}
+            style={{ border: 'none', background: 'none', cursor: 'pointer' }}
           >
             <Trash2 size={12} color="#9ca3af" />
           </button>
@@ -902,19 +906,19 @@ function LibraryTree({
                 onDragStart={(e) => handleDragStart(e, template.id, 'template')}
                 onClick={() => applyTemplateToLabel(template.id)}
                 style={{
-                  padding: '4px 8px',
-                  margin: '2px 0 2px 0.5rem',
+                  padding: '5px 10px',
+                  margin: '2px 0 2px 10px',
                   backgroundColor: 'white',
                   border: '1px solid #e5e7eb',
                   borderRadius: '4px',
-                  fontSize: '0.8rem',
+                  fontSize: '12px',
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
                   cursor: 'grab',
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <FileText size={12} color="#6b7280" />
                   <span>{template.name}</span>
                 </div>
@@ -923,7 +927,7 @@ function LibraryTree({
                     e.stopPropagation();
                     removeTemplate(template.id);
                   }}
-                  style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 0 }}
+                  style={{ border: 'none', background: 'none', cursor: 'pointer' }}
                 >
                   <Trash2 size={12} color="#ef4444" />
                 </button>
@@ -932,9 +936,9 @@ function LibraryTree({
             {childFolders.length === 0 && childTemplates.length === 0 && (
               <div
                 style={{
-                  fontSize: '0.75rem',
+                  fontSize: '12px',
                   color: '#9ca3af',
-                  padding: '4px 0 4px 1rem',
+                  padding: '5px 0 5px 20px',
                   fontStyle: 'italic',
                 }}
               >
@@ -954,7 +958,7 @@ function LibraryTree({
     <div
       onDragOver={handleDragOver}
       onDrop={(e) => handleDrop(e, null)}
-      style={{ minHeight: '100px', paddingBottom: '2rem' }}
+      style={{ minHeight: '100%;', paddingBottom: '30px' }}
     >
       {rootFolders.map(renderFolder)}
       {rootTemplates.map((template) => (
@@ -964,19 +968,19 @@ function LibraryTree({
           onDragStart={(e) => handleDragStart(e, template.id, 'template')}
           onClick={() => applyTemplateToLabel(template.id)}
           style={{
-            padding: '6px',
-            margin: '4px 0',
+            padding: '8px',
+            marginTop: '5px',
             backgroundColor: 'white',
             border: '1px solid #e5e7eb',
             borderRadius: '4px',
-            fontSize: '0.85rem',
+            fontSize: '13px',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
             cursor: 'grab',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <FileText size={14} color="#6b7280" />
             <span>{template.name}</span>
           </div>
@@ -985,17 +989,18 @@ function LibraryTree({
               e.stopPropagation();
               removeTemplate(template.id);
             }}
-            style={{ border: 'none', background: 'none', cursor: 'pointer', padding: '2px' }}
+            style={{ border: 'none', background: 'none', cursor: 'pointer' }}
           >
             <Trash2 size={14} color="#ef4444" />
           </button>
         </div>
       ))}
+
       {rootFolders.length === 0 && rootTemplates.length === 0 && (
-        <div style={{ padding: '1rem', textAlign: 'center', color: '#9ca3af', fontSize: '0.9rem' }}>
+        <div style={{ padding: '20px', textAlign: 'center', color: '#9ca3af', fontSize: '13px' }}>
           La bibliothèque est vide.
           <br />
-          Sauvegardez un design ou créez un dossier !
+          Créez un dossier ou sauvegardez un modèle !
         </div>
       )}
     </div>

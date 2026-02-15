@@ -247,7 +247,7 @@ export const createFolder = async (
 ): Promise<LibraryFolder> => {
   const db = await initDB();
   const folder: LibraryFolder = {
-    id: `folder_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    id: `folder_${typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Date.now() + '_' + Math.random().toString(36).substr(2, 9)}`,
     name,
     parentId,
     createdAt: Date.now(),
