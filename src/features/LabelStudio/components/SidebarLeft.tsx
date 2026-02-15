@@ -2,7 +2,7 @@
 import React, { useRef } from 'react';
 import styles from '../LabelStudio.module.css';
 import { useLabelStudio } from '../context/LabelContext';
-import { Plus, Printer, Trash2, ChevronDown, ChevronRight, Upload } from 'lucide-react';
+import { Plus, Printer, Trash2, ChevronDown, ChevronRight, Upload, Settings } from 'lucide-react';
 import { MediaCategory, MediaItem } from '../utils/db';
 
 const SidebarLeft: React.FC = () => {
@@ -20,11 +20,13 @@ const SidebarLeft: React.FC = () => {
     addMediaToLibrary,
     removeMediaFromLibrary,
     trimanConfig,
-    updateTriman,
-    deleteBatch,
+    customFonts,
+    addCustomFont,
+    deleteCustomFont,
   } = useLabelStudio();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const fontInputRef = useRef<HTMLInputElement>(null);
   const [activeCategory, setActiveCategory] = React.useState<MediaCategory | 'triman'>('logos');
   const [expandedCategories, setExpandedCategories] = React.useState<Record<string, boolean>>({
     triman: true,
@@ -421,6 +423,126 @@ const SidebarLeft: React.FC = () => {
           </div>
         )}
       </div>
+      {activeTab === 'settings' && (
+        <div className={styles.sidebarContent}>
+          <div className={styles.categorySection}>
+            <div className={styles.categoryHeader}>
+              <span className={styles.categoryTitle}>Gestion des Polices</span>
+            </div>
+
+            <div className={styles.categoryContent}>
+              {/* Import Button */}
+              <div style={{ marginBottom: '1rem' }}>
+                <input
+                  type="file"
+                  accept=".ttf,.otf"
+                  ref={fontInputRef}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      addCustomFont(file);
+                      e.target.value = ''; // Reset input
+                    }
+                  }}
+                  style={{ display: 'none' }}
+                />
+                <button
+                  onClick={() => fontInputRef.current?.click()}
+                  style={{
+                    width: '100%',
+                    padding: '0.5rem',
+                    backgroundColor: '#e5e7eb',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '0.375rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.5rem',
+                    fontSize: '0.875rem',
+                    color: '#374151',
+                  }}
+                >
+                  <Upload size={14} />
+                  Importer une police (.ttf/.otf)
+                </button>
+              </div>
+
+              {/* Font List */}
+              {customFonts && customFonts.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  {customFonts.map((font) => (
+                    <div
+                      key={font.id}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '0.5rem',
+                        backgroundColor: 'white',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '0.375rem',
+                      }}
+                    >
+                      <div style={{ overflow: 'hidden' }}>
+                        <div
+                          style={{
+                            fontWeight: 500,
+                            fontSize: '0.875rem',
+                            color: '#111827',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                          }}
+                        >
+                          {font.displayName || font.name}
+                        </div>
+                        <div
+                          style={{ fontSize: '0.75rem', color: '#6b7280', fontFamily: font.name }}
+                        >
+                          Aperçu du texte 123
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          if (confirm(`Supprimer la police "${font.displayName || font.name}" ?`)) {
+                            deleteCustomFont(font.id);
+                          }
+                        }}
+                        style={{
+                          padding: '0.25rem',
+                          color: '#ef4444',
+                          backgroundColor: '#fee2e2',
+                          border: 'none',
+                          borderRadius: '0.25rem',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                        title="Supprimer"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div
+                  style={{
+                    fontSize: '0.875rem',
+                    color: '#9ca3af',
+                    textAlign: 'center',
+                    padding: '1rem',
+                  }}
+                >
+                  Aucune police personnalisée.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </aside>
   );
 };

@@ -17,8 +17,6 @@ const RightSidebar: React.FC = () => {
     duplicateSideDesign,
     saveAsDefaultTemplate,
     customFonts,
-    addCustomFont,
-    deleteCustomFont,
   } = useLabelStudio();
 
   const activeBatch = batches.find((b) => b.id === activeBatchId);
@@ -326,18 +324,6 @@ const RightSidebar: React.FC = () => {
     }
   };
 
-  const hiddenFileInputRef = React.useRef<HTMLInputElement>(null);
-
-  const handleImportFontClick = () => {
-    hiddenFileInputRef.current?.click();
-  };
-
-  const handleFontFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      addCustomFont(e.target.files[0]);
-    }
-  };
-
   const handlePositionChange = (axis: 'x' | 'y', mmValue: string) => {
     const val = parseFloat(mmValue);
     if (isNaN(val)) return;
@@ -532,91 +518,15 @@ const RightSidebar: React.FC = () => {
                 )}
               </select>
 
-              {/* Custom Font Management List */}
-              {customFonts && customFonts.length > 0 && (
-                <div style={{ marginTop: '0.5rem' }}>
-                  <div
-                    style={{
-                      fontSize: '0.75rem',
-                      fontWeight: 'bold',
-                      marginBottom: '0.25rem',
-                      color: '#6b7280',
-                    }}
-                  >
-                    Gérer mes polices
-                  </div>
-                  {customFonts.map((font) => (
-                    <div
-                      key={font.id}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        marginBottom: '0.25rem',
-                        fontSize: '0.75rem',
-                        backgroundColor: '#f3f4f6',
-                        padding: '2px 6px',
-                        borderRadius: '4px',
-                      }}
-                    >
-                      <span
-                        style={{
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                          maxWidth: '160px',
-                        }}
-                      >
-                        {font.displayName || font.name}
-                      </span>
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          if (confirm(`Supprimer la police "${font.displayName || font.name}" ?`)) {
-                            deleteCustomFont(font.id);
-                          }
-                        }}
-                        style={{
-                          border: 'none',
-                          background: 'transparent',
-                          cursor: 'pointer',
-                          color: '#ef4444',
-                          padding: '0 4px',
-                          fontSize: '12px',
-                        }}
-                        title="Supprimer cette police"
-                      >
-                        ❌
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Import Font Button */}
-              <div style={{ marginTop: '0.5rem' }}>
-                <input
-                  type="file"
-                  accept=".ttf,.otf"
-                  ref={hiddenFileInputRef}
-                  onChange={handleFontFileChange}
-                  style={{ display: 'none' }}
-                />
-                <button
-                  onClick={handleImportFontClick}
-                  style={{
-                    fontSize: '0.75rem',
-                    padding: '0.25rem 0.5rem',
-                    backgroundColor: '#e5e7eb',
-                    border: '1px solid #d1d5db',
-                    borderRadius: '0.25rem',
-                    cursor: 'pointer',
-                    width: '100%',
-                    textAlign: 'center',
-                  }}
-                >
-                  📥 Importer une police (.ttf/.otf)
-                </button>
+              <div
+                style={{
+                  marginTop: '0.5rem',
+                  fontSize: '0.75rem',
+                  color: '#6b7280',
+                  fontStyle: 'italic',
+                }}
+              >
+                Gérez vos polices dans l'onglet <strong>Paramètres</strong> (nouveau menu à gauche).
               </div>
             </div>
 
