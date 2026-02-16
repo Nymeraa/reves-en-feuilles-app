@@ -210,22 +210,7 @@
   /* Plus de margin auto, le zoomWrapper gère le centrage */
 }
 
-/* Grid Systems (A4 is 210mm x 297mm) */
-.gridSmall {
-  display: grid;
-  grid-template-columns: repeat(2, 105mm);
-  grid-template-rows: repeat(4, 74.25mm);
-  width: 210mm;
-  height: 297mm;
-}
-
-.gridLarge {
-  display: grid;
-  grid-template-columns: repeat(2, 105mm);
-  grid-template-rows: repeat(2, 148.5mm);
-  width: 210mm;
-  height: 297mm;
-}
+/* Grid Systems defined below in LANDSCAPE section */
 
 /* --- GEOMETRIC REFACTOR (BRUTE FORCE) --- */
 

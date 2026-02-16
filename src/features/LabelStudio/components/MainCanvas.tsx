@@ -305,13 +305,13 @@ const MainCanvas: React.FC = () => {
           className={styles.zoomWrapper}
           style={{
             // On calcule la taille physique + une marge de sécurité de 100px
-            width: `calc(210mm * ${zoomLevel} + 100px)`,
-            height: `calc(297mm * ${zoomLevel} + 100px)`,
+            width: `calc(${activeBatch?.format === 'small' ? '297mm' : '210mm'} * ${zoomLevel} + 100px)`,
+            height: `calc(${activeBatch?.format === 'small' ? '210mm' : '297mm'} * ${zoomLevel} + 100px)`,
           }}
         >
           {/* LA FEUILLE A4 (Qui subit le scale visuel) */}
           <div
-            className={`${styles.paperA4} ${showCropMarks ? styles.printMode : ''}`}
+            className={`${styles.paperA4} ${activeBatch?.format === 'small' ? styles.landscape : ''} ${showCropMarks ? styles.printMode : ''}`}
             style={{
               transform: `scale(${zoomLevel})`,
               display: 'flex',
