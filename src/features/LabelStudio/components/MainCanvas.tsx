@@ -2,10 +2,30 @@
 import React from 'react';
 import styles from '../LabelStudio.module.css';
 import { useLabelStudio } from '../context/LabelContext';
-import { ZoomIn, ZoomOut, Grid } from 'lucide-react';
+import { ZoomIn, ZoomOut, Grid, RotateCw } from 'lucide-react';
 import SingleLabel from './SingleLabel';
 
 const MainCanvas: React.FC = () => {
+  const {
+    zoomLevel,
+    setZoomLevel,
+    activeBatchId,
+    batches,
+    selectedLabelId,
+    setSelectedLabelId,
+    selectedElementId,
+    setSelectedElementId,
+    updateLabelElement,
+    removeElement,
+    trimanConfig,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+    showCropMarks,
+    toggleCropMarks,
+    cropMarkOffset,
+    setCropMarkOffset,
   const {
     zoomLevel,
     setZoomLevel,
@@ -30,6 +50,7 @@ const MainCanvas: React.FC = () => {
   } = useLabelStudio();
 
   const [isDragging, setIsDragging] = React.useState(false);
+  const [isRotated, setIsRotated] = React.useState(false); // New state for global rotation
   const dragStartRef = React.useRef<{
     x: number;
     y: number;
@@ -127,38 +148,28 @@ const MainCanvas: React.FC = () => {
     const deltaY = e.clientY - dragStartRef.current.y;
 
     const { format } = activeBatch;
-    let effectiveDX = deltaX;
-    let effectiveDY = deltaY;
+    
+    // Calculate Page Deltas first (Global Rotation)
+    // If Rotated 90deg Clockwise:
+    // Screen X+ (Right) -> aligns with Page Y- (Up in Page Coords) => Page Y moves negative
+    // Screen Y+ (Down) -> aligns with Page X+ (Down/Right in Page Coords) => Page X moves positive
+    let pageDeltaX = isRotated ? deltaY : deltaX;
+    let pageDeltaY = isRotated ? -deltaX : deltaY;
 
-    // Drag Logic
-    // If format is 'small', the label is rotated 90deg clockwise.
-    // Screen X+ (Right) -> Label Y+ (Bottom) -> effectively Down in label space
-    // Screen Y+ (Down) -> Label X- (Left) -> effectively Left in label space
-    //
-    // However, the user reports:
-    // "move up -> it goes right" => Screen Y- should increase Label X? No.
-    // Let's stick to the visual correction:
-    // To move Visual Up (Screen Y-): We need to move "Label Top" (which is Label X-). So we need X-.
-    // EffectiveDX = deltaY (Y- => X-)
-    //
-    // To move Visual Right (Screen X+): We need to move "Label Right" (which is Label Y+). So we need Y+.
-    // EffectiveDY = -deltaX (X+ => Y-) -> Wait.
-    //
-    // Let's try the formula that worked before:
-    // effectiveDX = deltaY;
-    // effectiveDY = -deltaX;
+    let effectiveDX = pageDeltaX;
+    let effectiveDY = pageDeltaY;
 
+    // Apply Format-specific Label Rotation
     if (format === 'small') {
-      // Small format: Label is rotated 90deg.
-      // - Drag Up (Screen Y-) -> Visual Up (Label X-) => effectiveDX = deltaY
-      // - Drag Right (Screen X+) -> Visual Right (Label Y-) => effectiveDY = -deltaX
-      effectiveDX = deltaY;
-      effectiveDY = -deltaX;
+      // Small format: Label is rotated 90deg relative to Page.
+      // Label X is Page Y. Label Y is Page -X.
+      effectiveDX = pageDeltaY;
+      effectiveDY = -pageDeltaX;
     } else {
       // Large format (Standard Portrait)
       const scaleFactor = 105 / 141;
-      effectiveDX = deltaX / scaleFactor;
-      effectiveDY = deltaY / scaleFactor;
+      effectiveDX = pageDeltaX / scaleFactor;
+      effectiveDY = pageDeltaY / scaleFactor;
     }
 
     // Convert to % of Label Dimensions
@@ -288,6 +299,16 @@ const MainCanvas: React.FC = () => {
           >
             <ZoomIn size={18} color="#4b5563" />
           </button>
+
+          {/* Rotation Button */}
+          <button
+            className={styles.toolButton}
+            onClick={() => setIsRotated(!isRotated)}
+            title="Pivoter la vue 90°"
+            style={{ marginLeft: '0.5rem' }}
+          >
+            <RotateCw size={18} color={isRotated ? '#f59e0b' : '#4b5563'} />
+          </button>
         </div>
 
         {/* Crop Marks Controls moved to Sidebar */}
@@ -303,15 +324,16 @@ const MainCanvas: React.FC = () => {
           className={styles.zoomWrapper}
           style={{
             // On calcule la taille physique + une marge de sécurité de 100px
-            width: `calc(210mm * ${zoomLevel} + 100px)`,
-            height: `calc(297mm * ${zoomLevel} + 100px)`,
+            // Si rotated, on inverse width/height du wrapper pour le scroll
+            width: `calc(${isRotated ? '297mm' : '210mm'} * ${zoomLevel} + 100px)`,
+            height: `calc(${isRotated ? '210mm' : '297mm'} * ${zoomLevel} + 100px)`,
           }}
         >
           {/* LA FEUILLE A4 (Qui subit le scale visuel) */}
           <div
             className={`${styles.paperA4} ${showCropMarks ? styles.printMode : ''}`}
             style={{
-              transform: `scale(${zoomLevel})`,
+              transform: `scale(${zoomLevel}) rotate(${isRotated ? '90deg' : '0deg'})`,
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
