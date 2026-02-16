@@ -45,6 +45,10 @@ const SidebarLeft: React.FC = () => {
     applyTemplateToLabel,
     removeTemplate,
     moveItem,
+    showCropMarks,
+    toggleCropMarks,
+    cropMarkOffset,
+    setCropMarkOffset,
   } = useLabelStudio();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -624,6 +628,61 @@ const SidebarLeft: React.FC = () => {
 
       {activeTab === 'settings' && (
         <div className={styles.sidebarContent}>
+          <div className={styles.categorySection}>
+            <div className={styles.categoryHeader}>
+              <span className={styles.categoryTitle}>Paramètres d'impression</span>
+            </div>
+            <div className={styles.categoryContent}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: '1rem',
+                }}
+              >
+                <span style={{ fontSize: '0.875rem', color: '#374151' }}>
+                  Afficher traits de coupe
+                </span>
+                <input
+                  type="checkbox"
+                  checked={showCropMarks}
+                  onChange={toggleCropMarks}
+                  style={{ cursor: 'pointer' }}
+                />
+              </div>
+
+              {showCropMarks && (
+                <div style={{ marginBottom: '1rem' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      marginBottom: '0.25rem',
+                    }}
+                  >
+                    <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>Distance (mm)</span>
+                    <span style={{ fontSize: '0.75rem', color: '#374151', fontWeight: 500 }}>
+                      {cropMarkOffset}mm
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="3"
+                    max="10"
+                    step="0.5"
+                    value={cropMarkOffset}
+                    onChange={(e) => setCropMarkOffset(parseFloat(e.target.value))}
+                    style={{ width: '100%', cursor: 'pointer' }}
+                  />
+                  <div style={{ fontSize: '0.7rem', color: '#9ca3af', marginTop: '0.25rem' }}>
+                    Ajuste la position des traits par rapport aux coins des étiquettes.
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
           <div className={styles.categorySection}>
             <div className={styles.categoryHeader}>
               <span className={styles.categoryTitle}>Gestion des Polices</span>

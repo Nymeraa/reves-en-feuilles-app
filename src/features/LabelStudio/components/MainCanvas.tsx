@@ -130,19 +130,35 @@ const MainCanvas: React.FC = () => {
     let effectiveDX = deltaX;
     let effectiveDY = deltaY;
 
-    // Standard behavior (no rotation)
-    const scaleFactor = format === 'large' ? 105 / 141 : 1; // Scale for large, 1 for small?
-    // Actually, small format was rotated, but now we remove rotation.
-    // Small format is 1:1 scale likely?
-    // Let's assume standard behavior for now.
+    // Drag Logic
+    // If format is 'small', the label is rotated 90deg clockwise.
+    // Screen X+ (Right) -> Label Y+ (Bottom) -> effectively Down in label space
+    // Screen Y+ (Down) -> Label X- (Left) -> effectively Left in label space
+    //
+    // However, the user reports:
+    // "move up -> it goes right" => Screen Y- should increase Label X? No.
+    // Let's stick to the visual correction:
+    // To move Visual Up (Screen Y-): We need to move "Label Top" (which is Label X-). So we need X-.
+    // EffectiveDX = deltaY (Y- => X-)
+    //
+    // To move Visual Right (Screen X+): We need to move "Label Right" (which is Label Y+). So we need Y+.
+    // EffectiveDY = -deltaX (X+ => Y-) -> Wait.
+    //
+    // Let's try the formula that worked before:
+    // effectiveDX = deltaY;
+    // effectiveDY = -deltaX;
 
-    // For small format (Portrait grid on Portrait page), the coordinates should map directly.
-    effectiveDX = deltaX;
-    effectiveDY = deltaY;
-
-    if (format === 'large') {
-      effectiveDX = deltaX / (105 / 141);
-      effectiveDY = deltaY / (105 / 141);
+    if (format === 'small') {
+      // Small format: Label is rotated 90deg.
+      // - Drag Up (Screen Y-) -> Visual Up (Label X-) => effectiveDX = deltaY
+      // - Drag Right (Screen X+) -> Visual Right (Label Y-) => effectiveDY = -deltaX
+      effectiveDX = deltaY;
+      effectiveDY = -deltaX;
+    } else {
+      // Large format (Standard Portrait)
+      const scaleFactor = 105 / 141;
+      effectiveDX = deltaX / scaleFactor;
+      effectiveDY = deltaY / scaleFactor;
     }
 
     // Convert to % of Label Dimensions
@@ -274,48 +290,7 @@ const MainCanvas: React.FC = () => {
           </button>
         </div>
 
-        {/* Separator */}
-        <div style={{ width: '1px', height: '20px', background: '#ccc', margin: '0 10px' }} />
-
-        {/* Crop Marks Toggle */}
-        <button
-          className={styles.toolButton}
-          onClick={toggleCropMarks}
-          style={{
-            backgroundColor: showCropMarks ? '#e5e7eb' : 'transparent',
-            border: '1px solid #d1d5db',
-            borderRadius: '4px',
-            padding: '4px 8px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '5px',
-          }}
-          title="Afficher traits de coupe"
-        >
-          ✂️ <span style={{ fontSize: '0.8rem' }}>Traits de coupe</span>
-        </button>
-
-        {/* Crop Mark Offset Slider (only visible when crop marks are shown) */}
-        {showCropMarks && (
-          <div
-            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: '0.5rem' }}
-          >
-            <span style={{ fontSize: '0.75rem', color: '#6b7280', whiteSpace: 'nowrap' }}>
-              Distance: {cropMarkOffset}mm
-            </span>
-            <input
-              type="range"
-              min="3"
-              max="10"
-              step="0.5"
-              value={cropMarkOffset}
-              onChange={(e) => setCropMarkOffset(parseFloat(e.target.value))}
-              style={{ width: '80px' }}
-              title="Ajuster la distance des traits de coupe"
-            />
-          </div>
-        )}
+        {/* Crop Marks Controls moved to Sidebar */}
 
         <button className={styles.printBtn} onClick={() => window.print()}>
           🖨️ Imprimer / PDF
@@ -347,23 +322,24 @@ const MainCanvas: React.FC = () => {
               {renderGrid()}
 
               {/* Crop Marks relative to the GRID */}
+              {/* Crop Marks relative to the GRID - INSET positioning */}
               {showCropMarks && (
                 <>
                   <div
                     className={`${styles.cropMark} ${styles.cropMarkTL}`}
-                    style={{ top: `-${cropMarkOffset}mm`, left: `-${cropMarkOffset}mm` }}
+                    style={{ top: `${cropMarkOffset}mm`, left: `${cropMarkOffset}mm` }}
                   />
                   <div
                     className={`${styles.cropMark} ${styles.cropMarkTR}`}
-                    style={{ top: `-${cropMarkOffset}mm`, right: `-${cropMarkOffset}mm` }}
+                    style={{ top: `${cropMarkOffset}mm`, right: `${cropMarkOffset}mm` }}
                   />
                   <div
                     className={`${styles.cropMark} ${styles.cropMarkBL}`}
-                    style={{ bottom: `-${cropMarkOffset}mm`, left: `-${cropMarkOffset}mm` }}
+                    style={{ bottom: `${cropMarkOffset}mm`, left: `${cropMarkOffset}mm` }}
                   />
                   <div
                     className={`${styles.cropMark} ${styles.cropMarkBR}`}
-                    style={{ bottom: `-${cropMarkOffset}mm`, right: `-${cropMarkOffset}mm` }}
+                    style={{ bottom: `${cropMarkOffset}mm`, right: `${cropMarkOffset}mm` }}
                   />
                 </>
               )}
