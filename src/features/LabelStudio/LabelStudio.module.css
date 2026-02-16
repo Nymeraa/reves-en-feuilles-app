@@ -210,7 +210,22 @@
   /* Plus de margin auto, le zoomWrapper gère le centrage */
 }
 
-/* Grid Systems defined below in LANDSCAPE section */
+/* Grid Systems (A4 is 210mm x 297mm) */
+.gridSmall {
+  display: grid;
+  grid-template-columns: repeat(2, 105mm);
+  grid-template-rows: repeat(4, 74.25mm);
+  width: 210mm;
+  height: 297mm;
+}
+
+.gridLarge {
+  display: grid;
+  grid-template-columns: repeat(2, 105mm);
+  grid-template-rows: repeat(2, 148.5mm);
+  width: 210mm;
+  height: 297mm;
+}
 
 /* --- GEOMETRIC REFACTOR (BRUTE FORCE) --- */
 
@@ -485,20 +500,12 @@
   }
 }
 
-/* --- LANDSCAPE & CROP MARKS --- */
-
-/* Page Landscape (297x210) */
-.paperA4.landscape {
-  width: 297mm;
-  height: 210mm;
-}
+/* --- CROP MARKS --- */
 
 /* Container de la grille (le bloc d'étiquettes) */
 .labelsGrid {
   position: relative;
-  display: inline-block; /* S'adapte au contenu */
-  /* Centré dans la page via flex parent (paperA4) ou margin auto ? */
-  /* La grille est affichée via grid-template, donc elle a une taille explicite */
+  display: inline-block;
 }
 
 /* Traits de coupe relatifs au BLOC */
@@ -539,16 +546,8 @@
 
 @media print {
   @page {
-    size: auto; /* Laisse le CSS gérer landscape/portrait */
+    size: A4 portrait;
     margin: 0 !important;
-  }
-
-  /* Force landscape si la classe est présente */
-  .paperA4.landscape {
-    width: 297mm !important;
-    height: 210mm !important;
-    transform: none !important;
-    print-color-adjust: exact !important;
   }
 
   /* Ensure visual visibility */
