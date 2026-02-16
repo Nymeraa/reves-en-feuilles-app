@@ -81,6 +81,8 @@ export interface Batch {
   poids: string;
   lot: string;
   ddm: string;
+  infusion?: string;
+  temp?: string;
   labels: LabelData[]; // Array of independent label configs
 }
 
@@ -528,7 +530,7 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
     const generateDefaultElements = (
       side: 'front' | 'back',
       labelId: string,
-      batchData: { poids: string; lot: string; ddm: string },
+      batchData: { poids: string; lot: string; ddm: string; infusion?: string; temp?: string },
       format: 'small' | 'large'
     ): LabelElement[] => {
       const storageKey = `template_${format}_${side}`;
@@ -558,8 +560,9 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
             else if (suffix === 'tagline') content = "Une phrase d'accroche...";
             else if (suffix === 'desc') content = 'Description du produit...';
             else if (suffix === 'ingredients') content = 'Ingrédients : ...';
-            else if (suffix === 'infusion') content = "Temps d'infusion : 3-5 min";
-            else if (suffix === 'temp') content = 'Température : 90°C';
+            else if (suffix === 'infusion')
+              content = "Temps d'infusion : " + (batchData.infusion || '3-5 min');
+            else if (suffix === 'temp') content = 'Température : ' + (batchData.temp || '90°C');
             else content = suffix; // Fallback
 
             return {
@@ -616,8 +619,8 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
         addText('tagline', "Une phrase d'accroche...", 30, 10, true); // Y+20: 10→30
         addText('desc', 'Description du produit...', 40, 9); // Y+20: 20→40
         addText('ingredients', 'Ingrédients : ...', 55, 8); // Y+20: 35→55
-        addText('infusion', "Temps d'infusion : 3-5 min", 70, 8); // Y+20: 50→70
-        addText('temp', 'Température : 90°C', 75, 8); // Y+20: 55→75
+        addText('infusion', "Temps d'infusion : " + (batchData.infusion || '3-5 min'), 70, 8); // Y+20: 50→70
+        addText('temp', 'Température : ' + (batchData.temp || '90°C'), 75, 8); // Y+20: 55→75
         addText('weight_back', 'Poids net : ' + batchData.poids, 85, 8); // Y+20: 65→85
         addText('lot', 'Lot : ' + batchData.lot, 90, 8); // Y+20: 70→90
         addText('ddm', batchData.ddm, 95, 8); // Y+20: 75→95 (sans préfixe)
@@ -664,6 +667,8 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
               poids: newBatch.poids,
               lot: newBatch.lot,
               ddm: newBatch.ddm,
+              infusion: newBatch.infusion,
+              temp: newBatch.temp,
             },
             newBatch.format
           ), // Pré-remplissage automatique
