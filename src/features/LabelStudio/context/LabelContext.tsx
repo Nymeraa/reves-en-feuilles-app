@@ -550,19 +550,17 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
               suffix.includes('weight') || suffix === '1' || suffix === '2' || suffix === 'back';
 
             if (isWeight) {
-              if (suffix === 'back' || suffix === 'weight_back')
-                content = 'Poids net : ' + batchData.poids;
+              if (suffix === 'back' || suffix === 'weight_back') content = batchData.poids;
               else content = batchData.poids;
-            } else if (suffix === 'lot') content = 'Lot : ' + batchData.lot;
+            } else if (suffix === 'lot') content = batchData.lot;
             else if (suffix === 'ddm') content = batchData.ddm;
             else if (suffix === 'title') content = 'NOM DE LA RECETTE';
             else if (suffix === 'blend') content = 'Mélange de...';
             else if (suffix === 'tagline') content = "Une phrase d'accroche...";
             else if (suffix === 'desc') content = 'Description du produit...';
             else if (suffix === 'ingredients') content = 'Ingrédients : ...';
-            else if (suffix === 'infusion')
-              content = "Temps d'infusion : " + (batchData.infusion || '3-5 min');
-            else if (suffix === 'temp') content = 'Température : ' + (batchData.temp || '90°C');
+            else if (suffix === 'infusion') content = batchData.infusion || '3-5 min';
+            else if (suffix === 'temp') content = batchData.temp || '90°C';
             else content = suffix; // Fallback
 
             return {
