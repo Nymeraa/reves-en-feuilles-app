@@ -24,6 +24,8 @@ const MainCanvas: React.FC = () => {
     canRedo,
     showCropMarks,
     toggleCropMarks,
+    cropMarkOffset,
+    setCropMarkOffset,
     addToHistorySnapshot,
   } = useLabelStudio();
 
@@ -294,6 +296,27 @@ const MainCanvas: React.FC = () => {
           ✂️ <span style={{ fontSize: '0.8rem' }}>Traits de coupe</span>
         </button>
 
+        {/* Crop Mark Offset Slider (only visible when crop marks are shown) */}
+        {showCropMarks && (
+          <div
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: '0.5rem' }}
+          >
+            <span style={{ fontSize: '0.75rem', color: '#6b7280', whiteSpace: 'nowrap' }}>
+              Distance: {cropMarkOffset}mm
+            </span>
+            <input
+              type="range"
+              min="3"
+              max="10"
+              step="0.5"
+              value={cropMarkOffset}
+              onChange={(e) => setCropMarkOffset(parseFloat(e.target.value))}
+              style={{ width: '80px' }}
+              title="Ajuster la distance des traits de coupe"
+            />
+          </div>
+        )}
+
         <button className={styles.printBtn} onClick={() => window.print()}>
           🖨️ Imprimer / PDF
         </button>
@@ -326,10 +349,22 @@ const MainCanvas: React.FC = () => {
               {/* Crop Marks relative to the GRID */}
               {showCropMarks && (
                 <>
-                  <div className={`${styles.cropMark} ${styles.cropMarkTL}`} />
-                  <div className={`${styles.cropMark} ${styles.cropMarkTR}`} />
-                  <div className={`${styles.cropMark} ${styles.cropMarkBL}`} />
-                  <div className={`${styles.cropMark} ${styles.cropMarkBR}`} />
+                  <div
+                    className={`${styles.cropMark} ${styles.cropMarkTL}`}
+                    style={{ top: `-${cropMarkOffset}mm`, left: `-${cropMarkOffset}mm` }}
+                  />
+                  <div
+                    className={`${styles.cropMark} ${styles.cropMarkTR}`}
+                    style={{ top: `-${cropMarkOffset}mm`, right: `-${cropMarkOffset}mm` }}
+                  />
+                  <div
+                    className={`${styles.cropMark} ${styles.cropMarkBL}`}
+                    style={{ bottom: `-${cropMarkOffset}mm`, left: `-${cropMarkOffset}mm` }}
+                  />
+                  <div
+                    className={`${styles.cropMark} ${styles.cropMarkBR}`}
+                    style={{ bottom: `-${cropMarkOffset}mm`, right: `-${cropMarkOffset}mm` }}
+                  />
                 </>
               )}
             </div>

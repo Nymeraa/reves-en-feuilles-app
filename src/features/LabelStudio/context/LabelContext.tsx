@@ -164,6 +164,8 @@ interface LabelContextType {
 
   showCropMarks: boolean;
   toggleCropMarks: () => void;
+  cropMarkOffset: number;
+  setCropMarkOffset: (offset: number) => void;
   undo: () => void;
   redo: () => void;
   canUndo: boolean;
@@ -193,6 +195,7 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showCropMarks, setShowCropMarks] = useState(false);
   const toggleCropMarks = () => setShowCropMarks((prev) => !prev);
+  const [cropMarkOffset, setCropMarkOffset] = useState(5); // Default 5mm offset
 
   // Global Triman State
   const [trimanConfig, setTrimanConfig] = useState<GlobalTrimanConfig>({
@@ -1019,6 +1022,8 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
         // Print & History
         showCropMarks,
         toggleCropMarks,
+        cropMarkOffset,
+        setCropMarkOffset,
         undo,
         redo,
         canUndo,
