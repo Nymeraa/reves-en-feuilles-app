@@ -6,27 +6,7 @@ import { ZoomIn, ZoomOut, Grid, RotateCw } from 'lucide-react';
 import SingleLabel from './SingleLabel';
 
 const MainCanvas: React.FC = () => {
-  const {
-    zoomLevel,
-    setZoomLevel,
-    activeBatchId,
-    batches,
-    selectedLabelId,
-    setSelectedLabelId,
-    selectedElementId,
-    setSelectedElementId,
-    updateLabelElement,
-    removeElement,
-    trimanConfig,
-    undo,
-    redo,
-    canUndo,
-    canRedo,
-    showCropMarks,
-    toggleCropMarks,
-    cropMarkOffset,
-    setCropMarkOffset,
-  const {
+
     zoomLevel,
     setZoomLevel,
     activeBatchId,
