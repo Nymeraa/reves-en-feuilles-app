@@ -268,9 +268,9 @@
 }
 
 .small .labelWrapper {
-  width: 100%;
-  height: 100%;
-  transform: translate(-50%, -50%); /* No rotation */
+  width: 74.25mm;
+  height: 105mm;
+  transform: translate(-50%, -50%) rotate(90deg);
 }
 
 .large .labelWrapper {
