@@ -268,15 +268,15 @@
 }
 
 .small .labelWrapper {
-  width: 74.25mm;
-  height: 105mm;
-  transform: translate(-50%, -50%) rotate(90deg);
+  width: 100%;
+  height: 100%;
+  transform: translate(-50%, -50%); /* No rotation */
 }
 
 .large .labelWrapper {
   width: 100%;
   height: 100%;
-  transform: translate(-50%, -50%); /* Simple center if needed but width/height match */
+  transform: translate(-50%, -50%);
 }
 
 /* Niveau 3 : Le contenu réel */

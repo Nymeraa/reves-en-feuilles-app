@@ -128,16 +128,19 @@ const MainCanvas: React.FC = () => {
     let effectiveDX = deltaX;
     let effectiveDY = deltaY;
 
-    // Rotation / Scale Logic
-    if (format === 'small') {
-      // Rotated 90 deg: Mouse Right (X+) -> Label Down (Y+) | Mouse Down (Y+) -> Label Left (X-)
-      effectiveDX = deltaY;
-      effectiveDY = -deltaX;
-    } else {
-      // Large format is scaled
-      const scaleFactor = 105 / 141; // ~0.744
-      effectiveDX = deltaX / scaleFactor;
-      effectiveDY = deltaY / scaleFactor;
+    // Standard behavior (no rotation)
+    const scaleFactor = format === 'large' ? 105 / 141 : 1; // Scale for large, 1 for small?
+    // Actually, small format was rotated, but now we remove rotation.
+    // Small format is 1:1 scale likely?
+    // Let's assume standard behavior for now.
+
+    // For small format (Portrait grid on Portrait page), the coordinates should map directly.
+    effectiveDX = deltaX;
+    effectiveDY = deltaY;
+
+    if (format === 'large') {
+      effectiveDX = deltaX / (105 / 141);
+      effectiveDY = deltaY / (105 / 141);
     }
 
     // Convert to % of Label Dimensions
@@ -302,14 +305,13 @@ const MainCanvas: React.FC = () => {
           className={styles.zoomWrapper}
           style={{
             // On calcule la taille physique + une marge de sécurité de 100px
-            // Swap dimensions if landscape (format === 'small')
-            width: `calc(${activeBatch?.format === 'small' ? '297mm' : '210mm'} * ${zoomLevel} + 100px)`,
-            height: `calc(${activeBatch?.format === 'small' ? '210mm' : '297mm'} * ${zoomLevel} + 100px)`,
+            width: `calc(210mm * ${zoomLevel} + 100px)`,
+            height: `calc(297mm * ${zoomLevel} + 100px)`,
           }}
         >
           {/* LA FEUILLE A4 (Qui subit le scale visuel) */}
           <div
-            className={`${styles.paperA4} ${activeBatch?.format === 'small' ? styles.landscape : ''} ${showCropMarks ? styles.printMode : ''}`}
+            className={`${styles.paperA4} ${showCropMarks ? styles.printMode : ''}`}
             style={{
               transform: `scale(${zoomLevel})`,
               display: 'flex',
