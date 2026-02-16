@@ -31,6 +31,19 @@ const MainCanvas: React.FC = () => {
 
   const [isDragging, setIsDragging] = React.useState(false);
   const [isRotated, setIsRotated] = React.useState(false); // New state for global rotation
+
+  // Auto-rotate for small format when switching batches
+  React.useEffect(() => {
+    if (activeBatchId && batches) {
+      const batch = batches.find((b) => b.id === activeBatchId);
+      if (batch?.format === 'small') {
+        setIsRotated(true);
+      } else {
+        setIsRotated(false);
+      }
+    }
+  }, [activeBatchId]); // Only run when switching batches
+
   const dragStartRef = React.useRef<{
     x: number;
     y: number;
@@ -130,11 +143,11 @@ const MainCanvas: React.FC = () => {
     const { format } = activeBatch;
 
     // Calculate Page Deltas first (Global Rotation)
-    // If Rotated 90deg Clockwise:
-    // Screen X+ (Right) -> aligns with Page Y- (Up in Page Coords) => Page Y moves negative
-    // Screen Y+ (Down) -> aligns with Page X+ (Down/Right in Page Coords) => Page X moves positive
-    let pageDeltaX = isRotated ? deltaY : deltaX;
-    let pageDeltaY = isRotated ? -deltaX : deltaY;
+    // If Rotated -90deg (Counter-Clockwise) "L'autre sens":
+    // Screen X+ (Right) -> aligns with Page Y+ (Down in Page Coords) => Page Y moves positive
+    // Screen Y+ (Down) -> aligns with Page X- (Left in Page Coords) => Page X moves negative
+    let pageDeltaX = isRotated ? -deltaY : deltaX;
+    let pageDeltaY = isRotated ? deltaX : deltaY;
 
     let effectiveDX = pageDeltaX;
     let effectiveDY = pageDeltaY;
@@ -284,10 +297,14 @@ const MainCanvas: React.FC = () => {
           <button
             className={styles.toolButton}
             onClick={() => setIsRotated(!isRotated)}
-            title="Pivoter la vue 90°"
+            title="Pivoter la vue -90°"
             style={{ marginLeft: '0.5rem' }}
           >
-            <RotateCw size={18} color={isRotated ? '#f59e0b' : '#4b5563'} />
+            <RotateCw
+              size={18}
+              color={isRotated ? '#f59e0b' : '#4b5563'}
+              style={{ transform: 'scaleX(-1)' }}
+            />
           </button>
         </div>
 
@@ -313,7 +330,7 @@ const MainCanvas: React.FC = () => {
           <div
             className={`${styles.paperA4} ${showCropMarks ? styles.printMode : ''}`}
             style={{
-              transform: `scale(${zoomLevel}) rotate(${isRotated ? '90deg' : '0deg'})`,
+              transform: `scale(${zoomLevel}) rotate(${isRotated ? '-90deg' : '0deg'})`,
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
