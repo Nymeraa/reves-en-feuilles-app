@@ -8,12 +8,13 @@ interface HistoryState<T> {
 
 export interface UseHistoryReturn<T> {
   state: T;
-  set: (newPresent: T | ((prev: T) => T)) => void;
+  set: (newPresent: T | ((prev: T) => T), options?: { history?: boolean }) => void;
   undo: () => void;
   redo: () => void;
   canUndo: boolean;
   canRedo: boolean;
   historyState: HistoryState<T>; // For debugging if needed
+  snapshot: () => void;
 }
 
 const HISTORY_LIMIT = 20;
@@ -58,25 +59,49 @@ export function useHistory<T>(initialPresent: T): UseHistoryReturn<T> {
     });
   }, []);
 
-  const set = useCallback((newPresent: T | ((prev: T) => T)) => {
+  const set = useCallback(
+    (newPresent: T | ((prev: T) => T), options: { history?: boolean } = { history: true }) => {
+      setHistory((curr) => {
+        const nextState =
+          typeof newPresent === 'function'
+            ? (newPresent as (prev: T) => T)(curr.present)
+            : newPresent;
+
+        if (curr.present === nextState) return curr;
+
+        // If history is skipped, we just update present but keep past/future?
+        // Usually, any change should clear future to avoid inconsistency.
+        // But for "dragging", we want to be able to undo to *before* drag.
+        // So we keep 'past' as is.
+
+        let newPast = curr.past;
+
+        if (options.history !== false) {
+          newPast = [...curr.past, curr.present];
+          if (newPast.length > HISTORY_LIMIT) {
+            newPast.shift(); // Remove oldest
+          }
+        }
+
+        return {
+          past: newPast,
+          present: nextState,
+          future: [], // Clear future on new change
+        };
+      });
+    },
+    []
+  );
+
+  const snapshot = useCallback(() => {
     setHistory((curr) => {
-      const nextState =
-        typeof newPresent === 'function'
-          ? (newPresent as (prev: T) => T)(curr.present)
-          : newPresent;
-
-      if (curr.present === nextState) return curr;
-
-      // Limit history to HISTORY_LIMIT
       const newPast = [...curr.past, curr.present];
       if (newPast.length > HISTORY_LIMIT) {
-        newPast.shift(); // Remove oldest
+        newPast.shift();
       }
-
       return {
+        ...curr,
         past: newPast,
-        present: nextState,
-        future: [], // Clear future on new change
       };
     });
   }, []);
@@ -89,5 +114,6 @@ export function useHistory<T>(initialPresent: T): UseHistoryReturn<T> {
     canUndo,
     canRedo,
     historyState: history,
+    snapshot,
   };
 }

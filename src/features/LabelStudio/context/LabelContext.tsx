@@ -118,8 +118,13 @@ interface LabelContextType {
   setIsModalOpen: (isOpen: boolean) => void;
 
   addElementToLabel: (labelId: string, element: LabelElement) => void;
-  updateLabelElement: (labelId: string, elementId: string, updates: Partial<LabelElement>) => void;
-  updateLabel: (labelId: string, updates: Partial<LabelData>) => void;
+  updateLabelElement: (
+    labelId: string,
+    elementId: string,
+    updates: Partial<LabelElement>,
+    saveToHistory?: boolean
+  ) => void;
+  updateLabel: (labelId: string, updates: Partial<LabelData>, saveToHistory?: boolean) => void;
   removeElement: (labelId: string, elementId: string) => void;
   clearLabel: (labelId: string) => void;
   duplicateLabelDesign: (batchId: string, sourceLabelId: string) => void;
@@ -163,6 +168,7 @@ interface LabelContextType {
   redo: () => void;
   canUndo: boolean;
   canRedo: boolean;
+  addToHistorySnapshot: () => void;
 }
 
 const LabelContext = createContext<LabelContextType | undefined>(undefined);
@@ -175,6 +181,7 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
     redo,
     canUndo,
     canRedo,
+    snapshot: addToHistorySnapshot,
   } = useHistory<Batch[]>([]);
   const [activeBatchId, setActiveBatchId] = useState<string | null>(null);
   const [selectedLabelId, setSelectedLabelId] = useState<string | null>(null);
@@ -668,31 +675,34 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
   const updateLabelElement = (
     labelId: string,
     elementId: string,
-    updates: Partial<LabelElement>
+    updates: Partial<LabelElement>,
+    saveToHistory: boolean = true
   ) => {
     if (!activeBatchId) return;
 
-    setBatchesHistory((prevBatches) =>
-      prevBatches.map((batch) => {
-        if (batch.id !== activeBatchId) return batch;
+    setBatchesHistory(
+      (prevBatches) =>
+        prevBatches.map((batch) => {
+          if (batch.id !== activeBatchId) return batch;
 
-        return {
-          ...batch,
-          labels: batch.labels.map((label) => {
-            if (label.id !== labelId) return label;
+          return {
+            ...batch,
+            labels: batch.labels.map((label) => {
+              if (label.id !== labelId) return label;
 
-            return {
-              ...label,
-              design: {
-                ...label.design,
-                elements: label.design.elements.map((el) =>
-                  el.id === elementId ? { ...el, ...updates } : el
-                ),
-              },
-            };
-          }),
-        };
-      })
+              return {
+                ...label,
+                design: {
+                  ...label.design,
+                  elements: label.design.elements.map((el) =>
+                    el.id === elementId ? { ...el, ...updates } : el
+                  ),
+                },
+              };
+            }),
+          };
+        }),
+      { history: saveToHistory }
     );
   };
 
@@ -872,18 +882,24 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
   };
 
   // Update label properties (like backgroundColor)
-  const updateLabel = (labelId: string, updates: Partial<LabelData>) => {
+  const updateLabel = (
+    labelId: string,
+    updates: Partial<LabelData>,
+    saveToHistory: boolean = true
+  ) => {
     if (!activeBatchId) return;
-    setBatchesHistory((prev) =>
-      prev.map((batch) => {
-        if (batch.id !== activeBatchId) return batch;
-        return {
-          ...batch,
-          labels: batch.labels.map((label) =>
-            label.id === labelId ? { ...label, ...updates } : label
-          ),
-        };
-      })
+    setBatchesHistory(
+      (prev) =>
+        prev.map((batch) => {
+          if (batch.id !== activeBatchId) return batch;
+          return {
+            ...batch,
+            labels: batch.labels.map((label) =>
+              label.id === labelId ? { ...label, ...updates } : label
+            ),
+          };
+        }),
+      { history: saveToHistory }
     );
   };
 
@@ -1007,6 +1023,7 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
         redo,
         canUndo,
         canRedo,
+        addToHistorySnapshot,
       }}
     >
       {children}

@@ -24,6 +24,7 @@ const MainCanvas: React.FC = () => {
     canRedo,
     showCropMarks,
     toggleCropMarks,
+    addToHistorySnapshot,
   } = useLabelStudio();
 
   const [isDragging, setIsDragging] = React.useState(false);
@@ -33,6 +34,7 @@ const MainCanvas: React.FC = () => {
     initialLabelX: number;
     initialLabelY: number;
   } | null>(null);
+  const hasSnapshotRef = React.useRef(false);
 
   const activeBatch = batches.find((b) => b.id === activeBatchId);
 
@@ -104,6 +106,7 @@ const MainCanvas: React.FC = () => {
           initialLabelX: foundElement.x,
           initialLabelY: foundElement.y,
         };
+        hasSnapshotRef.current = false;
       }
     }
   };
@@ -147,13 +150,29 @@ const MainCanvas: React.FC = () => {
     const percentDeltaX = (effectiveDX / labelWidthPx) * 100;
     const percentDeltaY = (effectiveDY / labelHeightPx) * 100;
 
-    updateLabelElement(selectedLabelId, selectedElementId, {
-      x: dragStartRef.current.initialLabelX + percentDeltaX,
-      y: dragStartRef.current.initialLabelY + percentDeltaY,
-    });
+    if (!hasSnapshotRef.current) {
+      addToHistorySnapshot();
+      hasSnapshotRef.current = true;
+    }
+
+    updateLabelElement(
+      selectedLabelId,
+      selectedElementId,
+      {
+        x: dragStartRef.current.initialLabelX + percentDeltaX,
+        y: dragStartRef.current.initialLabelY + percentDeltaY,
+      },
+      false // Skip history during drag
+    );
   };
 
   const handleMouseUp = () => {
+    if (isDragging) {
+      // Final commit could be here if we were using a temp state,
+      // but passing false to history in move updates the 'present' correctly.
+      // The snapshot ensures we can undo.
+      hasSnapshotRef.current = false;
+    }
     setIsDragging(false);
     dragStartRef.current = null;
   };
@@ -317,6 +336,15 @@ const MainCanvas: React.FC = () => {
                 }
                 return null;
               })()}
+
+            {showCropMarks && (
+              <>
+                <div className={styles.cropMarkTL} />
+                <div className={styles.cropMarkTR} />
+                <div className={styles.cropMarkBL} />
+                <div className={styles.cropMarkBR} />
+              </>
+            )}
           </div>
         </div>
       </div>

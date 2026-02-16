@@ -500,107 +500,64 @@
   }
 }
 
-/* FORCE BRUTE (Corrigée pour CSS Modules) */
-.labelContent,
-.labelContainer,
-.singleLabel {
-  /* No background here to allow singleLabel styles */
-}
-
-/* --- CROP MARKS / TRAITS DE COUPE --- */
-.printMode {
-  /* En mode print/crop, on peut ajuster le fond si besoin */
-}
-
-/* On utilise .labelSlot pour dessiner les traits autour de chaque étiquette */
+/* Clear old logic */
 .printMode .labelSlot::before,
 .printMode .labelSlot::after {
-  content: '';
+  content: none;
+}
+
+/* Traits de coupe globaux (Page A4) */
+/* On positionne ces divs APRES le contenu, donc z-index élevé */
+.cropMarkTL,
+.cropMarkTR,
+.cropMarkBL,
+.cropMarkBR {
   position: absolute;
+  width: 10mm;
+  height: 10mm;
+  border-color: black;
+  border-style: solid;
   pointer-events: none;
-  border: 1px solid black; /* Couleur des traits */
   z-index: 9999;
 }
 
-/* ::before : Traits horizontaux et verticaux (Coin Haut-Gauche et Bas-Droit) */
-/* Astuce : on utilise des bordures partielles ou des gradients, mais le plus simple est d'avoir 4 divs.
-   Mais on est limités à ::before/::after.
-   On va dessiner un rectangle qui fait tout le tour mais avec des "coupures" ?
-   Non, les traits de coupe doivent dépasser VERS L'EXTÉRIEUR.
-   Comme on est en overflow hidden sur le slot, on ne verra rien dehors.
-   IL FAUT ENLEVER L'OVERFLOW HIDDEN EN MODE PRINT pour voir les traits dehors ?
-   OU BIEN dessiner DEDANS les coins.
-*/
-
-.printMode .labelSlot {
-  overflow: visible !important; /* Laisser dépasser les traits */
-  /* Ajouter une marge visuelle pour espacer les étiquettes ?
-     Si on change la géométrie (margin), ça casse la grille A4 millimétrée.
-     On ne PEUT PAS espacer les étiquettes car elles doivent coller au standard A4 des planches pré-découpées ?
-     AH ATTEND : L'utilisateur veut des traits de coupe.
-     Si ce sont des planches pré-découpées (Avery), on n'a PAS besoin de traits de coupe, juste de bien viser.
-     Si c'est du papier A4 blanc qu'on coupe au massicot, ALORS on a besoin de traits.
-     Si on coupe au massicot, on veut probablement espacer les designs pour avoir une zone de "fond perdu" ou de blanc.
-     MAIS le format A4 est fixe. Si on espace, on réduit la taille des étiquettes ou on change leur position.
-     
-     L'approche simple demandée : "Simuler des traits de coupe".
-     On va afficher des petites equerres DANS les coins de chaque slot.
-  */
+/* L inversé (Top Left) */
+.cropMarkTL {
+  top: -3mm;
+  left: -3mm;
+  border-width: 1px 0 0 1px;
 }
 
-/* Coins en "L" interieurs */
-.printMode .labelSlot::before {
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border-top: 1px solid black;
-  border-left: 1px solid black;
-  border-right: 1px solid black;
-  border-bottom: 1px solid black;
-
-  /* Masquer le centre des traits pour ne garder que les coins ? 
-      clip-path est une bonne solution.
-  */
-  clip-path: polygon(
-    0 5mm,
-    0 0,
-    5mm 0,
-    /* Coin HG */ 5mm 0,
-    0 0,
-    0 5mm,
-
-    /* Retour null */ 100% 5mm,
-    100% 0,
-    calc(100% - 5mm) 0,
-
-    /* Coin HD */ 100% calc(100% - 5mm),
-    100% 100%,
-    calc(100% - 5mm) 100%,
-
-    /* Coin BD */ 0 calc(100% - 5mm),
-    0 100%,
-    5mm 100% /* Coin BG */
-  );
-
-  /* Cette syntaxe clip-path polygone est complexe pour 4 coins disjoints.
-     Simplifions : utiliser 4 éléments divs dans SingleLabel serait mieux, mais on veut CSS-only.
-     Utilisons des gradients linéaires pour dessiner les coins sur le ::before.
-  */
-  background:
-    linear-gradient(to right, black 1px, transparent 1px) 0 0 / 5mm 5mm no-repeat,
-    linear-gradient(to bottom, black 1px, transparent 1px) 0 0 / 5mm 5mm no-repeat,
-    linear-gradient(to left, black 1px, transparent 1px) 100% 0 / 5mm 5mm no-repeat,
-    linear-gradient(to bottom, black 1px, transparent 1px) 100% 0 / 5mm 5mm no-repeat,
-    linear-gradient(to right, black 1px, transparent 1px) 0 100% / 5mm 5mm no-repeat,
-    linear-gradient(to top, black 1px, transparent 1px) 0 100% / 5mm 5mm no-repeat,
-    linear-gradient(to left, black 1px, transparent 1px) 100% 100% / 5mm 5mm no-repeat,
-    linear-gradient(to top, black 1px, transparent 1px) 100% 100% / 5mm 5mm no-repeat;
-
-  border: none;
+/* Top Right */
+.cropMarkTR {
+  top: -3mm;
+  right: -3mm;
+  border-width: 1px 1px 0 0;
 }
 
-/* Optionnel : Rendre les bordures de slot invisibles en mode print si elles étaient visible (dashed debug) */
-.printMode .labelSlot {
-  border: none;
+/* Bottom Left */
+.cropMarkBL {
+  bottom: -3mm;
+  left: -3mm;
+  border-width: 0 0 1px 1px;
+}
+
+/* Bottom Right */
+.cropMarkBR {
+  bottom: -3mm;
+  right: -3mm;
+  border-width: 0 1px 1px 0;
+}
+
+/* Print Overrides needed? */
+@media print {
+  /* Ensure crop marks are visible */
+  .cropMarkTL,
+  .cropMarkTR,
+  .cropMarkBL,
+  .cropMarkBR {
+    border-color: black !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
 }
