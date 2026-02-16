@@ -619,10 +619,10 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
         addText('tagline', "Une phrase d'accroche...", 30, 10, true); // Y+20: 10→30
         addText('desc', 'Description du produit...', 40, 9); // Y+20: 20→40
         addText('ingredients', 'Ingrédients : ...', 55, 8); // Y+20: 35→55
-        addText('infusion', "Temps d'infusion : " + (batchData.infusion || '3-5 min'), 70, 8); // Y+20: 50→70
-        addText('temp', 'Température : ' + (batchData.temp || '90°C'), 75, 8); // Y+20: 55→75
-        addText('weight_back', 'Poids net : ' + batchData.poids, 85, 8); // Y+20: 65→85
-        addText('lot', 'Lot : ' + batchData.lot, 90, 8); // Y+20: 70→90
+        addText('infusion', batchData.infusion || '3-5 min', 70, 8); // Y+20: 50→70
+        addText('temp', batchData.temp || '90°C', 75, 8); // Y+20: 55→75
+        addText('weight_back', batchData.poids, 85, 8); // Y+20: 65→85
+        addText('lot', batchData.lot, 90, 8); // Y+20: 70→90
         addText('ddm', batchData.ddm, 95, 8); // Y+20: 75→95 (sans préfixe)
       }
 
