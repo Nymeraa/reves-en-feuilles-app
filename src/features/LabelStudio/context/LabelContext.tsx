@@ -541,18 +541,26 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
           return template.map((t: any, idx: number) => {
             // Map idSuffix to content
             let content = '';
-            if (t.idSuffix.includes('weight')) content = batchData.poids;
-            else if (t.idSuffix === 'lot') content = 'Lot : ' + batchData.lot;
-            else if (t.idSuffix === 'ddm') content = batchData.ddm;
-            else if (t.idSuffix === 'weight_back') content = 'Poids net : ' + batchData.poids;
-            else if (t.idSuffix === 'title') content = 'NOM DE LA RECETTE';
-            else if (t.idSuffix === 'blend') content = 'Mélange de...';
-            else if (t.idSuffix === 'tagline') content = "Une phrase d'accroche...";
-            else if (t.idSuffix === 'desc') content = 'Description du produit...';
-            else if (t.idSuffix === 'ingredients') content = 'Ingrédients : ...';
-            else if (t.idSuffix === 'infusion') content = "Temps d'infusion : 3-5 min";
-            else if (t.idSuffix === 'temp') content = 'Température : 90°C';
-            else content = t.idSuffix; // Fallback
+
+            // Compatibility for broken suffixes (1, 2, back) -> weight
+            const suffix = t.idSuffix;
+            const isWeight =
+              suffix.includes('weight') || suffix === '1' || suffix === '2' || suffix === 'back';
+
+            if (isWeight) {
+              if (suffix === 'back' || suffix === 'weight_back')
+                content = 'Poids net : ' + batchData.poids;
+              else content = batchData.poids;
+            } else if (suffix === 'lot') content = 'Lot : ' + batchData.lot;
+            else if (suffix === 'ddm') content = batchData.ddm;
+            else if (suffix === 'title') content = 'NOM DE LA RECETTE';
+            else if (suffix === 'blend') content = 'Mélange de...';
+            else if (suffix === 'tagline') content = "Une phrase d'accroche...";
+            else if (suffix === 'desc') content = 'Description du produit...';
+            else if (suffix === 'ingredients') content = 'Ingrédients : ...';
+            else if (suffix === 'infusion') content = "Temps d'infusion : 3-5 min";
+            else if (suffix === 'temp') content = 'Température : 90°C';
+            else content = suffix; // Fallback
 
             return {
               id: `${labelId}_${t.idSuffix}`,
@@ -963,7 +971,8 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
     const storageKey = `template_${format}_${side}`;
     // Save only style/position, not content
     const template = elements.map((el) => ({
-      idSuffix: el.id.split('_').pop() || 'unknown',
+      // Robust suffix extraction: Remove prefix "label_batchId_index_"
+      idSuffix: el.id.replace(/^label_[^_]+_\d+_/, '') || el.id,
       type: el.type,
       x: el.x,
       y: el.y,

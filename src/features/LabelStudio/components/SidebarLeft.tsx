@@ -668,8 +668,8 @@ const SidebarLeft: React.FC = () => {
                   </div>
                   <input
                     type="range"
-                    min="3"
-                    max="10"
+                    min="0"
+                    max="30"
                     step="0.5"
                     value={cropMarkOffset}
                     onChange={(e) => setCropMarkOffset(parseFloat(e.target.value))}
