@@ -6,7 +6,7 @@ import { ZoomIn, ZoomOut, Grid, RotateCw } from 'lucide-react';
 import SingleLabel from './SingleLabel';
 
 const MainCanvas: React.FC = () => {
-
+  const {
     zoomLevel,
     setZoomLevel,
     activeBatchId,
@@ -128,7 +128,7 @@ const MainCanvas: React.FC = () => {
     const deltaY = e.clientY - dragStartRef.current.y;
 
     const { format } = activeBatch;
-    
+
     // Calculate Page Deltas first (Global Rotation)
     // If Rotated 90deg Clockwise:
     // Screen X+ (Right) -> aligns with Page Y- (Up in Page Coords) => Page Y moves negative
