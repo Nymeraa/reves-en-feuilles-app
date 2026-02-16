@@ -18,6 +18,12 @@ const MainCanvas: React.FC = () => {
     updateLabelElement,
     removeElement,
     trimanConfig,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+    showCropMarks,
+    toggleCropMarks,
   } = useLabelStudio();
 
   const [isDragging, setIsDragging] = React.useState(false);
@@ -30,13 +36,31 @@ const MainCanvas: React.FC = () => {
 
   const activeBatch = batches.find((b) => b.id === activeBatchId);
 
-  // Global keyboard handler for Delete/Backspace
+  // Global keyboard handler for Shortcuts
   React.useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
       // Ignore if user is typing in an input/textarea
       const target = e.target as HTMLElement;
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
 
+      // Undo: Ctrl+Z
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        if (canUndo) undo();
+        return;
+      }
+
+      // Redo: Ctrl+Y or Ctrl+Shift+Z
+      if (
+        ((e.ctrlKey || e.metaKey) && e.key === 'y') ||
+        ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'z')
+      ) {
+        e.preventDefault();
+        if (canRedo) redo();
+        return;
+      }
+
+      // Delete
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedElementId && selectedLabelId) {
         e.preventDefault();
         removeElement(selectedLabelId, selectedElementId);
@@ -45,24 +69,18 @@ const MainCanvas: React.FC = () => {
 
     window.addEventListener('keydown', handleGlobalKeyDown);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
-  }, [selectedElementId, selectedLabelId, removeElement]);
+  }, [selectedElementId, selectedLabelId, removeElement, undo, redo, canUndo, canRedo]);
 
-  // A4 dimensions in mm: 210 x 297
-  // We'll use a base scale where 1mm = 3px (approx) for display
   const PIXELS_PER_MM = 3.78; // 96 DPI / 25.4
-  const widthPx = 210 * PIXELS_PER_MM;
-  const heightPx = 297 * PIXELS_PER_MM;
+
+  // ... (mouse handlers remain same)
 
   const handleMouseDown = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
     const textId = target.dataset.id;
 
-    // We need to find which label this text belongs to.
-    // In the new structure, we have batch -> labels[] -> design -> texts[]
-
     if (textId && activeBatch) {
       e.preventDefault();
-
       // Find the label and element
       let foundLabelId = null;
       let foundElement = null;
@@ -140,7 +158,6 @@ const MainCanvas: React.FC = () => {
     dragStartRef.current = null;
   };
 
-  // Render Grid Cells based on Format
   const renderGrid = () => {
     if (!activeBatch) {
       return (
@@ -163,7 +180,7 @@ const MainCanvas: React.FC = () => {
 
     return (
       <div className={format === 'small' ? styles.gridSmall : styles.gridLarge}>
-        {activeBatch.labels.map((labelData, index) => (
+        {activeBatch.labels.map((labelData) => (
           <SingleLabel
             key={labelData.id}
             labelId={labelData.id}
@@ -184,6 +201,28 @@ const MainCanvas: React.FC = () => {
       onMouseLeave={handleMouseUp}
     >
       <div className={styles.toolbar}>
+        {/* Undo / Redo */}
+        <div style={{ display: 'flex', gap: '0.5rem', marginRight: '1rem' }}>
+          <button
+            onClick={undo}
+            disabled={!canUndo}
+            className={styles.toolButton}
+            style={{ opacity: canUndo ? 1 : 0.5, cursor: canUndo ? 'pointer' : 'default' }}
+            title="Annuler (Ctrl+Z)"
+          >
+            ↩️
+          </button>
+          <button
+            onClick={redo}
+            disabled={!canRedo}
+            className={styles.toolButton}
+            style={{ opacity: canRedo ? 1 : 0.5, cursor: canRedo ? 'pointer' : 'default' }}
+            title="Rétablir (Ctrl+Y)"
+          >
+            ↪️
+          </button>
+        </div>
+
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <span style={{ fontSize: '0.875rem', color: '#6b7280' }}>
             Zoom: {Math.round(zoomLevel * 100)}%
@@ -211,9 +250,26 @@ const MainCanvas: React.FC = () => {
           </button>
         </div>
 
-        <button className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900">
-          <Grid size={18} />
-          <span>Guides</span>
+        {/* Separator */}
+        <div style={{ width: '1px', height: '20px', background: '#ccc', margin: '0 10px' }} />
+
+        {/* Crop Marks Toggle */}
+        <button
+          className={styles.toolButton}
+          onClick={toggleCropMarks}
+          style={{
+            backgroundColor: showCropMarks ? '#e5e7eb' : 'transparent',
+            border: '1px solid #d1d5db',
+            borderRadius: '4px',
+            padding: '4px 8px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '5px',
+          }}
+          title="Afficher traits de coupe"
+        >
+          ✂️ <span style={{ fontSize: '0.8rem' }}>Traits de coupe</span>
         </button>
 
         <button className={styles.printBtn} onClick={() => window.print()}>
@@ -233,7 +289,7 @@ const MainCanvas: React.FC = () => {
         >
           {/* LA FEUILLE A4 (Qui subit le scale visuel) */}
           <div
-            className={styles.paperA4}
+            className={`${styles.paperA4} ${showCropMarks ? styles.printMode : ''}`}
             style={{
               transform: `scale(${zoomLevel})`,
             }}

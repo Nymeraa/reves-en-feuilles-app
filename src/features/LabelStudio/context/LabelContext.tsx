@@ -25,6 +25,7 @@ import {
   deleteTemplate as deleteTemplateFromDB,
   moveItem as moveItemInDB,
 } from '../utils/db';
+import { useHistory } from '../../../hooks/useHistory';
 
 // Define types for our domain
 export type ElementType = 'text' | 'image';
@@ -155,12 +156,26 @@ interface LabelContextType {
     type: 'folder' | 'template',
     targetFolderId: string | null
   ) => Promise<void>;
+
+  showCropMarks: boolean;
+  toggleCropMarks: () => void;
+  undo: () => void;
+  redo: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
 }
 
 const LabelContext = createContext<LabelContextType | undefined>(undefined);
 
 export const LabelProvider = ({ children }: { children: ReactNode }) => {
-  const [batches, setBatches] = useState<Batch[]>([]);
+  const {
+    state: batches,
+    set: setBatchesHistory,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+  } = useHistory<Batch[]>([]);
   const [activeBatchId, setActiveBatchId] = useState<string | null>(null);
   const [selectedLabelId, setSelectedLabelId] = useState<string | null>(null);
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
@@ -169,6 +184,8 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
     'production' | 'media' | 'config' | 'settings' | 'library'
   >('production');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showCropMarks, setShowCropMarks] = useState(false);
+  const toggleCropMarks = () => setShowCropMarks((prev) => !prev);
 
   // Global Triman State
   const [trimanConfig, setTrimanConfig] = useState<GlobalTrimanConfig>({
@@ -202,7 +219,7 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
         // Load batches
         const savedBatches = await getAllBatches();
         if (savedBatches.length > 0) {
-          setBatches(savedBatches as Batch[]);
+          setBatchesHistory(savedBatches as Batch[]);
         }
 
         // Load custom fonts
@@ -709,7 +726,7 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
   const deleteBatch = async (id: string) => {
     try {
       await deleteBatchFromDB(id);
-      setBatches((prev) => prev.filter((b) => b.id !== id));
+      setBatchesHistory((prev) => prev.filter((b) => b.id !== id));
       if (activeBatchId === id) {
         setActiveBatchId(null);
       }
@@ -719,7 +736,7 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const duplicateLabelDesign = (batchId: string, sourceLabelId: string) => {
-    setBatches((prev) =>
+    setBatchesHistory((prev) =>
       prev.map((batch) => {
         if (batch.id !== batchId) return batch;
 
@@ -749,7 +766,7 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
   const duplicateSideDesign = (sourceLabelId: string) => {
     if (!activeBatchId) return;
 
-    setBatches((prevBatches) =>
+    setBatchesHistory((prevBatches) =>
       prevBatches.map((batch) => {
         if (batch.id !== activeBatchId) return batch;
 
@@ -857,7 +874,7 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
   // Update label properties (like backgroundColor)
   const updateLabel = (labelId: string, updates: Partial<LabelData>) => {
     if (!activeBatchId) return;
-    setBatches((prev) =>
+    setBatchesHistory((prev) =>
       prev.map((batch) => {
         if (batch.id !== activeBatchId) return batch;
         return {
@@ -873,7 +890,7 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
   // Remove an element from a label
   const removeElement = (labelId: string, elementId: string) => {
     if (!activeBatchId) return;
-    setBatches((prev) =>
+    setBatchesHistory((prev) =>
       prev.map((batch) => {
         if (batch.id !== activeBatchId) return batch;
         return {
@@ -897,7 +914,7 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
   // Clear all elements from a label
   const clearLabel = (labelId: string) => {
     if (!activeBatchId) return;
-    setBatches((prev) =>
+    setBatchesHistory((prev) =>
       prev.map((batch) => {
         if (batch.id !== activeBatchId) return batch;
         return {
@@ -983,6 +1000,13 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
         applyTemplateToLabel,
         removeTemplate,
         moveItem,
+        // Print & History
+        showCropMarks,
+        toggleCropMarks,
+        undo,
+        redo,
+        canUndo,
+        canRedo,
       }}
     >
       {children}
