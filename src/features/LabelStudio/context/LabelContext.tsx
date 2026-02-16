@@ -660,7 +660,7 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
       labels,
     };
 
-    setBatches((prev) => [...prev, batch]);
+    setBatchesHistory((prev) => [...prev, batch]);
     setActiveBatchId(batchId);
     setIsModalOpen(false);
   };
@@ -672,7 +672,7 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
   ) => {
     if (!activeBatchId) return;
 
-    setBatches((prevBatches) =>
+    setBatchesHistory((prevBatches) =>
       prevBatches.map((batch) => {
         if (batch.id !== activeBatchId) return batch;
 
