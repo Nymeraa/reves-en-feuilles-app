@@ -500,18 +500,24 @@
   }
 }
 
-/* Clear old logic */
-.printMode .labelSlot::before,
-.printMode .labelSlot::after {
-  content: none;
+/* --- LANDSCAPE & CROP MARKS --- */
+
+/* Page Landscape (297x210) */
+.paperA4.landscape {
+  width: 297mm;
+  height: 210mm;
 }
 
-/* Traits de coupe globaux (Page A4) */
-/* On positionne ces divs APRES le contenu, donc z-index élevé */
-.cropMarkTL,
-.cropMarkTR,
-.cropMarkBL,
-.cropMarkBR {
+/* Container de la grille (le bloc d'étiquettes) */
+.labelsGrid {
+  position: relative;
+  display: inline-block; /* S'adapte au contenu */
+  /* Centré dans la page via flex parent (paperA4) ou margin auto ? */
+  /* La grille est affichée via grid-template, donc elle a une taille explicite */
+}
+
+/* Traits de coupe relatifs au BLOC */
+.cropMark {
   position: absolute;
   width: 10mm;
   height: 10mm;
@@ -521,43 +527,48 @@
   z-index: 9999;
 }
 
-/* L inversé (Top Left) */
+/* Coins externes (Offset négatif) */
 .cropMarkTL {
-  top: -3mm;
-  left: -3mm;
+  top: -5mm;
+  left: -5mm;
   border-width: 1px 0 0 1px;
 }
 
-/* Top Right */
 .cropMarkTR {
-  top: -3mm;
-  right: -3mm;
+  top: -5mm;
+  right: -5mm;
   border-width: 1px 1px 0 0;
 }
 
-/* Bottom Left */
 .cropMarkBL {
-  bottom: -3mm;
-  left: -3mm;
+  bottom: -5mm;
+  left: -5mm;
   border-width: 0 0 1px 1px;
 }
 
-/* Bottom Right */
 .cropMarkBR {
-  bottom: -3mm;
-  right: -3mm;
+  bottom: -5mm;
+  right: -5mm;
   border-width: 0 1px 1px 0;
 }
 
-/* Print Overrides needed? */
 @media print {
-  /* Ensure crop marks are visible */
-  .cropMarkTL,
-  .cropMarkTR,
-  .cropMarkBL,
-  .cropMarkBR {
+  @page {
+    size: auto; /* Laisse le CSS gérer landscape/portrait */
+    margin: 0 !important;
+  }
+
+  /* Force landscape si la classe est présente */
+  .paperA4.landscape {
+    width: 297mm !important;
+    height: 210mm !important;
+    transform: none !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Ensure visual visibility */
+  .cropMark {
     border-color: black !important;
-    -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
 }

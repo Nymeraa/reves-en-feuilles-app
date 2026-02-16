@@ -302,20 +302,43 @@ const MainCanvas: React.FC = () => {
           className={styles.zoomWrapper}
           style={{
             // On calcule la taille physique + une marge de sécurité de 100px
-            width: `calc(210mm * ${zoomLevel} + 100px)`,
-            height: `calc(297mm * ${zoomLevel} + 100px)`,
+            // Swap dimensions if landscape (format === 'small')
+            width: `calc(${activeBatch?.format === 'small' ? '297mm' : '210mm'} * ${zoomLevel} + 100px)`,
+            height: `calc(${activeBatch?.format === 'small' ? '210mm' : '297mm'} * ${zoomLevel} + 100px)`,
           }}
         >
           {/* LA FEUILLE A4 (Qui subit le scale visuel) */}
           <div
-            className={`${styles.paperA4} ${showCropMarks ? styles.printMode : ''}`}
+            className={`${styles.paperA4} ${activeBatch?.format === 'small' ? styles.landscape : ''} ${showCropMarks ? styles.printMode : ''}`}
             style={{
               transform: `scale(${zoomLevel})`,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
             }}
           >
-            {renderGrid()}
+            {/* The wrapper for grid + crop marks */}
+            <div className={styles.labelsGrid}>
+              {renderGrid()}
 
-            {/* Global Triman Overlay */}
+              {/* Crop Marks relative to the GRID */}
+              {showCropMarks && (
+                <>
+                  <div className={`${styles.cropMark} ${styles.cropMarkTL}`} />
+                  <div className={`${styles.cropMark} ${styles.cropMarkTR}`} />
+                  <div className={`${styles.cropMark} ${styles.cropMarkBL}`} />
+                  <div className={`${styles.cropMark} ${styles.cropMarkBR}`} />
+                </>
+              )}
+            </div>
+
+            {/* Global Triman Overlay - adjusted to stay relative to page if needed, or grid? 
+                User didn't specify, but typically Triman is on the label. 
+                If it's a global sheet overlay, it might need to be outside labelsGrid if labelsGrid is just the block. 
+                But let's keep it simple for now and see if it breaks.
+                Actually, checking previous code, it was absolute on paperA4. 
+                Let's keep it absolute on paperA4.
+            */}
             {activeBatch &&
               (() => {
                 const format = activeBatch.format;
@@ -328,7 +351,8 @@ const MainCanvas: React.FC = () => {
                       style={{
                         left: `${triman.x}mm`,
                         top: `${triman.y}mm`,
-                        width: '10mm', // Fixed width for standard Triman
+                        width: '10mm',
+                        position: 'absolute', // Re-assert absolute relative to paperA4
                       }}
                       alt="Triman Overlay"
                     />
@@ -336,15 +360,6 @@ const MainCanvas: React.FC = () => {
                 }
                 return null;
               })()}
-
-            {showCropMarks && (
-              <>
-                <div className={styles.cropMarkTL} />
-                <div className={styles.cropMarkTR} />
-                <div className={styles.cropMarkBL} />
-                <div className={styles.cropMarkBR} />
-              </>
-            )}
           </div>
         </div>
       </div>
