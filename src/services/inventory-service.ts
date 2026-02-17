@@ -120,12 +120,45 @@ export const InventoryService = {
     await db.append('movements', movement);
 
     if (ingredient && entityType === EntityType.INGREDIENT) {
-      const newStock = ingredient.currentStock + quantity;
+      let newWAC = ingredient.weightedAverageCost;
+      const currentStock = ingredient.currentStock;
+
+      // Calculate Moving Average Cost (CUMP) on PURCHASE
+      if (
+        type === MovementType.PURCHASE &&
+        quantity > 0 &&
+        unitPrice !== undefined &&
+        unitPrice !== null
+      ) {
+        const oldTotalValue = currentStock * ingredient.weightedAverageCost;
+        const incomingValue = quantity * unitPrice;
+        const newTotalStock = currentStock + quantity;
+
+        if (newTotalStock > 0) {
+          // If previous stock was negative, we might want to just take the new price or do the math?
+          // Standard CUMP usually assumes positive stock.
+          // If we had negative stock (e.g. -5) and we buy 10 at new price.
+          // The math: (-5 * OldPrice + 10 * NewPrice) / 5.
+          // This allows "paying back" the debt at the old estimated rate.
+          // However, if stock was 0 or negative, typically we might just want to align with the new price if the old price was 0?
+          // Let's stick to the pure math formula, but handle the case where we start from 0 stock and 0 cost.
+          newWAC = (oldTotalValue + incomingValue) / newTotalStock;
+        } else if (newTotalStock === 0) {
+          // If we are exactly at 0, WAC is undefined or we keep the last known?
+          // Let's keep the last known or the new price.
+          // Usually if stock is 0, value is 0. But we keep a unit cost reference.
+          newWAC = unitPrice;
+        }
+      }
+
+      const newStock = currentStock + quantity;
+
       await db.upsert(
         'ingredients',
         {
           ...ingredient,
           currentStock: newStock,
+          weightedAverageCost: newWAC,
           updatedAt: new Date(),
         },
         orgId
