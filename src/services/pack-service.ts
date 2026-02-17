@@ -7,177 +7,246 @@ import { CostEngine } from '@/lib/cost-engine';
 import { Ingredient } from '@/types/inventory';
 
 const _getContext = async (orgId?: string) => {
-    const allRecipes = await db.readAll<Recipe>('recipes', orgId);
-    const allIngredients = await db.readAll<Ingredient>('ingredients', orgId);
+  const allRecipes = await db.readAll<Recipe>('recipes', orgId);
+  const allIngredients = await db.readAll<Ingredient>('ingredients', orgId);
 
-    const recipeMap: Record<string, Recipe> = {};
-    allRecipes.forEach(r => recipeMap[r.id] = r);
+  const recipeMap: Record<string, Recipe> = {};
+  allRecipes.forEach((r) => (recipeMap[r.id] = r));
 
-    const ingMap: Record<string, number> = {};
-    allIngredients.forEach(i => ingMap[i.id] = i.weightedAverageCost || 0);
+  const ingMap: Record<string, number> = {};
+  allIngredients.forEach((i) => (ingMap[i.id] = i.weightedAverageCost || 0));
 
-    return { recipeMap, ingMap };
+  return { recipeMap, ingMap };
 };
 
 export const PackService = {
-    async getPacks(orgId: string): Promise<Pack[]> {
-        return db.readAll('packs', orgId);
-    },
+  async getPacks(orgId: string): Promise<Pack[]> {
+    return db.readAll('packs', orgId);
+  },
 
-    async getPackById(id: string, orgId?: string): Promise<Pack | undefined> {
-        const result = await db.getById<Pack>('packs', id, orgId);
-        return result || undefined;
-    },
+  async getPackById(id: string, orgId?: string): Promise<Pack | undefined> {
+    const result = await db.getById<Pack>('packs', id, orgId);
+    return result || undefined;
+  },
 
-    async getPackVersion(packId: string, versionNumber: number): Promise<PackVersion | undefined> {
-        const versions = await db.readAll<PackVersion>('pack-versions');
-        return versions.find(v => v.packId === packId && v.versionNumber === versionNumber);
-    },
+  async getPackVersion(packId: string, versionNumber: number): Promise<PackVersion | undefined> {
+    const versions = await db.readAll<PackVersion>('pack-versions');
+    return versions.find((v) => v.packId === packId && v.versionNumber === versionNumber);
+  },
 
-    async createPack(orgId: string, input: CreatePackInput): Promise<Pack> {
-        const newPack: Pack = {
-            id: Math.random().toString(36).substring(7),
-            organizationId: orgId,
-            name: input.name,
-            slug: input.name.toLowerCase().replace(/\s+/g, '-'),
-            status: PackStatus.DRAFT,
-            description: input.description,
-            recipes: [],
-            packaging: [],
-            price: 0,
-            updatedAt: new Date(),
-            version: 1,
-            totalCost: 0,
-            margin: 0
-        };
+  async createPack(orgId: string, input: CreatePackInput): Promise<Pack> {
+    const newPack: Pack = {
+      id: Math.random().toString(36).substring(7),
+      organizationId: orgId,
+      name: input.name,
+      slug: input.name.toLowerCase().replace(/\s+/g, '-'),
+      status: PackStatus.DRAFT,
+      description: input.description,
+      recipes: [],
+      packaging: [],
+      price: 0,
+      updatedAt: new Date(),
+      version: 1,
+      totalCost: 0,
+      margin: 0,
+    };
 
-        await db.upsert('packs', newPack, orgId);
+    await db.upsert('packs', newPack, orgId);
 
-        const { ActivityService } = await import('./activity-service');
-        await ActivityService.log(orgId, 'CREATE' as any, 'Pack', newPack.id, `Pack "${newPack.name}" created.`);
+    const { ActivityService } = await import('./activity-service');
+    await ActivityService.log(
+      orgId,
+      'CREATE' as any,
+      'Pack',
+      newPack.id,
+      `Pack "${newPack.name}" created.`
+    );
 
-        await AuditService.log({
-            action: AuditAction.CREATE,
-            entity: AuditEntity.PACK,
-            entityId: newPack.id,
-            metadata: { name: newPack.name }
-        });
+    await AuditService.log({
+      action: AuditAction.CREATE,
+      entity: AuditEntity.PACK,
+      entityId: newPack.id,
+      metadata: { name: newPack.name },
+    });
 
-        return newPack;
-    },
+    return newPack;
+  },
 
-    async updatePackFull(orgId: string, packId: string, data: Partial<Pack>) {
-        const pack = await db.getById<Pack>('packs', packId, orgId);
-        if (!pack) throw new Error('Pack not found');
+  async updatePackFull(orgId: string, packId: string, data: Partial<Pack>) {
+    const pack = await db.getById<Pack>('packs', packId, orgId);
+    if (!pack) throw new Error('Pack not found');
 
-        // 1. Calculate Cost
-        const nextRecipes = data.recipes || pack.recipes;
-        const nextPackaging = data.packaging || pack.packaging;
-        const { recipeMap, ingMap } = await _getContext(orgId);
-        const totalCost = CostEngine.calculatePackCost(nextRecipes, nextPackaging, recipeMap, ingMap);
+    // 1. Calculate Cost
+    const nextRecipes = data.recipes || pack.recipes;
+    const nextPackaging = data.packaging || pack.packaging;
+    const { recipeMap, ingMap } = await _getContext(orgId);
+    const totalCost = CostEngine.calculatePackCost(nextRecipes, nextPackaging, recipeMap, ingMap);
 
-        // 2. Versioning Logic
-        if (pack.status === PackStatus.ACTIVE) {
-            const snapshot: PackVersion = {
-                id: Math.random().toString(36).substring(7),
-                packId: pack.id,
-                organizationId: pack.organizationId,
-                name: pack.name,
-                slug: pack.slug,
-                description: pack.description,
-                versionNumber: pack.version,
-                snapshotDate: new Date(),
-                status: 'VERSION',
-                recipes: pack.recipes,
-                packaging: pack.packaging,
-                price: pack.price,
-                totalCost: pack.totalCost || 0,
-                margin: pack.margin || 0,
-                updatedAt: new Date()
-            };
+    // 2. Versioning Logic
+    if (pack.status === PackStatus.ACTIVE) {
+      const snapshot: PackVersion = {
+        id: Math.random().toString(36).substring(7),
+        packId: pack.id,
+        organizationId: pack.organizationId,
+        name: pack.name,
+        slug: pack.slug,
+        description: pack.description,
+        versionNumber: pack.version,
+        snapshotDate: new Date(),
+        status: 'VERSION',
+        recipes: pack.recipes,
+        packaging: pack.packaging,
+        price: pack.price,
+        totalCost: pack.totalCost || 0,
+        margin: pack.margin || 0,
+        updatedAt: new Date(),
+      };
 
-            await db.upsert('pack-versions', snapshot, orgId);
+      await db.upsert('pack-versions', snapshot, orgId);
 
-            pack.version += 1;
+      pack.version += 1;
 
-            await AuditService.log({
-                action: AuditAction.CREATE,
-                entity: AuditEntity.PACK_VERSION,
-                entityId: snapshot.id,
-                correlationId: pack.id,
-                metadata: {
-                    versionNumber: snapshot.versionNumber,
-                    packId: pack.id
-                }
-            });
-        }
-
-        const nextPrice = data.price !== undefined ? data.price : pack.price;
-
-        const updatedPack: Pack = {
-            ...pack,
-            ...data,
-            totalCost,
-            margin: nextPrice - totalCost,
-            updatedAt: new Date()
-        };
-
-        await db.upsert('packs', updatedPack, orgId);
-
-        const { ActivityService } = await import('./activity-service');
-        await ActivityService.log(orgId, 'UPDATE' as any, 'Pack', packId, `Pack "${pack.name}" updated v${pack.version}.`);
-
-        await AuditService.log({
-            action: AuditAction.UPDATE,
-            entity: AuditEntity.PACK,
-            entityId: packId,
-            correlationId: packId,
-            metadata: {
-                version: pack.version,
-                totalCost: updatedPack.totalCost,
-                margin: updatedPack.margin
-            }
-        });
-
-        return updatedPack;
-    },
-
-    async duplicatePack(orgId: string, packId: string): Promise<Pack> {
-        const original = await db.getById<Pack>('packs', packId, orgId);
-        if (!original) throw new Error('Pack not found');
-
-        const newPack: Pack = {
-            ...original,
-            id: Math.random().toString(36).substring(7),
-            name: `${original.name} (Copy)`,
-            slug: `${original.slug}-copy`,
-            status: PackStatus.DRAFT,
-            version: 1,
-            updatedAt: new Date(),
-        };
-
-        const { recipeMap, ingMap } = await _getContext(orgId);
-        const cost = CostEngine.calculatePackCost(newPack.recipes, newPack.packaging, recipeMap, ingMap);
-        newPack.totalCost = cost;
-        newPack.margin = newPack.price - cost;
-
-        await db.upsert('packs', newPack, orgId);
-        return newPack;
-    },
-
-    async deletePack(orgId: string, id: string): Promise<boolean> {
-        const existing = await db.getById('packs', id, orgId);
-        if (!existing) return false;
-
-        await db.delete('packs', id, orgId);
-
-        await AuditService.log({
-            action: AuditAction.DELETE,
-            entity: AuditEntity.PACK,
-            entityId: id,
-            severity: AuditSeverity.WARNING
-        });
-
-        return true;
+      await AuditService.log({
+        action: AuditAction.CREATE,
+        entity: AuditEntity.PACK_VERSION,
+        entityId: snapshot.id,
+        correlationId: pack.id,
+        metadata: {
+          versionNumber: snapshot.versionNumber,
+          packId: pack.id,
+        },
+      });
     }
+
+    const nextPrice = data.price !== undefined ? data.price : pack.price;
+
+    const updatedPack: Pack = {
+      ...pack,
+      ...data,
+      totalCost,
+      margin: nextPrice - totalCost,
+      updatedAt: new Date(),
+    };
+
+    await db.upsert('packs', updatedPack, orgId);
+
+    const { ActivityService } = await import('./activity-service');
+    await ActivityService.log(
+      orgId,
+      'UPDATE' as any,
+      'Pack',
+      packId,
+      `Pack "${pack.name}" updated v${pack.version}.`
+    );
+
+    await AuditService.log({
+      action: AuditAction.UPDATE,
+      entity: AuditEntity.PACK,
+      entityId: packId,
+      correlationId: packId,
+      metadata: {
+        version: pack.version,
+        totalCost: updatedPack.totalCost,
+        margin: updatedPack.margin,
+      },
+    });
+
+    return updatedPack;
+  },
+
+  async duplicatePack(orgId: string, packId: string): Promise<Pack> {
+    const original = await db.getById<Pack>('packs', packId, orgId);
+    if (!original) throw new Error('Pack not found');
+
+    const newPack: Pack = {
+      ...original,
+      id: Math.random().toString(36).substring(7),
+      name: `${original.name} (Copy)`,
+      slug: `${original.slug}-copy`,
+      status: PackStatus.DRAFT,
+      version: 1,
+      updatedAt: new Date(),
+    };
+
+    const { recipeMap, ingMap } = await _getContext(orgId);
+    const cost = CostEngine.calculatePackCost(
+      newPack.recipes,
+      newPack.packaging,
+      recipeMap,
+      ingMap
+    );
+    newPack.totalCost = cost;
+    newPack.margin = newPack.price - cost;
+
+    await db.upsert('packs', newPack, orgId);
+    return newPack;
+  },
+
+  async deletePack(orgId: string, id: string): Promise<boolean> {
+    const existing = await db.getById('packs', id, orgId);
+    if (!existing) return false;
+
+    await db.delete('packs', id, orgId);
+
+    await AuditService.log({
+      action: AuditAction.DELETE,
+      entity: AuditEntity.PACK,
+      entityId: id,
+      severity: AuditSeverity.WARNING,
+    });
+
+    return true;
+  },
+  async updatePackCostsForIngredient(orgId: string, ingredientId: string) {
+    const packs = await db.readAll<Pack>('packs', orgId);
+    const { recipeMap, ingMap } = await _getContext(orgId);
+
+    for (const pack of packs) {
+      // Check if pack uses this ingredient directly (packaging or accessory)
+      const usesIngredient = pack.packaging.some((p) => p.ingredientId === ingredientId);
+      // We could also check recipes -> ingredients deep check, but we rely on RecipeService to update recipes first,
+      // then trigger updatePackCostsForRecipe.
+      // So here we only care about direct usage (Packaging/Accessories/Direct Ingredients if any)
+
+      if (usesIngredient) {
+        const totalCost = CostEngine.calculatePackCost(
+          pack.recipes,
+          pack.packaging,
+          recipeMap,
+          ingMap
+        );
+        const updatedPack = {
+          ...pack,
+          totalCost,
+          margin: pack.price - totalCost,
+          updatedAt: new Date(),
+        };
+        await db.upsert('packs', updatedPack, orgId);
+      }
+    }
+  },
+
+  async updatePackCostsForRecipe(orgId: string, recipeId: string) {
+    const packs = await db.readAll<Pack>('packs', orgId);
+    const { recipeMap, ingMap } = await _getContext(orgId);
+
+    for (const pack of packs) {
+      const usesRecipe = pack.recipes.some((r) => r.recipeId === recipeId);
+      if (usesRecipe) {
+        const totalCost = CostEngine.calculatePackCost(
+          pack.recipes,
+          pack.packaging,
+          recipeMap,
+          ingMap
+        );
+        const updatedPack = {
+          ...pack,
+          totalCost,
+          margin: pack.price - totalCost,
+          updatedAt: new Date(),
+        };
+        await db.upsert('packs', updatedPack, orgId);
+      }
+    }
+  },
 };

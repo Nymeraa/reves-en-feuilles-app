@@ -168,6 +168,19 @@ export const InventoryService = {
         },
         orgId
       );
+
+      // Trigger Cascading Cost Updates if WAC changed
+      if (Math.abs(newWAC - ingredient.weightedAverageCost) > 0.000001) {
+        // Dynamic imports to avoid circular deps
+        const { RecipeService } = await import('./recipe-service');
+        const { PackService } = await import('./pack-service');
+
+        // Update Recipes using this ingredient
+        await RecipeService.updateRecipeCostsForIngredient(orgId, ingredientId, newWAC);
+
+        // Update Packs using this ingredient directly (Packaging/Accessory)
+        await PackService.updatePackCostsForIngredient(orgId, ingredientId);
+      }
     }
 
     void AuditService.log({
