@@ -119,7 +119,12 @@ export const InventoryService = {
 
     await db.append('movements', movement);
 
-    if (ingredient && entityType === EntityType.INGREDIENT) {
+    if (
+      ingredient &&
+      (entityType === EntityType.INGREDIENT ||
+        entityType === EntityType.PACKAGING ||
+        entityType === EntityType.ACCESSORY)
+    ) {
       let newWAC = ingredient.weightedAverageCost;
       const currentStock = ingredient.currentStock;
 
