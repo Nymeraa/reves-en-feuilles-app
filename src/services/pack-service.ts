@@ -158,7 +158,7 @@ export const PackService = {
       nextRecipes.forEach((r) =>
         itemsForDb!.push({
           id: r.id || Math.random().toString(36).substring(7),
-          packId,
+          // packId, // REMOVED: Nested create/update handles this
           type: 'RECIPE',
           recipeId: r.recipeId,
           quantity: r.quantity,
@@ -168,7 +168,7 @@ export const PackService = {
       nextPackaging.forEach((p) =>
         itemsForDb!.push({
           id: p.id || Math.random().toString(36).substring(7),
-          packId,
+          // packId, // REMOVED: Nested create/update handles this
           type: 'INGREDIENT',
           ingredientId: p.ingredientId,
           quantity: p.quantity,
@@ -189,6 +189,7 @@ export const PackService = {
 
     if (itemsForDb) {
       (packToUpdate as any).items = itemsForDb;
+      console.log('[PackService] Upserting Pack with items:', JSON.stringify(itemsForDb, null, 2));
     }
 
     await db.upsert('packs', packToUpdate as Pack, orgId);
@@ -251,7 +252,7 @@ export const PackService = {
     newPack.recipes.forEach((r) =>
       itemsForDb.push({
         id: Math.random().toString(36).substring(7),
-        packId: newPack.id,
+        // packId: newPack.id, // REMOVED
         type: 'RECIPE',
         recipeId: r.recipeId,
         quantity: r.quantity,
@@ -261,7 +262,7 @@ export const PackService = {
     newPack.packaging.forEach((p) =>
       itemsForDb.push({
         id: Math.random().toString(36).substring(7),
-        packId: newPack.id,
+        // packId: newPack.id, // REMOVED
         type: 'INGREDIENT',
         ingredientId: p.ingredientId,
         quantity: p.quantity,
