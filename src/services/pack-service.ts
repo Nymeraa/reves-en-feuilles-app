@@ -215,13 +215,18 @@ export const PackService = {
           recipeMap,
           ingMap
         );
-        const updatedPack = {
+        const updatedPackBase = {
           ...pack,
           totalCost,
           margin: pack.price - totalCost,
           updatedAt: new Date(),
         };
-        await db.upsert('packs', updatedPack, orgId);
+
+        // Exclude relations to prevent upsert issues
+        // We cast to any to peel off properties that might exist on runtime object but not type, or vice versa
+        const { recipes, packaging, items, ...packToUpdate } = updatedPackBase as any;
+
+        await db.upsert('packs', packToUpdate as Pack, orgId);
       }
     }
   },
@@ -239,13 +244,17 @@ export const PackService = {
           recipeMap,
           ingMap
         );
-        const updatedPack = {
+        const updatedPackBase = {
           ...pack,
           totalCost,
           margin: pack.price - totalCost,
           updatedAt: new Date(),
         };
-        await db.upsert('packs', updatedPack, orgId);
+
+        // Exclude relations to prevent upsert issues
+        const { recipes, packaging, items, ...packToUpdate } = updatedPackBase as any;
+
+        await db.upsert('packs', packToUpdate as Pack, orgId);
       }
     }
   },

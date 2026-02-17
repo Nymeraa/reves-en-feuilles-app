@@ -214,7 +214,10 @@ export const RecipeService = {
       recipe.totalCost = newCost + (recipe.laborCost || 0) + (recipe.packagingCost || 0);
       recipe.updatedAt = new Date();
 
-      await db.upsert('recipes', recipe, orgId);
+      // Exclude items to prevent db-sql from trying to deleteMany/create them
+      const { items, ...recipeToUpdate } = recipe;
+
+      await db.upsert('recipes', recipeToUpdate as Recipe, orgId);
 
       // Trigger Cascade to Packs
       await PackService.updatePackCostsForRecipe(orgId, recipe.id);
