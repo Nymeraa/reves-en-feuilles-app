@@ -19,14 +19,42 @@ const _getContext = async (orgId?: string) => {
   return { recipeMap, ingMap };
 };
 
+// New helper function to map raw DB pack data to the Pack type
+const _mapPackFromDb = (rawPack: Pack & { items: any[] }): Pack => {
+  const recipes = rawPack.items
+    .filter((item) => item.type === 'RECIPE')
+    .map((item) => ({
+      id: item.id,
+      recipeId: item.recipeId,
+      quantity: item.quantity,
+      format: item.format,
+    }));
+  const packaging = rawPack.items
+    .filter((item) => item.type === 'INGREDIENT')
+    .map((item) => ({
+      id: item.id,
+      ingredientId: item.ingredientId,
+      quantity: item.quantity,
+    }));
+
+  // Remove the 'items' property and add 'recipes' and 'packaging'
+  const { items, ...packWithoutItems } = rawPack;
+  return {
+    ...packWithoutItems,
+    recipes,
+    packaging,
+  } as Pack;
+};
+
 export const PackService = {
   async getPacks(orgId: string): Promise<Pack[]> {
-    return db.readAll('packs', orgId);
+    const rawPacks = await db.readAll<Pack & { items: any[] }>('packs', orgId);
+    return rawPacks.map((p) => _mapPackFromDb(p));
   },
 
   async getPackById(id: string, orgId?: string): Promise<Pack | undefined> {
-    const result = await db.getById<Pack>('packs', id, orgId);
-    return result || undefined;
+    const result = await db.getById<Pack & { items: any[] }>('packs', id, orgId);
+    return result ? _mapPackFromDb(result) : undefined;
   },
 
   async getPackVersion(packId: string, versionNumber: number): Promise<PackVersion | undefined> {
@@ -51,7 +79,10 @@ export const PackService = {
       margin: 0,
     };
 
-    await db.upsert('packs', newPack, orgId);
+    // Exclude recipes/packaging from DB payload (Prisma doesn't know them)
+    const { recipes, packaging, ...dbPayload } = newPack;
+
+    await db.upsert('packs', dbPayload, orgId);
 
     const { ActivityService } = await import('./activity-service');
     await ActivityService.log(
@@ -73,7 +104,7 @@ export const PackService = {
   },
 
   async updatePackFull(orgId: string, packId: string, data: Partial<Pack>) {
-    const pack = await db.getById<Pack>('packs', packId, orgId);
+    const pack = await this.getPackById(packId, orgId); // Use local getById to get hydrated pack
     if (!pack) throw new Error('Pack not found');
 
     // 1. Calculate Cost
@@ -120,7 +151,32 @@ export const PackService = {
 
     const nextPrice = data.price !== undefined ? data.price : pack.price;
 
-    const updatedPack: Pack = {
+    // 3. Prepare Items for DB if they changed
+    let itemsForDb: any[] | undefined = undefined;
+    if (data.recipes || data.packaging) {
+      itemsForDb = [];
+      nextRecipes.forEach((r) =>
+        itemsForDb!.push({
+          id: r.id || Math.random().toString(36).substring(7),
+          packId,
+          type: 'RECIPE',
+          recipeId: r.recipeId,
+          quantity: r.quantity,
+          format: r.format,
+        })
+      );
+      nextPackaging.forEach((p) =>
+        itemsForDb!.push({
+          id: p.id || Math.random().toString(36).substring(7),
+          packId,
+          type: 'INGREDIENT',
+          ingredientId: p.ingredientId,
+          quantity: p.quantity,
+        })
+      );
+    }
+
+    const updatedPackBase = {
       ...pack,
       ...data,
       totalCost,
@@ -128,7 +184,14 @@ export const PackService = {
       updatedAt: new Date(),
     };
 
-    await db.upsert('packs', updatedPack, orgId);
+    // Exclude relations to prevent upsert issues, inject items if needed
+    const { recipes, packaging, items, ...packToUpdate } = updatedPackBase as any;
+
+    if (itemsForDb) {
+      (packToUpdate as any).items = itemsForDb;
+    }
+
+    await db.upsert('packs', packToUpdate as Pack, orgId);
 
     const { ActivityService } = await import('./activity-service');
     await ActivityService.log(
@@ -146,16 +209,21 @@ export const PackService = {
       correlationId: packId,
       metadata: {
         version: pack.version,
-        totalCost: updatedPack.totalCost,
-        margin: updatedPack.margin,
+        totalCost: totalCost,
+        margin: updatedPackBase.margin,
       },
     });
 
-    return updatedPack;
+    // Return re-mapped object
+    return {
+      ...updatedPackBase,
+      recipes: nextRecipes,
+      packaging: nextPackaging,
+    } as Pack;
   },
 
   async duplicatePack(orgId: string, packId: string): Promise<Pack> {
-    const original = await db.getById<Pack>('packs', packId, orgId);
+    const original = await this.getPackById(packId, orgId);
     if (!original) throw new Error('Pack not found');
 
     const newPack: Pack = {
@@ -178,7 +246,32 @@ export const PackService = {
     newPack.totalCost = cost;
     newPack.margin = newPack.price - cost;
 
-    await db.upsert('packs', newPack, orgId);
+    // Prepare items
+    const itemsForDb: any[] = [];
+    newPack.recipes.forEach((r) =>
+      itemsForDb.push({
+        id: Math.random().toString(36).substring(7),
+        packId: newPack.id,
+        type: 'RECIPE',
+        recipeId: r.recipeId,
+        quantity: r.quantity,
+        format: r.format,
+      })
+    );
+    newPack.packaging.forEach((p) =>
+      itemsForDb.push({
+        id: Math.random().toString(36).substring(7),
+        packId: newPack.id,
+        type: 'INGREDIENT',
+        ingredientId: p.ingredientId,
+        quantity: p.quantity,
+      })
+    );
+
+    const { recipes, packaging, ...dbPayload } = newPack;
+    (dbPayload as any).items = itemsForDb;
+
+    await db.upsert('packs', dbPayload, orgId);
     return newPack;
   },
 
@@ -198,7 +291,8 @@ export const PackService = {
     return true;
   },
   async updatePackCostsForIngredient(orgId: string, ingredientId: string) {
-    const packs = await db.readAll<Pack>('packs', orgId);
+    const rawPacks = await db.readAll<Pack & { items: any[] }>('packs', orgId);
+    const packs = rawPacks.map((p) => _mapPackFromDb(p));
     const { recipeMap, ingMap } = await _getContext(orgId);
 
     for (const pack of packs) {
@@ -232,7 +326,8 @@ export const PackService = {
   },
 
   async updatePackCostsForRecipe(orgId: string, recipeId: string) {
-    const packs = await db.readAll<Pack>('packs', orgId);
+    const rawPacks = await db.readAll<Pack & { items: any[] }>('packs', orgId);
+    const packs = rawPacks.map((p) => _mapPackFromDb(p));
     const { recipeMap, ingMap } = await _getContext(orgId);
 
     for (const pack of packs) {
