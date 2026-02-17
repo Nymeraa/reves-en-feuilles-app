@@ -15,9 +15,20 @@ const _validateComposition = (items: RecipeItem[]) => {
 
 export const RecipeService = {
   async getIngredientCostMap(orgId?: string) {
+    // Dynamic import to avoid circular dependency if SettingsService uses something that imports RecipeService (unlikely but safe)
+    const { SettingsService } = await import('./settings-service');
+    const settings = await SettingsService.getSettings(orgId);
+    // Standardize: tvaIngredients is percentage (e.g. 5.5 or 20)
+    // Multiplier = 1 + (5.5 / 100) = 1.055
+    const taxMultiplier = 1 + (settings.tvaIngredients || 0) / 100;
+
     const ingredients = await db.readAll<Ingredient>('ingredients', orgId);
     const map: Record<string, number> = {};
-    ingredients.forEach((i) => (map[i.id] = i.weightedAverageCost || 0));
+    ingredients.forEach((i) => {
+      // CUMP is usually HT (Excl. Tax). We want TTC (Incl. Tax) for Recipe Costs.
+      const costHT = i.weightedAverageCost || 0;
+      map[i.id] = costHT * taxMultiplier;
+    });
     return map;
   },
 

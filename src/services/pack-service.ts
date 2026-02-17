@@ -7,6 +7,11 @@ import { CostEngine } from '@/lib/cost-engine';
 import { Ingredient } from '@/types/inventory';
 
 const _getContext = async (orgId?: string) => {
+  const { SettingsService } = await import('./settings-service');
+  const settings = await SettingsService.getSettings(orgId);
+  const taxMultiplierIng = 1 + (settings.tvaIngredients || 0) / 100;
+  const taxMultiplierPack = 1 + (settings.tvaPackaging || 0) / 100;
+
   const allRecipes = await db.readAll<Recipe>('recipes', orgId);
   const allIngredients = await db.readAll<Ingredient>('ingredients', orgId);
 
@@ -14,7 +19,13 @@ const _getContext = async (orgId?: string) => {
   allRecipes.forEach((r) => (recipeMap[r.id] = r));
 
   const ingMap: Record<string, number> = {};
-  allIngredients.forEach((i) => (ingMap[i.id] = i.weightedAverageCost || 0));
+  allIngredients.forEach((i) => {
+    const isPackaging = i.category === 'Packaging' || i.category === 'Accessoire';
+    const costHT = i.weightedAverageCost || 0;
+    // Apply appropriate tax rate
+    const multiplier = isPackaging ? taxMultiplierPack : taxMultiplierIng;
+    ingMap[i.id] = costHT * multiplier;
+  });
 
   return { recipeMap, ingMap };
 };

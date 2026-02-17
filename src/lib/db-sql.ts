@@ -63,7 +63,8 @@ function getModel(entity: EntityType) {
       return prisma.pack;
     case 'suppliers':
       return prisma.supplier;
-    // case 'settings': return prisma.settings; // Settings is weird, might need special handling
+    case 'settings':
+      return prisma.settings;
     case 'audit-logs':
       return prisma.auditLog;
     case 'activity-logs':
@@ -91,6 +92,8 @@ function getModelName(entity: EntityType) {
       return 'pack';
     case 'suppliers':
       return 'supplier';
+    case 'settings':
+      return 'settings';
     case 'audit-logs':
       return 'auditLog';
     case 'activity-logs':
@@ -230,10 +233,29 @@ export const sqlDb: DbInterface = {
     const model = getModel(entity);
 
     if (entity === 'settings') {
+      const sanitized = sanitizeData(data);
+      // Whitelist fields to avoid "Unknown argument"
+      const fields = [
+        'urssafRate',
+        'shopifyTransactionPercent',
+        'shopifyFixedFee',
+        'defaultOtherFees',
+        'tvaIngredients',
+        'tvaPackaging',
+      ];
+      const filtered = Object.keys(sanitized)
+        .filter((key) => fields.includes(key))
+        .reduce((obj: any, key) => {
+          obj[key] = sanitized[key];
+          return obj;
+        }, {});
+
+      const payload = { ...filtered, id: 'global' };
+      console.log('[DB-SQL] Upserting Settings:', JSON.stringify(payload, null, 2));
       return prisma.settings.upsert({
         where: { id: 'global' },
-        create: { ...(data as any), id: 'global' },
-        update: data as any,
+        create: payload,
+        update: filtered,
       }) as unknown as T;
     }
 
