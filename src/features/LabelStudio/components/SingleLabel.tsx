@@ -80,16 +80,66 @@ const SingleLabel: React.FC<SingleLabelProps> = ({ labelId, design, format }) =>
               );
             } else if (el.type === 'image') {
               const widthMM = el.width || 20;
+              // Calcul robuste des dimensions en pixels pour l'affichage
+              const pixelWidth = Math.round(widthMM * el.scale * 3.78);
+              const pixelHeight = el.height ? Math.round(el.height * el.scale * 3.78) : null;
+
+              const safeWidth = `${pixelWidth}px`;
+              const safeHeight = pixelHeight ? `${pixelHeight}px` : 'auto';
+
+              console.log('Rendu Image:', {
+                id: el.id,
+                mm: widthMM,
+                px: pixelWidth,
+                safeW: safeWidth,
+                safeH: safeHeight,
+              });
+
               return (
                 <div
                   key={el.id}
                   data-id={el.id}
                   onClick={(e) => {
-                    // ... content
+                    e.stopPropagation();
+                    setSelectedElementId(el.id);
                   }}
-                  // ... styles
+                  style={{
+                    position: 'absolute',
+                    left: `${el.x}%`,
+                    top: `${el.y}%`,
+                    width: safeWidth,
+                    height: safeHeight,
+                    transform: `translate(-50%, -50%) rotate(${el.rotation}deg)`,
+                    border: isSelected ? '2px solid #3b82f6' : '1px solid transparent',
+                    cursor: 'move',
+                    userSelect: 'none',
+                    zIndex: 5,
+                    pointerEvents: 'auto',
+                    // FIX: Overflow visible pour déboguer l'affichage, html-to-image gérera le crop via foreignObject
+                    overflow: 'visible',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
                 >
-                  {/* ... img ... */}
+                  <img
+                    src={el.content}
+                    crossOrigin="anonymous"
+                    draggable={false}
+                    alt="label element"
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'contain',
+                      display: 'block',
+                      maxWidth: '100%',
+                      maxHeight: '100%',
+                      pointerEvents: 'none',
+                    }}
+                    // Fallback attributes
+                    width={pixelWidth}
+                    height={pixelHeight || undefined}
+                  />
                 </div>
               );
             }
