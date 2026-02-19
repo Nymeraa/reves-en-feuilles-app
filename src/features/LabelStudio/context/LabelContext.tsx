@@ -46,6 +46,7 @@ export interface LabelElement {
   fontWeight?: string; // (text only) 'normal' | 'bold'
   fontStyle?: string; // (text only) 'normal' | 'italic'
   textDecoration?: string; // (text only) 'none' | 'underline'
+  textAlign?: 'left' | 'center' | 'right'; // (text only)
   locked?: boolean;
 }
 
@@ -510,6 +511,7 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
           fontFamily: 'sans-serif',
           rotation: 0,
           scale: 1,
+          textAlign: 'center',
         },
         {
           id: 't2',
@@ -522,6 +524,7 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
           fontFamily: 'sans-serif',
           rotation: 0,
           scale: 1,
+          textAlign: 'center',
         },
       ],
     };
@@ -603,6 +606,7 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
           fontSize,
           fontFamily: 'Arial',
           color: '#6a3278', // Couleur violette par défaut
+          textAlign: 'left',
         });
       };
 

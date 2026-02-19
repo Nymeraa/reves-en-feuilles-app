@@ -2,6 +2,7 @@
 import React from 'react';
 import styles from '../LabelStudio.module.css';
 import { useLabelStudio } from '../context/LabelContext';
+import { AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
 
 const RightSidebar: React.FC = () => {
   const {
@@ -605,6 +606,81 @@ const RightSidebar: React.FC = () => {
                   title="Souligné"
                 >
                   U
+                </button>
+              </div>
+            </div>
+
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Alignement</label>
+              <div style={{ display: 'flex', gap: '0.25rem' }}>
+                <button
+                  onClick={() => handleChange('textAlign', 'left')}
+                  style={{
+                    flex: 1,
+                    padding: '0.4rem',
+                    backgroundColor:
+                      selectedElement.textAlign === 'left' || !selectedElement.textAlign
+                        ? '#dbeafe'
+                        : 'white',
+                    border:
+                      selectedElement.textAlign === 'left' || !selectedElement.textAlign
+                        ? '1px solid #3b82f6'
+                        : '1px solid #d1d5db',
+                    color:
+                      selectedElement.textAlign === 'left' || !selectedElement.textAlign
+                        ? '#1e40af'
+                        : '#374151',
+                    borderRadius: '0.25rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                  title="Aligner à gauche"
+                >
+                  <AlignLeft size={16} />
+                </button>
+                <button
+                  onClick={() => handleChange('textAlign', 'center')}
+                  style={{
+                    flex: 1,
+                    padding: '0.4rem',
+                    backgroundColor: selectedElement.textAlign === 'center' ? '#dbeafe' : 'white',
+                    border:
+                      selectedElement.textAlign === 'center'
+                        ? '1px solid #3b82f6'
+                        : '1px solid #d1d5db',
+                    color: selectedElement.textAlign === 'center' ? '#1e40af' : '#374151',
+                    borderRadius: '0.25rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                  title="Centrer"
+                >
+                  <AlignCenter size={16} />
+                </button>
+                <button
+                  onClick={() => handleChange('textAlign', 'right')}
+                  style={{
+                    flex: 1,
+                    padding: '0.4rem',
+                    backgroundColor: selectedElement.textAlign === 'right' ? '#dbeafe' : 'white',
+                    border:
+                      selectedElement.textAlign === 'right'
+                        ? '1px solid #3b82f6'
+                        : '1px solid #d1d5db',
+                    color: selectedElement.textAlign === 'right' ? '#1e40af' : '#374151',
+                    borderRadius: '0.25rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                  title="Aligner à droite"
+                >
+                  <AlignRight size={16} />
                 </button>
               </div>
             </div>

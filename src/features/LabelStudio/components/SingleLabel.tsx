@@ -59,6 +59,7 @@ const SingleLabel: React.FC<SingleLabelProps> = ({ labelId, design, format }) =>
                     fontWeight: el.fontWeight || 'normal',
                     fontStyle: el.fontStyle || 'normal',
                     textDecoration: el.textDecoration || 'none',
+                    textAlign: el.textAlign || 'left',
                     transform: `rotate(${el.rotation}deg) scale(${el.scale})`,
                     cursor: 'pointer',
                     border: isSelected ? '2px solid #3b82f6' : '1px solid transparent', // Blue or transparent

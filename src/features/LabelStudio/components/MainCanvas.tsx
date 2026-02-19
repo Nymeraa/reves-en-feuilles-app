@@ -122,7 +122,16 @@ const MainCanvas: React.FC = () => {
           initialLabelX: foundElement.x,
           initialLabelY: foundElement.y,
         };
-        hasSnapshotRef.current = false;
+      }
+    } else {
+      // Clicked on background (not on a text element)
+      const isLabel = target.closest(`.${styles.labelContent}`);
+      if (!isLabel) {
+        setSelectedElementId(null);
+        setSelectedLabelId(null);
+      } else {
+        // We clicked ON a label but NOT on an element (text/image)
+        setSelectedElementId(null);
       }
     }
   };
