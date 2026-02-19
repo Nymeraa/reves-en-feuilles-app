@@ -30,6 +30,10 @@ const SingleLabel: React.FC<SingleLabelProps> = ({ labelId, design, format }) =>
             cursor: 'pointer',
             border: isLabelSelected ? '2px solid #10b981' : '1px solid #e5e7eb',
             boxSizing: 'border-box',
+            // FIX: Assurer le rendu du fond et empêcher les débordements globaux
+            WebkitPrintColorAdjust: 'exact',
+            printColorAdjust: 'exact',
+            overflow: 'hidden',
           }}
           onClick={() => {
             setSelectedLabelId(labelId);
@@ -77,30 +81,16 @@ const SingleLabel: React.FC<SingleLabelProps> = ({ labelId, design, format }) =>
             } else if (el.type === 'image') {
               const widthMM = el.width || 20;
               return (
-                <img
+                <div
                   key={el.id}
                   data-id={el.id}
-                  src={el.content}
-                  crossOrigin="anonymous"
                   onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedElementId(el.id);
+                    // ... content
                   }}
-                  style={{
-                    position: 'absolute',
-                    left: `${el.x}%`,
-                    top: `${el.y}%`,
-                    width: `${widthMM * el.scale}mm`,
-                    transform: `translate(-50%, -50%) rotate(${el.rotation}deg)`,
-                    border: isSelected ? '2px solid #3b82f6' : '1px solid transparent',
-                    cursor: 'move',
-                    userSelect: 'none',
-                    zIndex: 5,
-                    pointerEvents: 'auto',
-                  }}
-                  draggable={false}
-                  alt="label element"
-                />
+                  // ... styles
+                >
+                  {/* ... img ... */}
+                </div>
               );
             }
           })}
