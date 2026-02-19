@@ -32,6 +32,7 @@
     "csv-parse": "^6.1.0",
     "csv-stringify": "^6.6.0",
     "dotenv": "^17.2.4",
+    "html-to-image": "^1.11.13",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.1.0",
     "lucide-react": "^0.563.0",
