@@ -14,17 +14,60 @@ export const exportToPdf = async (elementId: string, fileName: string): Promise<
   }
 
   try {
-    // 1. Capture Haute Résolution avec html2canvas
-    const canvas = await html2canvas(element, {
-      scale: 4, // Échelle 4 pour une meilleure qualité (~300 DPI si base 72/96)
-      useCORS: true, // Important pour les images externes (si configurées CORS)
-      allowTaint: false, // DOIT ÊTRE FALSE pour permettre toDataURL() sans SecurityError
-      backgroundColor: '#ffffff', // Fond blanc propre
-      logging: false, // Désactiver les logs
-      onclone: (clonedDoc: Document) => {
-        // Optimisations spécifiques pour l'impression dans le DOM cloné
-        // On force les couleurs en HEX/RGB pour éviter l'erreur "unsupported color function lab/oklch"
-        const style = clonedDoc.createElement('style');
+    // 1. Préparer un clone du DOM pour manipulation (manipuler le clone évite de casser l'UI)
+    // On doit l'ajouter au document pour que html2canvas puisse lire les styles calculés
+    const cloneContainer = document.createElement('div');
+    cloneContainer.style.position = 'absolute';
+    cloneContainer.style.top = '-9999px';
+    cloneContainer.style.left = '-9999px';
+    cloneContainer.style.width = element.offsetWidth + 'px'; // Garder la même largeur pour le layout
+    document.body.appendChild(cloneContainer);
+
+    const clone = element.cloneNode(true) as HTMLElement;
+    cloneContainer.appendChild(clone);
+
+    // 2. Traitement des images : Conversion en Base64 pour garantir le rendu
+    const images = clone.querySelectorAll('img');
+    const imagePromises = Array.from(images).map(async (img) => {
+      const src = img.getAttribute('src');
+      if (src && (src.startsWith('http') || src.startsWith('/'))) {
+        try {
+          // Tenter de récupérer l'image et de la convertir en blob/base64
+          const response = await fetch(src, { cache: 'no-cache' });
+          const blob = await response.blob();
+          return new Promise<void>((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              if (reader.result) {
+                img.src = reader.result as string; // Remplacer l'URL par la Data URI
+              }
+              resolve();
+            };
+            reader.readAsDataURL(blob);
+          });
+        } catch (err) {
+          console.warn('Failed to load image for PDF export:', src, err);
+          // On laisse l'URL d'origine si échec, html2canvas essaiera
+          return Promise.resolve();
+        }
+      }
+      return Promise.resolve();
+    });
+
+    // Attendre que toutes les images soient traitées
+    await Promise.all(imagePromises);
+
+    // 3. Capture avec html2canvas sur le CLONE
+    const canvas = await html2canvas(clone, {
+      scale: 4, // ~300 DPI
+      useCORS: true,
+      allowTaint: true, // Avec Base64, on peut remettre allowTaint à true souvent, ou tester false
+      backgroundColor: '#ffffff',
+      logging: false,
+      onclone: (doc) => {
+        // Injection des styles correctifs (OKLCH override) dans le clone interne de html2canvas
+        // Note: html2canvas re-clone le noeud qu'on lui passe, donc ce 'doc' est un 2ème clone.
+        const style = doc.createElement('style');
         style.innerHTML = `
           :root, * {
             --background: #ffffff !important;
@@ -60,21 +103,19 @@ export const exportToPdf = async (elementId: string, fileName: string): Promise<
             --sidebar-border: #e4e4e7 !important;
             --sidebar-ring: #d4d4d8 !important;
             
-            /* Surcharge pour Tailwind v4 qui utilise oklch par défaut */
+            /* Surcharge pour Tailwind v4 */
             --tw-ring-color: #3b82f6 !important; 
             --tw-ring-offset-color: #ffffff !important;
           }
         `;
-        clonedDoc.head.appendChild(style);
-
-        const clonedElement = clonedDoc.getElementById(elementId);
-        if (clonedElement) {
-          clonedElement.style.transform = 'none'; // Annuler les transformations de zoom/rotation
-        }
+        doc.head.appendChild(style);
       },
     });
 
-    // 2. Génération du PDF avec jsPDF
+    // Nettoyage du clone temporaire
+    document.body.removeChild(cloneContainer);
+
+    // 4. Génération du PDF avec jsPDF
     const pdf = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
@@ -83,17 +124,10 @@ export const exportToPdf = async (elementId: string, fileName: string): Promise<
     });
 
     const imgData = canvas.toDataURL('image/png');
-
-    // Dimensions A4 en mm
     const pdfWidth = 210;
     const pdfHeight = 297;
 
-    // Ajouter l'image au PDF
-    // 'FAST' compression est plus rapide mais 'undefined' ou 'SLOW' est meilleure qualité.
-    // L'utilisateur veut la qualité MAX, donc on utilise la compression par défaut (meilleure).
     pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
-
-    // 3. Téléchargement
     pdf.save(fileName);
   } catch (error: any) {
     console.error('Error generating PDF:', error);
