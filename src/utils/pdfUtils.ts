@@ -18,7 +18,7 @@ export const exportToPdf = async (elementId: string, fileName: string): Promise<
     const canvas = await html2canvas(element, {
       scale: 4, // Échelle 4 pour une meilleure qualité (~300 DPI si base 72/96)
       useCORS: true, // Important pour les images externes (si configurées CORS)
-      allowTaint: true,
+      allowTaint: false, // DOIT ÊTRE FALSE pour permettre toDataURL() sans SecurityError
       backgroundColor: '#ffffff', // Fond blanc propre
       logging: false, // Désactiver les logs
       onclone: (clonedDoc: Document) => {
@@ -54,8 +54,8 @@ export const exportToPdf = async (elementId: string, fileName: string): Promise<
 
     // 3. Téléchargement
     pdf.save(fileName);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error generating PDF:', error);
-    alert('Une erreur est survenue lors de la génération du PDF.');
+    alert(`Une erreur est survenue lors de la génération du PDF: ${error.message || error}`);
   }
 };
