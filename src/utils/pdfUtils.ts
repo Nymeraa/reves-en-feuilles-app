@@ -15,6 +15,9 @@ export const exportToPdf = async (elementId: string, fileName: string): Promise<
 
   try {
     // 1. Petit délai de sécurité pour le rendu
+    // On ajoute une classe pour masquer les bordures de layout
+    element.classList.add('pdf-export-mode');
+
     await new Promise((resolve) => setTimeout(resolve, 500));
 
     // 2. Génération avec html-to-image (Qualité x4 pour le 300 DPI)
@@ -26,6 +29,9 @@ export const exportToPdf = async (elementId: string, fileName: string): Promise<
       },
       cacheBust: true,
     });
+
+    // Nettoyage de la classe
+    element.classList.remove('pdf-export-mode');
 
     // 3. Génération du PDF avec jsPDF
     const pdf = new jsPDF({

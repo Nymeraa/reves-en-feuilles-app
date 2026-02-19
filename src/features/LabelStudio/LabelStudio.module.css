@@ -237,6 +237,11 @@
   box-sizing: border-box;
 }
 
+/* Hide border during PDF export */
+:global(.pdf-export-mode) .labelSlot {
+  border: none !important;
+}
+
 .labelSlot.small {
   width: 105mm;
   height: 74.25mm;
