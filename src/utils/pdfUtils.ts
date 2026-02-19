@@ -57,14 +57,22 @@ export const exportToPdf = async (elementId: string, fileName: string): Promise<
     // Attendre que toutes les images soient traitées
     await Promise.all(imagePromises);
 
+    // 1b. Petit délai pour laisser le navigateur finir ses rendus (fontes, images réseau)
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
     // 3. Capture avec html2canvas sur le CLONE
     const canvas = await html2canvas(clone, {
       scale: 4, // ~300 DPI
       useCORS: true,
-      allowTaint: true, // Avec Base64, on peut remettre allowTaint à true souvent, ou tester false
+      allowTaint: true,
       backgroundColor: '#ffffff',
       logging: false,
-      onclone: (doc) => {
+      // FIX IMPORTANT : Forcer les dimensions pour éviter les débordements
+      width: clone.scrollWidth,
+      height: clone.scrollHeight,
+      windowWidth: clone.scrollWidth,
+      windowHeight: clone.scrollHeight,
+      onclone: (doc: Document) => {
         // Injection des styles correctifs (OKLCH override) dans le clone interne de html2canvas
         // Note: html2canvas re-clone le noeud qu'on lui passe, donc ce 'doc' est un 2ème clone.
         const style = doc.createElement('style');
@@ -110,7 +118,7 @@ export const exportToPdf = async (elementId: string, fileName: string): Promise<
         `;
         doc.head.appendChild(style);
       },
-    });
+    } as any);
 
     // Nettoyage du clone temporaire
     document.body.removeChild(cloneContainer);
