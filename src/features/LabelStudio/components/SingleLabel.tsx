@@ -81,6 +81,7 @@ const SingleLabel: React.FC<SingleLabelProps> = ({ labelId, design, format }) =>
                   key={el.id}
                   data-id={el.id}
                   src={el.content}
+                  crossOrigin="anonymous"
                   onClick={(e) => {
                     e.stopPropagation();
                     setSelectedElementId(el.id);
