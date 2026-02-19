@@ -64,11 +64,6 @@ export const exportToPdf = async (elementId: string, fileName: string): Promise<
             --tw-ring-color: #3b82f6 !important; 
             --tw-ring-offset-color: #ffffff !important;
           }
-          
-          /* Force borderColor to use the new hex variable */
-          * {
-            border-color: #e2e8f0 !important;
-          }
         `;
         clonedDoc.head.appendChild(style);
 
