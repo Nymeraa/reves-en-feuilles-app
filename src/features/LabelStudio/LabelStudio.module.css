@@ -305,8 +305,16 @@
   color: purple;
   pointer-events: none;
   background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.8);
   padding: 2px;
   z-index: 20;
+}
+
+/* Print Quality Optimization */
+.printQuality {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 /* Modal Overlay */

@@ -4,6 +4,7 @@ import styles from '../LabelStudio.module.css';
 import { useLabelStudio } from '../context/LabelContext';
 import { ZoomIn, ZoomOut, Grid, RotateCw } from 'lucide-react';
 import SingleLabel from './SingleLabel';
+import { exportToPdf } from '../../../utils/pdfUtils';
 
 const MainCanvas: React.FC = () => {
   const {
@@ -31,6 +32,7 @@ const MainCanvas: React.FC = () => {
 
   const [isDragging, setIsDragging] = React.useState(false);
   const [isRotated, setIsRotated] = React.useState(false); // New state for global rotation
+  const [isGeneratingPdf, setIsGeneratingPdf] = React.useState(false);
 
   // Auto-rotate for small format when switching batches
   React.useEffect(() => {
@@ -319,8 +321,28 @@ const MainCanvas: React.FC = () => {
 
         {/* Crop Marks Controls moved to Sidebar */}
 
-        <button className={styles.printBtn} onClick={() => window.print()}>
-          🖨️ Imprimer / PDF
+        {/* Crop Marks Controls moved to Sidebar */}
+
+        <button
+          className={styles.printBtn}
+          onClick={async () => {
+            if (isGeneratingPdf) return;
+            setIsGeneratingPdf(true);
+            // On cible l'élément à capturer (la feuille A4)
+            // L'ID doit être unique, on va l'ajouter au div paperA4
+            await exportToPdf(
+              'label-studio-paper-a4',
+              `etiquettes-${activeBatch?.model || 'export'}.pdf`
+            );
+            setIsGeneratingPdf(false);
+          }}
+          disabled={isGeneratingPdf}
+          style={{
+            opacity: isGeneratingPdf ? 0.7 : 1,
+            cursor: isGeneratingPdf ? 'wait' : 'pointer',
+          }}
+        >
+          {isGeneratingPdf ? 'Génération en cours...' : 'Télécharger PDF (HD)'}
         </button>
       </div>
 
@@ -337,7 +359,8 @@ const MainCanvas: React.FC = () => {
         >
           {/* LA FEUILLE A4 (Qui subit le scale visuel) */}
           <div
-            className={`${styles.paperA4} ${showCropMarks ? styles.printMode : ''}`}
+            id="label-studio-paper-a4"
+            className={`${styles.paperA4} ${showCropMarks ? styles.printMode : ''} ${styles.printQuality}`}
             style={{
               transform: `scale(${zoomLevel}) rotate(${isRotated ? '-90deg' : '0deg'})`,
               display: 'flex',
