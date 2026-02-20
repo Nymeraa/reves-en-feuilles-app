@@ -148,8 +148,8 @@ const MainCanvas: React.FC = () => {
     )
       return;
 
-    const deltaX = e.clientX - dragStartRef.current.x;
-    const deltaY = e.clientY - dragStartRef.current.y;
+    const deltaX = (e.clientX - dragStartRef.current.x) / zoomLevel;
+    const deltaY = (e.clientY - dragStartRef.current.y) / zoomLevel;
 
     const { format } = activeBatch;
 

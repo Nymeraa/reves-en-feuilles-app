@@ -9,6 +9,14 @@ interface SingleLabelProps {
   format: 'small' | 'large';
 }
 
+/** Z-index hierarchy: text always on top, images in the middle, backgrounds at the back. */
+const getZIndex = (type: string): number => {
+  if (type === 'text') return 100;
+  if (type === 'image' || type === 'illustration') return 10;
+  if (type === 'background' || type === 'shape') return 1;
+  return 50;
+};
+
 const SingleLabel: React.FC<SingleLabelProps> = ({ labelId, design, format }) => {
   const { selectedElementId, setSelectedElementId, selectedLabelId, setSelectedLabelId } =
     useLabelStudio();
@@ -61,6 +69,7 @@ const SingleLabel: React.FC<SingleLabelProps> = ({ labelId, design, format }) =>
                     left: `${el.x}%`,
                     top: `${el.y}%`,
                     transformOrigin: 'center center',
+                    zIndex: getZIndex(el.type),
                     fontSize: `${(el.fontSize || 12) * 1.33}px`,
                     color: el.color,
                     fontFamily: el.fontFamily,
@@ -117,7 +126,7 @@ const SingleLabel: React.FC<SingleLabelProps> = ({ labelId, design, format }) =>
                     border: isSelected ? '2px solid #3b82f6' : '1px solid transparent',
                     cursor: 'move',
                     userSelect: 'none',
-                    zIndex: 5,
+                    zIndex: getZIndex(el.type),
                     pointerEvents: 'auto',
                     // FIX: Overflow visible pour déboguer l'affichage, html-to-image gérera le crop via foreignObject
                     overflow: 'visible',
