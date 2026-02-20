@@ -170,11 +170,12 @@ const MainCanvas: React.FC = () => {
       effectiveDX = pageDeltaY;
       effectiveDY = -pageDeltaX;
     } else {
-      // Large format (Standard Portrait) — no extra scaling needed.
-      // The conversion to % of label dimensions (lines below) handles
-      // the width vs height asymmetry correctly.
-      effectiveDX = pageDeltaX;
-      effectiveDY = pageDeltaY;
+      // Large format (Standard Portrait)
+      // The label design is 141mm wide but rendered in a 105mm CSS slot,
+      // so X is squeezed by 105/141. Y slot is 148.5mm = label height, no squeeze.
+      const scaleFactorX = 105 / 141;
+      effectiveDX = pageDeltaX / scaleFactorX;
+      effectiveDY = pageDeltaY; // No correction needed on Y
     }
 
     // Convert to % of Label Dimensions
