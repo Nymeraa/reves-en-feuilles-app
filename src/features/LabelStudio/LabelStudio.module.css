@@ -237,9 +237,21 @@
   box-sizing: border-box;
 }
 
-/* Hide border during PDF export */
+/* Hide border during PDF export and fix hairlines */
 :global(.pdf-export-mode) .labelSlot {
   border: none !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  /* ASTUCE ANTI-FISSURE : Outline pour créer un léger chevauchement */
+  outline: 1px solid white !important;
+  outline-offset: -1px;
+}
+
+:global(.pdf-export-mode) .gridSmall,
+:global(.pdf-export-mode) .gridLarge {
+  gap: 0 !important;
+  /* Fond blanc pour éviter que le gris du container ne passe à travers les micro-fissures */
+  background-color: white !important;
 }
 
 .labelSlot.small {
