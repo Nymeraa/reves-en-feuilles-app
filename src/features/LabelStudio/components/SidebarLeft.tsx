@@ -615,7 +615,9 @@ const SidebarLeft: React.FC = () => {
           <div style={{ flex: 1, overflowY: 'auto', padding: '10px' }}>
             <FolderTree
               folders={libraryFolders}
-              templates={libraryTemplates}
+              templates={libraryTemplates.filter(
+                (t) => !activeBatchFormat || t.format === activeBatchFormat
+              )}
               moveItem={moveItem}
               removeFolder={removeFolder}
               removeTemplate={removeTemplate}

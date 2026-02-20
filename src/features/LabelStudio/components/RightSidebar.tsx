@@ -22,6 +22,7 @@ const RightSidebar: React.FC = () => {
     savePreset,
     applyPreset,
     deletePreset,
+    addElementToLabel,
   } = useLabelStudio();
 
   const [presetName, setPresetName] = useState('');
@@ -308,10 +309,58 @@ const RightSidebar: React.FC = () => {
         </div>
 
         <div
-          style={{ color: '#9ca3af', fontSize: '0.875rem', textAlign: 'center', marginTop: '1rem' }}
+          style={{
+            color: '#9ca3af',
+            fontSize: '0.875rem',
+            textAlign: 'center',
+            marginTop: '1rem',
+            marginBottom: '1rem',
+          }}
         >
           Sélectionnez un élément pour le modifier
         </div>
+
+        {/* Add Text Button when viewing label global properties */}
+        <button
+          onClick={() => {
+            if (selectedLabelId) {
+              const newText = {
+                id: `txt_${Date.now()}`,
+                type: 'text' as const,
+                content: 'Nouveau Texte',
+                x: 50,
+                y: 50,
+                rotation: 0,
+                scale: 1,
+                fontSize: 12,
+                color: '#000000',
+                fontFamily: 'Arial',
+                textAlign: 'center' as const,
+              };
+              addElementToLabel(selectedLabelId, newText);
+            }
+          }}
+          style={{
+            width: '100%',
+            padding: '0.75rem 1rem',
+            backgroundColor: '#8b5cf6',
+            color: 'white',
+            border: 'none',
+            borderRadius: '0.375rem',
+            fontSize: '0.875rem',
+            fontWeight: '600',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.5rem',
+            transition: 'background-color 0.2s',
+          }}
+          onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#7c3aed')}
+          onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#8b5cf6')}
+        >
+          ➕ Ajouter un texte
+        </button>
       </aside>
     );
   }
