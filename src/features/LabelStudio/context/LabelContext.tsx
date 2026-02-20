@@ -24,6 +24,10 @@ import {
   getTemplates,
   deleteTemplate as deleteTemplateFromDB,
   moveItem as moveItemInDB,
+  ElementPreset,
+  savePresetToDB,
+  deletePresetFromDB,
+  getAllPresets,
 } from '../utils/db';
 import { useHistory } from '../../../hooks/useHistory';
 
@@ -174,6 +178,11 @@ interface LabelContextType {
   canUndo: boolean;
   canRedo: boolean;
   addToHistorySnapshot: () => void;
+
+  presets: ElementPreset[];
+  savePreset: (name: string, element: LabelElement, format: string) => Promise<void>;
+  applyPreset: (preset: ElementPreset, elementId: string) => void;
+  deletePreset: (id: string) => Promise<void>;
 }
 
 const LabelContext = createContext<LabelContextType | undefined>(undefined);
@@ -208,6 +217,7 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
 
   const [mediaLibrary, setMediaLibrary] = useState<MediaItem[]>([]);
   const [customFonts, setCustomFonts] = useState<FontItem[]>([]);
+  const [presets, setPresets] = useState<ElementPreset[]>([]);
 
   // Derived state
   const activeBatch = batches.find((b) => b.id === activeBatchId);
@@ -253,6 +263,12 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
             }
           }
           setCustomFonts(loadedFonts);
+        }
+
+        // Load presets
+        const savedPresets = await getAllPresets();
+        if (savedPresets && savedPresets.length > 0) {
+          setPresets(savedPresets);
         }
       } catch (error) {
         console.error('Failed to load data:', error);
@@ -481,6 +497,60 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
 
     // Lecture en Data URL (Base64)
     reader.readAsDataURL(file);
+  };
+
+  const savePreset = async (name: string, element: LabelElement, format: string) => {
+    const properties: Partial<LabelElement> = {
+      x: element.x,
+      y: element.y,
+      rotation: element.rotation,
+      scale: element.scale,
+      width: element.width,
+      height: element.height,
+      fontSize: element.fontSize,
+      color: element.color,
+      fontFamily: element.fontFamily,
+      fontWeight: element.fontWeight,
+      fontStyle: element.fontStyle,
+      textDecoration: element.textDecoration,
+      textAlign: element.textAlign,
+    };
+
+    // Remove undefined properties
+    (Object.keys(properties) as (keyof LabelElement)[]).forEach(
+      (key) => properties[key] === undefined && delete properties[key]
+    );
+
+    const newPreset: ElementPreset = {
+      id: `preset_${Date.now()}`,
+      name,
+      type: element.type,
+      format,
+      properties,
+    };
+
+    try {
+      await savePresetToDB(newPreset);
+      setPresets((prev) => [...prev, newPreset]);
+    } catch (error) {
+      console.error('Error saving preset:', error);
+      alert('Erreur lors de la sauvegarde du preset');
+    }
+  };
+
+  const deletePreset = async (id: string) => {
+    try {
+      await deletePresetFromDB(id);
+      setPresets((prev) => prev.filter((p) => p.id !== id));
+    } catch (error) {
+      console.error('Error deleting preset:', error);
+      alert('Erreur lors de la suppression du preset');
+    }
+  };
+
+  const applyPreset = (preset: ElementPreset, elementId: string) => {
+    if (!selectedLabelId) return;
+    updateLabelElement(selectedLabelId, elementId, preset.properties as Partial<LabelElement>);
   };
 
   const deleteCustomFont = async (id: string) => {
@@ -1045,6 +1115,10 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
         canUndo,
         canRedo,
         addToHistorySnapshot,
+        presets,
+        savePreset,
+        applyPreset,
+        deletePreset,
       }}
     >
       {children}

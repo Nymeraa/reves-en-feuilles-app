@@ -12,7 +12,7 @@ export interface MediaItem {
 
 const DB_NAME = 'LabelStudioDB';
 const STORE_NAME = 'mediaLibrary';
-const DB_VERSION = 6; // Increment version for moveItem support (optional but good practice)
+const DB_VERSION = 7; // Increment version for element_presets support
 
 export const initDB = (): Promise<IDBDatabase> => {
   return new Promise((resolve, reject) => {
@@ -67,6 +67,12 @@ export const initDB = (): Promise<IDBDatabase> => {
         const templateStore = db.createObjectStore('templates', { keyPath: 'id' });
         templateStore.createIndex('folderId', 'folderId', { unique: false });
         templateStore.createIndex('createdAt', 'createdAt', { unique: false });
+      }
+      // Create element presets store
+      if (!db.objectStoreNames.contains('element_presets')) {
+        const presetStore = db.createObjectStore('element_presets', { keyPath: 'id' });
+        presetStore.createIndex('type', 'type', { unique: false });
+        presetStore.createIndex('format', 'format', { unique: false });
       }
     };
   });
@@ -364,5 +370,50 @@ export const moveItem = async (
     };
 
     getRequest.onerror = () => reject('Error fetching item to move');
+  });
+};
+
+// --- ELEMENT PRESETS ---
+
+export interface ElementPreset {
+  id: string;
+  name: string;
+  type: 'text' | 'image' | 'illustration' | string;
+  format: string;
+  properties: any; // Style/position properties (Partial<LabelElement>)
+}
+
+const PRESET_STORE = 'element_presets';
+
+export const savePresetToDB = async (preset: ElementPreset): Promise<void> => {
+  const db = await initDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction([PRESET_STORE], 'readwrite');
+    const store = transaction.objectStore(PRESET_STORE);
+    const request = store.put(preset);
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject('Error saving preset');
+  });
+};
+
+export const deletePresetFromDB = async (id: string): Promise<void> => {
+  const db = await initDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction([PRESET_STORE], 'readwrite');
+    const store = transaction.objectStore(PRESET_STORE);
+    const request = store.delete(id);
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject('Error deleting preset');
+  });
+};
+
+export const getAllPresets = async (): Promise<ElementPreset[]> => {
+  const db = await initDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction([PRESET_STORE], 'readonly');
+    const store = transaction.objectStore(PRESET_STORE);
+    const request = store.getAll();
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject('Error getting presets');
   });
 };

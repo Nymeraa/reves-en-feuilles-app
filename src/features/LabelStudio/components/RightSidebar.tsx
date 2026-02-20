@@ -1,5 +1,5 @@
 'use client';
-import React from 'react';
+import React, { useState } from 'react';
 import styles from '../LabelStudio.module.css';
 import { useLabelStudio } from '../context/LabelContext';
 import { AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
@@ -18,7 +18,13 @@ const RightSidebar: React.FC = () => {
     duplicateSideDesign,
     saveAsDefaultTemplate,
     customFonts,
+    presets,
+    savePreset,
+    applyPreset,
+    deletePreset,
   } = useLabelStudio();
+
+  const [presetName, setPresetName] = useState('');
 
   const activeBatch = batches.find((b) => b.id === activeBatchId);
   const selectedLabel = activeBatch?.labels.find((l) => l.id === selectedLabelId);
@@ -315,6 +321,10 @@ const RightSidebar: React.FC = () => {
   const widthMM = format === 'small' ? 74.25 : 141;
   const heightMM = format === 'small' ? 105 : 148.5;
 
+  const availablePresets = presets.filter(
+    (p) => p.type === selectedElement.type && p.format === format
+  );
+
   // Convert % to mm for display/edit
   const xMM = (selectedElement.x / 100) * widthMM;
   const yMM = (selectedElement.y / 100) * heightMM;
@@ -459,6 +469,97 @@ const RightSidebar: React.FC = () => {
             value={selectedElement.rotation}
             onChange={(e) => handleChange('rotation', parseFloat(e.target.value))}
           />
+        </div>
+
+        {/* --- PRESETS --- */}
+        <div className={styles.formGroup}>
+          <label className={styles.label}>✨ Presets</label>
+          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+            <input
+              type="text"
+              className={styles.input}
+              placeholder="Nom du preset..."
+              value={presetName}
+              onChange={(e) => setPresetName(e.target.value)}
+              style={{ flex: 1 }}
+            />
+            <button
+              onClick={() => {
+                if (!presetName.trim()) return;
+                savePreset(presetName.trim(), selectedElement, format);
+                setPresetName('');
+              }}
+              style={{
+                backgroundColor: '#10b981',
+                color: 'white',
+                border: 'none',
+                borderRadius: '0.25rem',
+                padding: '0 0.5rem',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+              }}
+              disabled={!presetName.trim()}
+              title="Sauvegarder les propriétés actuelles comme preset"
+            >
+              💾
+            </button>
+          </div>
+
+          {availablePresets.length > 0 && (
+            <div style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
+              {availablePresets.map((preset) => (
+                <div
+                  key={preset.id}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    backgroundColor: '#f3f4f6',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '0.25rem',
+                    overflow: 'hidden',
+                  }}
+                >
+                  <button
+                    onClick={() => applyPreset(preset, selectedElement.id)}
+                    style={{
+                      padding: '0.25rem 0.5rem',
+                      border: 'none',
+                      backgroundColor: 'transparent',
+                      cursor: 'pointer',
+                      fontSize: '0.75rem',
+                      fontWeight: '600',
+                      color: '#4b5563',
+                    }}
+                    title="Appliquer le preset"
+                  >
+                    {preset.name}
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (confirm(`Supprimer le preset "${preset.name}" ?`)) {
+                        deletePreset(preset.id);
+                      }
+                    }}
+                    style={{
+                      padding: '0.25rem',
+                      border: 'none',
+                      borderLeft: '1px solid #d1d5db',
+                      backgroundColor: '#fee2e2',
+                      color: '#ef4444',
+                      cursor: 'pointer',
+                      fontSize: '0.75rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                    title="Supprimer le preset"
+                  >
+                    🗑️
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Delete Element Button */}
