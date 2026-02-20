@@ -24,17 +24,21 @@ const SingleLabel: React.FC<SingleLabelProps> = ({ labelId, design, format }) =>
       <div className={styles.labelWrapper}>
         <div
           className={styles.labelContent}
-          style={{
-            backgroundColor: design.backgroundColor ? design.backgroundColor : '#ffffff',
-            backgroundImage: design.backgroundImage ? `url(${design.backgroundImage})` : 'none',
-            cursor: 'pointer',
-            border: isLabelSelected ? '2px solid #10b981' : '1px solid #e5e7eb',
-            boxSizing: 'border-box',
-            // FIX: Assurer le rendu du fond et empêcher les débordements globaux
-            WebkitPrintColorAdjust: 'exact',
-            printColorAdjust: 'exact',
-            overflow: 'hidden',
-          }}
+          style={
+            {
+              backgroundColor: design.backgroundColor ? design.backgroundColor : '#ffffff',
+              backgroundImage: design.backgroundImage ? `url(${design.backgroundImage})` : 'none',
+              // FIX: Variable pour le CSS bleed lors de l'export PDF
+              '--label-bg-color': design.backgroundColor || '#ffffff',
+              cursor: 'pointer',
+              border: isLabelSelected ? '2px solid #10b981' : '1px solid #e5e7eb',
+              boxSizing: 'border-box',
+              // FIX: Assurer le rendu du fond et empêcher les débordements globaux
+              WebkitPrintColorAdjust: 'exact',
+              printColorAdjust: 'exact',
+              overflow: 'hidden',
+            } as React.CSSProperties
+          }
           onClick={() => {
             setSelectedLabelId(labelId);
           }}

@@ -240,18 +240,26 @@
 /* Hide border during PDF export and fix hairlines */
 :global(.pdf-export-mode) .labelSlot {
   border: none !important;
-  margin: 0 !important;
+  margin: -0.5px !important; /* Tirer légèrement les éléments pour chevauchement */
   box-sizing: border-box !important;
-  /* ASTUCE ANTI-FISSURE : Outline pour créer un léger chevauchement */
-  outline: 1px solid white !important;
-  outline-offset: -1px;
+
+  /* ASTUCE ANTI-FISSURE : Bleed (fond perdu externe) avec la couleur du label */
+  /* 1. Box-shadow crée un débordement d'1px */
+  box-shadow: 0 0 1px 1px var(--label-bg-color, white) !important;
+
+  /* 2. Outline pour renforcer */
+  outline: 1px solid var(--label-bg-color, white) !important;
+  outline-offset: -0.5px !important;
+
+  /* S'assurer que ça passe au dessus du fond blanc de la grille */
+  z-index: 1;
 }
 
 :global(.pdf-export-mode) .gridSmall,
 :global(.pdf-export-mode) .gridLarge {
   gap: 0 !important;
-  /* Fond blanc pour éviter que le gris du container ne passe à travers les micro-fissures */
-  background-color: white !important;
+  /* Fond transparent pour laisser les labels se chevaucher sans interférence */
+  background-color: transparent !important;
 }
 
 .labelSlot.small {
