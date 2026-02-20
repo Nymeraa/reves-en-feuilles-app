@@ -170,10 +170,11 @@ const MainCanvas: React.FC = () => {
       effectiveDX = pageDeltaY;
       effectiveDY = -pageDeltaX;
     } else {
-      // Large format (Standard Portrait)
-      const scaleFactor = 105 / 141;
-      effectiveDX = pageDeltaX / scaleFactor;
-      effectiveDY = pageDeltaY / scaleFactor;
+      // Large format (Standard Portrait) — no extra scaling needed.
+      // The conversion to % of label dimensions (lines below) handles
+      // the width vs height asymmetry correctly.
+      effectiveDX = pageDeltaX;
+      effectiveDY = pageDeltaY;
     }
 
     // Convert to % of Label Dimensions
