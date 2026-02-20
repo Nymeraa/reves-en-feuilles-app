@@ -233,8 +233,19 @@ const MainCanvas: React.FC = () => {
 
     const { format } = activeBatch;
 
+    // Récupération de la couleur de fond de la première étiquette pour le fix anti-fissure
+    const gridBgFill = activeBatch.labels[0]?.design.backgroundColor || 'transparent';
+
     return (
-      <div className={format === 'small' ? styles.gridSmall : styles.gridLarge}>
+      <div
+        className={format === 'small' ? styles.gridSmall : styles.gridLarge}
+        style={
+          {
+            // Variable CSS pour colorer le fond de la grille en mode export PDF
+            '--grid-bg-fill': gridBgFill,
+          } as React.CSSProperties
+        }
+      >
         {activeBatch.labels.map((labelData) => (
           <SingleLabel
             key={labelData.id}

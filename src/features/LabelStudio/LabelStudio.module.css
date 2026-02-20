@@ -240,26 +240,18 @@
 /* Hide border during PDF export and fix hairlines */
 :global(.pdf-export-mode) .labelSlot {
   border: none !important;
-  margin: -0.5px !important; /* Tirer légèrement les éléments pour chevauchement */
-  box-sizing: border-box !important;
-
-  /* ASTUCE ANTI-FISSURE : Bleed (fond perdu externe) avec la couleur du label */
-  /* 1. Box-shadow crée un débordement d'1px */
-  box-shadow: 0 0 1px 1px var(--label-bg-color, white) !important;
-
-  /* 2. Outline pour renforcer */
-  outline: 1px solid var(--label-bg-color, white) !important;
-  outline-offset: -0.5px !important;
-
-  /* S'assurer que ça passe au dessus du fond blanc de la grille */
-  z-index: 1;
+  /* On retire les hacks précédents (margin negatif, box-shadow) qui posaient problème */
+  margin: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
 }
 
 :global(.pdf-export-mode) .gridSmall,
 :global(.pdf-export-mode) .gridLarge {
   gap: 0 !important;
-  /* Fond transparent pour laisser les labels se chevaucher sans interférence */
-  background-color: transparent !important;
+  /* STRATÉGIE 2 : On colore le fond de la grille avec la couleur des étiquettes */
+  /* Cela "bouche" les trous entre les étiquettes avec la bonne couleur */
+  background-color: var(--grid-bg-fill, transparent) !important;
 }
 
 .labelSlot.small {
