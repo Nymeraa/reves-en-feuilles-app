@@ -69,6 +69,10 @@ export interface Order {
   discountCode?: string | null;
   discountPercent?: number | null;
 
+  affiliateName?: string | null;
+  affiliateCommissionRate?: number | null;
+  affiliateFixedAmount?: number | null;
+
   notes?: string | null;
   parcelWeightGrams?: number | null;
 
@@ -102,6 +106,11 @@ export interface CreateOrderInput {
   packagingType?: string;
   discountCode?: string;
   discountPercent?: number;
+
+  affiliateName?: string;
+  affiliateCommissionRate?: number;
+  affiliateFixedAmount?: number;
+
   feesOther?: number;
   notes?: string;
   site?: string;

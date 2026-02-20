@@ -193,6 +193,9 @@ model Order {
   discountPercent Float?
   manualTotal     Boolean         @default(false)
   notes           String?
+  affiliateName           String?
+  affiliateCommissionRate Float?
+  affiliateFixedAmount    Float?
   items           OrderItem[]
   parcelWeightGrams Int?
   movements       StockMovement[]

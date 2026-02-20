@@ -58,6 +58,9 @@ export const OrderService = {
       packagingType: input.packagingType || null,
       discountCode: input.discountCode || null,
       discountPercent: input.discountPercent ?? null,
+      affiliateName: input.affiliateName || null,
+      affiliateCommissionRate: input.affiliateCommissionRate ?? null,
+      affiliateFixedAmount: input.affiliateFixedAmount ?? null,
       feesOther: input.feesOther ?? 0,
       notes: input.notes || null,
       parcelWeightGrams: input.parcelWeightGrams ?? null,
@@ -217,12 +220,25 @@ export const OrderService = {
       totalRevenue * (settings.shopifyTransactionPercent / 100) + settings.shopifyFixedFee
     );
     if (order.feesOther === undefined || order.feesOther === null) order.feesOther = 0.1;
+
+    // Affiliate Commission Calculation
+    const baseCommission = Math.max(0, order.totalAmount - (order.shippingCost || 0));
+    const percentageCommission = order.affiliateCommissionRate
+      ? baseCommission * (order.affiliateCommissionRate / 100)
+      : 0;
+    const fixedCommission = order.affiliateFixedAmount || 0;
+    const totalCommissionAmount = percentageCommission + fixedCommission;
+
     order.feesTotal = roundCurrency(
       (order.feesUrssaf || 0) + (order.feesShopify || 0) + (order.feesOther || 0)
     );
 
     order.netProfit = roundCurrency(
-      totalRevenue - order.totalCost - (order.shippingCost || 0) - order.feesTotal
+      totalRevenue -
+        order.totalCost -
+        (order.shippingCost || 0) -
+        order.feesTotal -
+        totalCommissionAmount
     );
     order.margin = totalRevenue > 0 ? (order.netProfit / totalRevenue) * 100 : 0;
   },
@@ -455,6 +471,11 @@ export const OrderService = {
     order.packagingType = input.packagingType || null;
     order.discountCode = input.discountCode || null;
     order.discountPercent = input.discountPercent ?? null;
+    if (input.affiliateName !== undefined) order.affiliateName = input.affiliateName || null;
+    if (input.affiliateCommissionRate !== undefined)
+      order.affiliateCommissionRate = input.affiliateCommissionRate ?? null;
+    if (input.affiliateFixedAmount !== undefined)
+      order.affiliateFixedAmount = input.affiliateFixedAmount ?? null;
     order.feesOther = input.feesOther ?? null;
     order.notes = input.notes || null;
     if (input.parcelWeightGrams !== undefined) {

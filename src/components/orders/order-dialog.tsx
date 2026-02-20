@@ -23,7 +23,8 @@ import { Order, CreateOrderInput, OrderStatus } from '@/types/order';
 import { Recipe, RECIPE_FORMATS } from '@/types/recipe';
 import { Ingredient } from '@/types/inventory';
 import { Pack } from '@/types/pack';
-import { Plus, Trash, Calculator } from 'lucide-react';
+import { Plus, Trash, Calculator, Handshake } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/components/ui/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { apiFetch } from '@/lib/api-client';
@@ -72,6 +73,7 @@ export function OrderDialog({
     cogsMaterial: 0,
     cogsPackaging: 0,
     fees: 0.1, // Default from screenshot
+    commission: 0,
     netProfit: 0,
     margin: 0,
   });
@@ -84,6 +86,11 @@ export function OrderDialog({
   const [site, setSite] = useState('');
 
   const [packagingType, setPackagingType] = useState('Aucun');
+
+  const [isAffiliate, setIsAffiliate] = useState(false);
+  const [affiliateName, setAffiliateName] = useState('');
+  const [affiliateCommissionRate, setAffiliateCommissionRate] = useState(0);
+  const [affiliateFixedAmount, setAffiliateFixedAmount] = useState(0);
 
   // Auto-select doypack based on first recipe format
   useEffect(() => {
@@ -160,6 +167,17 @@ export function OrderDialog({
         setPackagingType(initialData.packagingType || 'Aucun');
         setSource(initialData.source || 'Manuel');
         setSite((initialData as any).site || '');
+
+        const hasAffiliate = !!(
+          initialData.affiliateName ||
+          initialData.affiliateCommissionRate ||
+          initialData.affiliateFixedAmount
+        );
+        setIsAffiliate(hasAffiliate);
+        setAffiliateName(initialData.affiliateName || '');
+        setAffiliateCommissionRate(initialData.affiliateCommissionRate || 0);
+        setAffiliateFixedAmount(initialData.affiliateFixedAmount || 0);
+
         setTotals((prev) => ({ ...prev, fees: initialData.feesOther || 0.1 })); // ensure consistent
       } else {
         setItems([]);
@@ -169,6 +187,10 @@ export function OrderDialog({
         setPackagingType('Aucun');
         setSource('Manuel');
         setSite('');
+        setIsAffiliate(false);
+        setAffiliateName('');
+        setAffiliateCommissionRate(0);
+        setAffiliateFixedAmount(0);
         setTotals((prev) => ({ ...prev, fees: 0.1 }));
       }
     }
@@ -250,10 +272,19 @@ export function OrderDialog({
         totalAmount * (settings.shopifyTransactionPercent / 100) + settings.shopifyFixedFee;
     }
 
+    // Affiliate Commission Calculation
+    const baseCommission = Math.max(0, totalAmount - shippingCost);
+    const percentageCommission = affiliateCommissionRate
+      ? baseCommission * (affiliateCommissionRate / 100)
+      : 0;
+    const fixedCommission = affiliateFixedAmount || 0;
+    const totalCommissionAmount = isAffiliate ? percentageCommission + fixedCommission : 0;
+
     // Profit = Revenue - Costs
     const calculatedFees = urssaf + platformFees;
     const totalFees = calculatedFees + feesOther;
-    const totalCosts = materialCost + totals.cogsPackaging + shippingCost + totalFees;
+    const totalCosts =
+      materialCost + totals.cogsPackaging + shippingCost + totalFees + totalCommissionAmount;
 
     const netProfit = totalAmount - totalCosts;
     const margin = totalAmount > 0 ? (netProfit / totalAmount) * 100 : 0;
@@ -264,6 +295,7 @@ export function OrderDialog({
       netProfit,
       margin,
       fees: totalFees,
+      commission: totalCommissionAmount,
     }));
   }, [
     items,
@@ -276,6 +308,9 @@ export function OrderDialog({
     ingredients,
     settings,
     source,
+    isAffiliate,
+    affiliateCommissionRate,
+    affiliateFixedAmount,
   ]);
 
   const handleAddItem = () => {
@@ -331,6 +366,9 @@ export function OrderDialog({
       notes: formData.get('notes'),
       items: itemsPayload,
       site: site === 'NONE' ? '' : site, // Add site if managed
+      affiliateName: isAffiliate ? affiliateName : undefined,
+      affiliateCommissionRate: isAffiliate ? affiliateCommissionRate : undefined,
+      affiliateFixedAmount: isAffiliate ? affiliateFixedAmount : undefined,
     };
 
     try {
@@ -702,10 +740,66 @@ export function OrderDialog({
             </div>
           </div>
 
+          {/* Affiliation / Sponsorisée */}
+          <div className="border rounded-md p-4 bg-muted/20 space-y-4">
+            <div className="flex items-center space-x-2">
+              <Switch id="affiliate-mode" checked={isAffiliate} onCheckedChange={setIsAffiliate} />
+              <Label
+                htmlFor="affiliate-mode"
+                className="flex items-center gap-2 cursor-pointer font-medium"
+              >
+                <Handshake className="w-4 h-4 text-primary" /> Commande Sponsorisée / Affiliation
+              </Label>
+            </div>
+            {isAffiliate && (
+              <div className="grid grid-cols-3 gap-4 pt-2">
+                <div className="space-y-2">
+                  <Label>Nom du partenaire</Label>
+                  <Input
+                    placeholder="ex: @influenceur"
+                    value={affiliateName}
+                    onChange={(e) => setAffiliateName(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>% de commission</Label>
+                  <div className="relative">
+                    <Input
+                      type="number"
+                      step="0.1"
+                      placeholder="Calculé hors fdp"
+                      value={affiliateCommissionRate || ''}
+                      onChange={(e) => setAffiliateCommissionRate(parseFloat(e.target.value) || 0)}
+                    />
+                    <span className="absolute right-3 top-2.5 text-muted-foreground text-sm">
+                      %
+                    </span>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Montant fixe (€)</Label>
+                  <div className="relative">
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={affiliateFixedAmount || ''}
+                      onChange={(e) => setAffiliateFixedAmount(parseFloat(e.target.value) || 0)}
+                    />
+                    <span className="absolute right-3 top-2.5 text-muted-foreground text-sm">
+                      €
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Footer Summary */}
           <div className="bg-muted/50 p-4 rounded-md border mt-4">
             <h4 className="text-sm font-semibold mb-4 text-foreground">Récapitulatif calculé</h4>
-            <div className="grid grid-cols-4 gap-4 text-sm">
+            <div
+              className={`grid ${isAffiliate && totals.commission > 0 ? 'grid-cols-5' : 'grid-cols-4'} gap-4 text-sm`}
+            >
               <div>
                 <div className="text-muted-foreground">Total payé</div>
                 <div className="font-medium text-foreground">{totalAmount.toFixed(2)} €</div>
@@ -731,6 +825,14 @@ export function OrderDialog({
                     ` + ${((totalAmount * settings.shopifyTransactionPercent) / 100 + settings.shopifyFixedFee).toFixed(2)}€ Shopify`}
                 </div>
               </div>
+              {isAffiliate && totals.commission > 0 && (
+                <div>
+                  <div className="text-muted-foreground">Commission Affilié</div>
+                  <div className="font-medium text-amber-600 dark:text-amber-500">
+                    -{totals.commission.toFixed(2)} €
+                  </div>
+                </div>
+              )}
             </div>
             <div className="flex justify-between items-end mt-4 pt-4 border-t border-border">
               <div>

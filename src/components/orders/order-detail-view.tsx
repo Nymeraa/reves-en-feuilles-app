@@ -257,6 +257,34 @@ export function OrderDetailView({
               <span className="text-slate-500">Total Frais:</span>
               <span>{(order.feesTotal || 0).toFixed(2)} €</span>
             </div>
+
+            {(() => {
+              if (!order.affiliateCommissionRate && !order.affiliateFixedAmount) return null;
+
+              const baseCommission = Math.max(0, order.totalAmount - (order.shippingCost || 0));
+              const pctAmount = order.affiliateCommissionRate
+                ? baseCommission * (order.affiliateCommissionRate / 100)
+                : 0;
+              const fixedAmount = order.affiliateFixedAmount || 0;
+              const totalComm = pctAmount + fixedAmount;
+
+              const name = order.affiliateName || 'Affilié';
+              let label = `Commission (${name})`;
+              if (order.affiliateCommissionRate && !order.affiliateFixedAmount) {
+                label = `Commission (${name} - ${order.affiliateCommissionRate}%)`;
+              } else if (!order.affiliateCommissionRate && order.affiliateFixedAmount) {
+                label = `Commission (${name} - Fixe)`;
+              } else if (order.affiliateCommissionRate && order.affiliateFixedAmount) {
+                label = `Commission (${name} - ${order.affiliateFixedAmount}€ + ${order.affiliateCommissionRate}%)`;
+              }
+
+              return (
+                <div className="flex justify-between font-medium text-amber-600 dark:text-amber-500 mt-2 pt-2 border-t border-dashed">
+                  <span>{label} :</span>
+                  <span>- {totalComm.toFixed(2)} €</span>
+                </div>
+              );
+            })()}
           </CardContent>
         </Card>
       </div>
