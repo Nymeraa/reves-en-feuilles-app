@@ -211,8 +211,8 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
 
   // Global Triman State
   const [trimanConfig, setTrimanConfig] = useState<GlobalTrimanConfig>({
-    small: { url: null, x: 5, y: 5, enabled: true },
-    large: { url: null, x: 5, y: 5, enabled: true },
+    small: { url: null, x: 0, y: 0, enabled: true },
+    large: { url: null, x: 0, y: 0, enabled: true },
   });
 
   const [mediaLibrary, setMediaLibrary] = useState<MediaItem[]>([]);
