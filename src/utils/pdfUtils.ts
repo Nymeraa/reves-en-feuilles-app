@@ -18,7 +18,10 @@ export const exportToPdf = async (elementId: string, fileName: string): Promise<
     // On ajoute une classe pour masquer les bordures de layout
     element.classList.add('pdf-export-mode');
 
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    // Assure que les polices sont complètement chargées
+    await document.fonts.ready;
+
+    await new Promise((resolve) => setTimeout(resolve, 800)); // Ajusté à 800ms par consigne
 
     // 2. Génération avec html-to-image (Qualité x4 pour le 300 DPI)
     const dataUrl = await toPng(element, {

@@ -187,6 +187,25 @@ interface LabelContextType {
 
 const LabelContext = createContext<LabelContextType | undefined>(undefined);
 
+const injectFontToDOM = (fontName: string, base64Data: string) => {
+  let styleTag = document.getElementById('custom-fonts-style');
+  if (!styleTag) {
+    styleTag = document.createElement('style');
+    styleTag.id = 'custom-fonts-style';
+    document.head.appendChild(styleTag);
+  }
+
+  if (!styleTag.innerHTML.includes(`font-family: '${fontName}'`)) {
+    styleTag.innerHTML += `
+      @font-face {
+        font-family: '${fontName}';
+        src: url('${base64Data}') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+      }
+    `;
+  }
+};
 export const LabelProvider = ({ children }: { children: ReactNode }) => {
   const {
     state: batches,
@@ -255,6 +274,7 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
               const fontFace = new FontFace(font.name, `url(${font.data})`);
               await fontFace.load();
               document.fonts.add(fontFace);
+              injectFontToDOM(font.name, font.data); // Injection DOM pour html-to-image
               loadedFonts.push(font);
               console.log(`Initialisation police : ${font.name}`);
             } catch (fontErr) {
@@ -457,6 +477,7 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
 
         // 4. Ajout au document
         document.fonts.add(fontFace);
+        injectFontToDOM(fontName, result); // Injection DOM pour html-to-image
         console.log('Police ajoutée au document avec succès !');
 
         // 5. Sauvegarde en Base de Données
