@@ -25,6 +25,7 @@ import {
   deleteTemplate as deleteTemplateFromDB,
   moveItem as moveItemInDB,
   ElementPreset,
+  PresetFolder,
   savePresetToDB,
   deletePresetFromDB,
   getAllPresets,
@@ -180,9 +181,15 @@ interface LabelContextType {
   addToHistorySnapshot: () => void;
 
   presets: ElementPreset[];
-  savePreset: (name: string, element: LabelElement, format: string) => Promise<void>;
+  savePreset: (
+    name: string,
+    element: LabelElement,
+    format: string,
+    folder?: PresetFolder
+  ) => Promise<void>;
   applyPreset: (preset: ElementPreset, elementId: string) => void;
   deletePreset: (id: string) => Promise<void>;
+  movePresetToFolder: (presetId: string, folder: PresetFolder) => Promise<void>;
 }
 
 const LabelContext = createContext<LabelContextType | undefined>(undefined);
@@ -520,7 +527,12 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
     reader.readAsDataURL(file);
   };
 
-  const savePreset = async (name: string, element: LabelElement, format: string) => {
+  const savePreset = async (
+    name: string,
+    element: LabelElement,
+    format: string,
+    folder: PresetFolder = null
+  ) => {
     const properties: Partial<LabelElement> = {
       x: element.x,
       y: element.y,
@@ -547,6 +559,7 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
       name,
       type: element.type,
       format,
+      folder,
       properties,
     };
 
@@ -556,6 +569,21 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
     } catch (error) {
       console.error('Error saving preset:', error);
       alert('Erreur lors de la sauvegarde du preset');
+    }
+  };
+
+  const movePresetToFolder = async (presetId: string, folder: PresetFolder) => {
+    const preset = presets.find((p) => p.id === presetId);
+    if (!preset) return;
+
+    const updatedPreset = { ...preset, folder };
+
+    try {
+      await savePresetToDB(updatedPreset);
+      setPresets((prev) => prev.map((p) => (p.id === presetId ? updatedPreset : p)));
+    } catch (error) {
+      console.error('Error moving preset:', error);
+      alert('Erreur lors du déplacement du preset');
     }
   };
 
@@ -1140,6 +1168,7 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
         savePreset,
         applyPreset,
         deletePreset,
+        movePresetToFolder,
       }}
     >
       {children}

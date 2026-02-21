@@ -375,11 +375,14 @@ export const moveItem = async (
 
 // --- ELEMENT PRESETS ---
 
+export type PresetFolder = 'haut_gauche' | 'haut_droite' | 'bas_gauche' | 'bas_droite' | null;
+
 export interface ElementPreset {
   id: string;
   name: string;
   type: 'text' | 'image' | 'illustration' | string;
   format: string;
+  folder?: PresetFolder;
   properties: any; // Style/position properties (Partial<LabelElement>)
 }
 

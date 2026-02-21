@@ -22,8 +22,11 @@ const RightSidebar: React.FC = () => {
     savePreset,
     applyPreset,
     deletePreset,
+    movePresetToFolder,
     addElementToLabel,
   } = useLabelStudio();
+
+  const [activeFolder, setActiveFolder] = useState<string | null>(null);
 
   const [presetName, setPresetName] = useState('');
 
@@ -554,61 +557,161 @@ const RightSidebar: React.FC = () => {
             </button>
           </div>
 
-          {availablePresets.length > 0 && (
-            <div style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
-              {availablePresets.map((preset) => (
+          {/* Preset Folders with Drag and Drop */}
+          <div
+            style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}
+          >
+            {[
+              { id: 'haut_gauche', label: '↖️ Haut Gauche' },
+              { id: 'haut_droite', label: '↗️ Haut Droite' },
+              { id: 'bas_gauche', label: '↙️ Bas Gauche' },
+              { id: 'bas_droite', label: '↘️ Bas Droite' },
+              { id: null, label: '📁 Non classé' },
+            ].map((folderObj) => {
+              const folderPresets = availablePresets.filter((p) =>
+                folderObj.id === null ? !p.folder : p.folder === folderObj.id
+              );
+
+              const isExpanded =
+                activeFolder === folderObj.id ||
+                (folderObj.id === null && folderPresets.length > 0 && activeFolder === null);
+
+              return (
                 <div
-                  key={preset.id}
+                  key={folderObj.id || 'unclassified'}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const presetId = e.dataTransfer.getData('presetId');
+                    if (presetId) {
+                      movePresetToFolder(presetId, folderObj.id as any);
+                    }
+                  }}
                   style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    backgroundColor: '#f3f4f6',
                     border: '1px solid #d1d5db',
-                    borderRadius: '0.25rem',
+                    borderRadius: '0.375rem',
                     overflow: 'hidden',
+                    backgroundColor: 'white',
                   }}
                 >
-                  <button
-                    onClick={() => applyPreset(preset, selectedElement.id)}
+                  {/* Folder Header */}
+                  <div
+                    onClick={() => setActiveFolder(isExpanded ? null : folderObj.id)}
                     style={{
-                      padding: '0.25rem 0.5rem',
-                      border: 'none',
-                      backgroundColor: 'transparent',
+                      padding: '0.5rem',
+                      backgroundColor: '#f9fafb',
                       cursor: 'pointer',
-                      fontSize: '0.75rem',
-                      fontWeight: '600',
-                      color: '#4b5563',
-                    }}
-                    title="Appliquer le preset"
-                  >
-                    {preset.name}
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (confirm(`Supprimer le preset "${preset.name}" ?`)) {
-                        deletePreset(preset.id);
-                      }
-                    }}
-                    style={{
-                      padding: '0.25rem',
-                      border: 'none',
-                      borderLeft: '1px solid #d1d5db',
-                      backgroundColor: '#fee2e2',
-                      color: '#ef4444',
-                      cursor: 'pointer',
-                      fontSize: '0.75rem',
                       display: 'flex',
+                      justifyContent: 'space-between',
                       alignItems: 'center',
-                      justifyContent: 'center',
+                      fontSize: '0.875rem',
+                      fontWeight: '600',
+                      color: '#374151',
+                      borderBottom: isExpanded ? '1px solid #e5e7eb' : 'none',
                     }}
-                    title="Supprimer le preset"
                   >
-                    🗑️
-                  </button>
+                    <span>{folderObj.label}</span>
+                    <span
+                      style={{
+                        fontSize: '0.75rem',
+                        color: '#6b7280',
+                        padding: '0.1rem 0.4rem',
+                        backgroundColor: '#e5e7eb',
+                        borderRadius: '1rem',
+                      }}
+                    >
+                      {folderPresets.length}
+                    </span>
+                  </div>
+
+                  {/* Folder Content */}
+                  {isExpanded && (
+                    <div
+                      style={{
+                        padding: '0.5rem',
+                        display: 'flex',
+                        gap: '0.25rem',
+                        flexWrap: 'wrap',
+                        minHeight: '3rem',
+                        backgroundColor: '#ffffff',
+                      }}
+                    >
+                      {folderPresets.length === 0 ? (
+                        <div
+                          style={{
+                            fontSize: '0.75rem',
+                            color: '#9ca3af',
+                            width: '100%',
+                            textAlign: 'center',
+                            padding: '0.5rem 0',
+                            fontStyle: 'italic',
+                          }}
+                        >
+                          Glissez un preset ici...
+                        </div>
+                      ) : (
+                        folderPresets.map((preset) => (
+                          <div
+                            key={preset.id}
+                            draggable
+                            onDragStart={(e) => e.dataTransfer.setData('presetId', preset.id)}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              backgroundColor: '#f3f4f6',
+                              border: '1px solid #d1d5db',
+                              borderRadius: '0.25rem',
+                              overflow: 'hidden',
+                              cursor: 'grab',
+                              boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                            }}
+                          >
+                            <button
+                              onClick={() => applyPreset(preset, selectedElement.id)}
+                              style={{
+                                padding: '0.25rem 0.5rem',
+                                border: 'none',
+                                backgroundColor: 'transparent',
+                                cursor: 'pointer',
+                                fontSize: '0.75rem',
+                                fontWeight: '600',
+                                color: '#4b5563',
+                              }}
+                              title="Appliquer le preset"
+                            >
+                              {preset.name}
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (confirm(`Supprimer le preset "${preset.name}" ?`)) {
+                                  deletePreset(preset.id);
+                                }
+                              }}
+                              style={{
+                                padding: '0.25rem',
+                                border: 'none',
+                                borderLeft: '1px solid #d1d5db',
+                                backgroundColor: '#fee2e2',
+                                color: '#ef4444',
+                                cursor: 'pointer',
+                                fontSize: '0.75rem',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
+                              title="Supprimer le preset"
+                            >
+                              🗑️
+                            </button>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  )}
                 </div>
-              ))}
-            </div>
-          )}
+              );
+            })}
+          </div>
         </div>
 
         {/* Delete Element Button */}
