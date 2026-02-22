@@ -15,7 +15,16 @@ import {
   FileText,
   Save,
 } from 'lucide-react';
-import { MediaCategory, MediaItem } from '../utils/db';
+import {
+  MediaCategory,
+  MediaItem,
+  getAllMedia,
+  getAllBatches,
+  getAllFonts,
+  getFolders,
+  getTemplates,
+  getAllPresets,
+} from '../utils/db';
 
 const SidebarLeft: React.FC = () => {
   const {
@@ -73,6 +82,64 @@ const SidebarLeft: React.FC = () => {
 
   const toggleFolder = (folderId: string) => {
     setOpenFolders((prev) => ({ ...prev, [folderId]: !prev[folderId] }));
+  };
+
+  const [isMigrating, setIsMigrating] = React.useState(false);
+
+  const handleMigration = async () => {
+    if (
+      !confirm(
+        'Voulez-vous migrer vos données locales du Label Studio vers Supabase ? Cette action peut prendre quelques secondes.'
+      )
+    ) {
+      return;
+    }
+    setIsMigrating(true);
+    try {
+      // 1. Fetch all data from IndexedDB
+      const [media, batches, fonts, folders, templates, presets] = await Promise.all([
+        getAllMedia(),
+        getAllBatches(),
+        getAllFonts(),
+        getFolders(),
+        getTemplates(),
+        getAllPresets(),
+      ]);
+
+      // 2. Prepare payload
+      const payload = {
+        media,
+        batches,
+        fonts,
+        folders,
+        templates,
+        presets,
+      };
+
+      // 3. Send to API
+      const response = await fetch('/api/label-studio/migrate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert(
+          'Migration réussie ! Toutes vos images, modèles, et presets sont maintenant sauvegardés dans le cloud.'
+        );
+      } else {
+        alert('Erreur lors de la migration: ' + (data.error || 'Erreur inconnue'));
+      }
+    } catch (error) {
+      console.error('Migration error:', error);
+      alert("Une erreur inattendue s'est produite lors de la migration.");
+    } finally {
+      setIsMigrating(false);
+    }
   };
 
   const handleFileUpload = async (
@@ -645,6 +712,44 @@ const SidebarLeft: React.FC = () => {
 
       {activeTab === 'settings' && (
         <div className={styles.sidebarContent}>
+          <div className={styles.categorySection}>
+            <div className={styles.categoryHeader}>
+              <span className={styles.categoryTitle}>Cloud Sync</span>
+            </div>
+            <div className={styles.categoryContent}>
+              <p
+                style={{
+                  fontSize: '0.75rem',
+                  color: 'var(--muted-foreground)',
+                  marginBottom: '10px',
+                }}
+              >
+                Cliquez sur ce bouton pour envoyer tous vos modèles, images et presets locaux vers
+                le serveur.
+              </p>
+              <button
+                onClick={handleMigration}
+                disabled={isMigrating}
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  backgroundColor: isMigrating ? 'var(--muted)' : '#10b981',
+                  color: isMigrating ? 'var(--muted-foreground)' : 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: isMigrating ? 'not-allowed' : 'pointer',
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                }}
+              >
+                {isMigrating ? 'Migration en cours...' : '☁️ Migrer vers le Cloud'}
+              </button>
+            </div>
+          </div>
+
           <div className={styles.categorySection}>
             <div className={styles.categoryHeader}>
               <span className={styles.categoryTitle}>Paramètres d'impression</span>
