@@ -239,33 +239,33 @@
 
 /* Hide border during PDF export and fix hairlines */
 :global(.pdf-export-mode) .labelSlot {
-  /* Strategy: Physically enlarge the grid cell by 1px on all sides using border, 
-     then pull it back into the grid layout using -1px margin. 
-     This forces a 1px overlap without altering the content dimensions. */
-  border: 1px solid var(--label-bg-color) !important;
-  margin: -1px !important;
-  box-sizing: content-box !important;
-  background-color: var(--label-bg-color) !important;
+  border: none !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
   outline: none !important;
   width: 100% !important;
   height: 100% !important;
-  overflow: visible !important;
-  position: relative !important;
-  z-index: 10 !important; /* Force overlap layer */
+  overflow: hidden !important;
+  background-color: transparent !important; /* Let the grid background shine through any gaps */
 }
 
+/* 
+  NEW PARADIGM: Instead of trying to make the cells overlap perfectly (impossible with html-to-image scaling),
+  we color the backdrop of the entire grid with the label color. Thus, any sub-pixel gap will just reveal the identical 
+  color behind it, rendering the gap entirely invisible.
+*/
 :global(.pdf-export-mode) .gridSmall {
   grid-template-columns: 50% 50% !important;
   grid-template-rows: 25% 25% 25% 25% !important;
   gap: 0 !important;
-  background-color: transparent !important;
+  background-color: var(--grid-bg-fill) !important;
 }
 
 :global(.pdf-export-mode) .gridLarge {
   grid-template-columns: 50% 50% !important;
   grid-template-rows: 50% 50% !important;
   gap: 0 !important;
-  background-color: transparent !important;
+  background-color: var(--grid-bg-fill) !important;
 }
 
 .labelSlot.small {
