@@ -943,8 +943,9 @@ const RightSidebar: React.FC = () => {
               <input
                 type="number"
                 className={styles.input}
+                step="0.5"
                 value={selectedElement.fontSize}
-                onChange={(e) => handleChange('fontSize', parseInt(e.target.value) || 12)}
+                onChange={(e) => handleChange('fontSize', parseFloat(e.target.value) || 12)}
               />
             </div>
 
