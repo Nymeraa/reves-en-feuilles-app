@@ -239,13 +239,19 @@
 
 /* Hide border during PDF export and fix hairlines */
 :global(.pdf-export-mode) .labelSlot {
-  border: none !important;
-  margin: 0 !important;
-  box-shadow: none !important;
+  /* Strategy: Physically enlarge the grid cell by 1px on all sides using border, 
+     then pull it back into the grid layout using -1px margin. 
+     This forces a 1px overlap without altering the content dimensions. */
+  border: 1px solid var(--label-bg-color) !important;
+  margin: -1px !important;
+  box-sizing: content-box !important;
+  background-color: var(--label-bg-color) !important;
   outline: none !important;
   width: 100% !important;
   height: 100% !important;
   overflow: visible !important;
+  position: relative !important;
+  z-index: 10 !important; /* Force overlap layer */
 }
 
 :global(.pdf-export-mode) .gridSmall {
@@ -260,11 +266,6 @@
   grid-template-rows: 50% 50% !important;
   gap: 0 !important;
   background-color: transparent !important;
-}
-
-:global(.pdf-export-mode) .labelContent {
-  /* Box-shadow outward to bleed background color into fractional pixel gaps */
-  box-shadow: 0 0 0 1.5px var(--label-bg-color) !important;
 }
 
 .labelSlot.small {
