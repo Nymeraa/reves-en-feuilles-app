@@ -106,10 +106,10 @@ const SidebarLeft: React.FC = () => {
         getAllPresets(),
       ]);
 
-      // Vercel serverless has a 4.5MB limit. Media might be 38MB total.
-      // We will batch media 10 items at a time max.
-
-      const BATCH_SIZE = 5;
+      // Vercel serverless has a 4.5MB limit.
+      // Some templates or media are huge (base64 PNGs > 4MB).
+      // To be safe we send them 1 by 1.
+      const BATCH_SIZE = 1;
 
       const mediaChunks = [];
       for (let i = 0; i < media.length; i += BATCH_SIZE) {
