@@ -244,10 +244,24 @@
   margin: 0 !important;
   box-shadow: none !important;
   outline: none !important;
-  /* NEW STRATEGY: overlapping cells by ~0.3mm to fix rendering subpixel gaps precisely */
-  transform: scale(1.003) !important;
-  /* Ensure the subpixel bleeding reflects the label's own background color, not the first label's globally */
+  /* NEW STRATEGY: ::before pseudo element expanding 1px past grid lines */
+  overflow: visible !important;
+  background-color: transparent !important;
+}
+
+:global(.pdf-export-mode) .labelSlot::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  right: -1px;
+  bottom: -1px;
   background-color: var(--label-bg-color) !important;
+  z-index: 0;
+}
+
+:global(.pdf-export-mode) .labelWrapper {
+  z-index: 1;
 }
 
 :global(.pdf-export-mode) .gridSmall,
