@@ -249,6 +249,11 @@
   background-color: transparent !important; /* Let the grid background shine through any gaps */
 }
 
+:global(.pdf-export-mode) .labelContent {
+  /* This prevents the inline 1px #e5e7eb border from rendering during PDF export */
+  border: none !important;
+}
+
 /* 
   NEW PARADIGM: Instead of trying to make the cells overlap perfectly (impossible with html-to-image scaling),
   we color the backdrop of the entire grid with the label color. Thus, any sub-pixel gap will just reveal the identical 
