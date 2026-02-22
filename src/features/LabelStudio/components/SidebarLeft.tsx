@@ -107,69 +107,71 @@ const SidebarLeft: React.FC = () => {
       ]);
 
       // Vercel serverless has a 4.5MB limit.
-      // Some templates or media are huge (base64 PNGs > 4MB).
+      // Some templates, media, or fonts are huge (base64 PNGs > 4MB).
       // To be safe we send them 1 by 1.
       const BATCH_SIZE = 1;
 
-      const mediaChunks = [];
-      for (let i = 0; i < media.length; i += BATCH_SIZE) {
-        mediaChunks.push(media.slice(i, i + BATCH_SIZE));
-      }
+      const chunkArray = (arr: any[], size: number) => {
+        const chunks = [];
+        for (let i = 0; i < arr.length; i += size) {
+          chunks.push(arr.slice(i, i + size));
+        }
+        return chunks;
+      };
 
-      const batchesChunks = [];
-      for (let i = 0; i < batches.length; i += BATCH_SIZE) {
-        batchesChunks.push(batches.slice(i, i + BATCH_SIZE));
-      }
+      const mediaChunks = chunkArray(media, BATCH_SIZE);
+      const batchesChunks = chunkArray(batches, BATCH_SIZE);
+      const templatesChunks = chunkArray(templates, BATCH_SIZE);
+      const fontsChunks = chunkArray(fonts, BATCH_SIZE);
+      const foldersChunks = chunkArray(folders, BATCH_SIZE);
+      const presetsChunks = chunkArray(presets, BATCH_SIZE);
 
-      // Templates can also hold heavy designs.
-      const templatesChunks = [];
-      for (let i = 0; i < templates.length; i += BATCH_SIZE) {
-        templatesChunks.push(templates.slice(i, i + BATCH_SIZE));
-      }
+      const totalRequests =
+        mediaChunks.length +
+        batchesChunks.length +
+        templatesChunks.length +
+        fontsChunks.length +
+        foldersChunks.length +
+        presetsChunks.length;
 
-      const totalRequests = mediaChunks.length + batchesChunks.length + templatesChunks.length + 1; // +1 for fonts, folders, presets
       let currentRequest = 0;
 
-      const sendChunk = async (payload: any) => {
+      const sendChunk = async (payload: any, type: string) => {
+        currentRequest++;
+        const payloadString = JSON.stringify(payload);
+        const sizeKb = Math.round(payloadString.length / 1024);
+        console.log(
+          `[${currentRequest}/${totalRequests}] Sending ${type} chunk... Size: ${sizeKb} KB`
+        );
+
+        if (sizeKb > 4000) {
+          console.warn(
+            `ATTENTION: Ce chunk ${type} fait ${sizeKb} KB, il risque d'être rejeté par Vercel (> 4.5MB).`
+          );
+        }
+
         const response = await fetch('/api/label-studio/migrate', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(payload),
+          body: payloadString,
         });
 
         if (!response.ok) {
-          throw new Error(`Erreur serveur ${response.status}`);
+          throw new Error(
+            `Erreur serveur ${response.status} lors de l'envoi de ${type} (Taille: ${sizeKb} KB)`
+          );
         }
         return await response.json();
       };
 
-      // Send Media in chunks
-      for (const chunk of mediaChunks) {
-        currentRequest++;
-        console.log(`Sending media chunk... (${currentRequest}/${totalRequests})`);
-        await sendChunk({ media: chunk });
-      }
-
-      // Send Batches in chunks
-      for (const chunk of batchesChunks) {
-        currentRequest++;
-        console.log(`Sending batches chunk... (${currentRequest}/${totalRequests})`);
-        await sendChunk({ batches: chunk });
-      }
-
-      // Send Templates in chunks
-      for (const chunk of templatesChunks) {
-        currentRequest++;
-        console.log(`Sending templates chunk... (${currentRequest}/${totalRequests})`);
-        await sendChunk({ templates: chunk });
-      }
-
-      // Send the rest (metadata usually small)
-      currentRequest++;
-      console.log(`Sending remaining data... (${currentRequest}/${totalRequests})`);
-      await sendChunk({ fonts, folders, presets });
+      for (const chunk of mediaChunks) await sendChunk({ media: chunk }, 'media');
+      for (const chunk of batchesChunks) await sendChunk({ batches: chunk }, 'batches');
+      for (const chunk of templatesChunks) await sendChunk({ templates: chunk }, 'templates');
+      for (const chunk of fontsChunks) await sendChunk({ fonts: chunk }, 'fonts');
+      for (const chunk of foldersChunks) await sendChunk({ folders: chunk }, 'folders');
+      for (const chunk of presetsChunks) await sendChunk({ presets: chunk }, 'presets');
 
       alert(
         'Migration réussie ! Toutes vos images, modèles, et presets sont maintenant sauvegardés dans le cloud.'
