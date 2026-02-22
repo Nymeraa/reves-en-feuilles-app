@@ -106,37 +106,77 @@ const SidebarLeft: React.FC = () => {
         getAllPresets(),
       ]);
 
-      // 2. Prepare payload
-      const payload = {
-        media,
-        batches,
-        fonts,
-        folders,
-        templates,
-        presets,
+      // Vercel serverless has a 4.5MB limit. Media might be 38MB total.
+      // We will batch media 10 items at a time max.
+
+      const BATCH_SIZE = 5;
+
+      const mediaChunks = [];
+      for (let i = 0; i < media.length; i += BATCH_SIZE) {
+        mediaChunks.push(media.slice(i, i + BATCH_SIZE));
+      }
+
+      const batchesChunks = [];
+      for (let i = 0; i < batches.length; i += BATCH_SIZE) {
+        batchesChunks.push(batches.slice(i, i + BATCH_SIZE));
+      }
+
+      // Templates can also hold heavy designs.
+      const templatesChunks = [];
+      for (let i = 0; i < templates.length; i += BATCH_SIZE) {
+        templatesChunks.push(templates.slice(i, i + BATCH_SIZE));
+      }
+
+      const totalRequests = mediaChunks.length + batchesChunks.length + templatesChunks.length + 1; // +1 for fonts, folders, presets
+      let currentRequest = 0;
+
+      const sendChunk = async (payload: any) => {
+        const response = await fetch('/api/label-studio/migrate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Erreur serveur ${response.status}`);
+        }
+        return await response.json();
       };
 
-      // 3. Send to API
-      const response = await fetch('/api/label-studio/migrate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        alert(
-          'Migration réussie ! Toutes vos images, modèles, et presets sont maintenant sauvegardés dans le cloud.'
-        );
-      } else {
-        alert('Erreur lors de la migration: ' + (data.error || 'Erreur inconnue'));
+      // Send Media in chunks
+      for (const chunk of mediaChunks) {
+        currentRequest++;
+        console.log(`Sending media chunk... (${currentRequest}/${totalRequests})`);
+        await sendChunk({ media: chunk });
       }
-    } catch (error) {
+
+      // Send Batches in chunks
+      for (const chunk of batchesChunks) {
+        currentRequest++;
+        console.log(`Sending batches chunk... (${currentRequest}/${totalRequests})`);
+        await sendChunk({ batches: chunk });
+      }
+
+      // Send Templates in chunks
+      for (const chunk of templatesChunks) {
+        currentRequest++;
+        console.log(`Sending templates chunk... (${currentRequest}/${totalRequests})`);
+        await sendChunk({ templates: chunk });
+      }
+
+      // Send the rest (metadata usually small)
+      currentRequest++;
+      console.log(`Sending remaining data... (${currentRequest}/${totalRequests})`);
+      await sendChunk({ fonts, folders, presets });
+
+      alert(
+        'Migration réussie ! Toutes vos images, modèles, et presets sont maintenant sauvegardés dans le cloud.'
+      );
+    } catch (error: any) {
       console.error('Migration error:', error);
-      alert("Une erreur inattendue s'est produite lors de la migration.");
+      alert("Une erreur inattendue s'est produite lors de la migration: " + error.message);
     } finally {
       setIsMigrating(false);
     }
