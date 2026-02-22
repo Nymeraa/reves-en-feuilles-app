@@ -78,7 +78,63 @@ export const initDB = (): Promise<IDBDatabase> => {
   });
 };
 
+// --- HYBRID CLOUD API HELPERS ---
+const API_URL = '/api/label-studio/data';
+
+const fetchCloudData = async (type: string): Promise<any[]> => {
+  try {
+    const res = await fetch(`${API_URL}?type=${type}`);
+    if (res.ok) return await res.json();
+  } catch (err) {
+    console.error(`Failed to fetch ${type} from cloud:`, err);
+  }
+  return [];
+};
+
+const saveToCloud = async (type: string, data: any): Promise<boolean> => {
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type, data }),
+    });
+    return res.ok;
+  } catch (err) {
+    console.error(`Failed to save ${type} to cloud:`, err);
+    return false;
+  }
+};
+
+const deleteFromCloud = async (type: string, id: string): Promise<boolean> => {
+  try {
+    const res = await fetch(`${API_URL}?type=${type}&id=${id}`, {
+      method: 'DELETE',
+    });
+    return res.ok;
+  } catch (err) {
+    console.error(`Failed to delete ${type} from cloud:`, err);
+    return false;
+  }
+};
+
+// Helper: merge local and cloud arrays (deduplicate by id, prioritize cloud or newest timestamp)
+const mergeHybridData = (localData: any[], cloudData: any[]): any[] => {
+  const map = new Map<string, any>();
+
+  // Add local first
+  localData.forEach((item) => map.set(item.id, item));
+
+  // Overwrite with cloud (cloud is source of truth if exists)
+  cloudData.forEach((item) => map.set(item.id, item));
+
+  return Array.from(map.values());
+};
+
 export const saveMedia = async (item: MediaItem): Promise<void> => {
+  // 1. Save to Cloud
+  await saveToCloud('media', item);
+
+  // 2. Save locally (always as a fallback and offline cache)
   const db = await initDB();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction([STORE_NAME], 'readwrite');
@@ -91,6 +147,10 @@ export const saveMedia = async (item: MediaItem): Promise<void> => {
 };
 
 export const deleteMedia = async (id: string): Promise<void> => {
+  // 1. Delete from Cloud
+  await deleteFromCloud('media', id);
+
+  // 2. Delete locally
   const db = await initDB();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction([STORE_NAME], 'readwrite');
@@ -111,18 +171,23 @@ export const getMediaByCategoryAndFormat = async (
 };
 
 export const getAllMedia = async (): Promise<MediaItem[]> => {
+  // 1. Fetch from Cloud
+  const cloudMedia = await fetchCloudData('media');
+
+  // 2. Fetch locally
   const db = await initDB();
-  return new Promise((resolve, reject) => {
+  const localMedia = await new Promise<MediaItem[]>((resolve) => {
     const transaction = db.transaction([STORE_NAME], 'readonly');
     const store = transaction.objectStore(STORE_NAME);
     const request = store.getAll();
-
-    request.onsuccess = () => {
-      const results = (request.result as MediaItem[]).sort((a, b) => b.timestamp - a.timestamp);
-      resolve(results);
-    };
-    request.onerror = () => reject('Error fetching all media');
+    request.onsuccess = () => resolve(request.result as MediaItem[]);
+    request.onerror = () => resolve([]); // fallback empty array if local err
   });
+
+  // 3. Merge & Sort
+  const merged = mergeHybridData(localMedia, cloudMedia);
+
+  return merged.sort((a, b) => b.timestamp - a.timestamp);
 };
 
 // Batch persistence
@@ -140,6 +205,8 @@ export interface BatchData {
 const BATCH_STORE = 'batches';
 
 export const saveBatch = async (batch: BatchData): Promise<void> => {
+  await saveToCloud('batches', batch);
+
   const db = await initDB();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction([BATCH_STORE], 'readwrite');
@@ -152,6 +219,8 @@ export const saveBatch = async (batch: BatchData): Promise<void> => {
 };
 
 export const deleteBatch = async (id: string): Promise<void> => {
+  await deleteFromCloud('batches', id);
+
   const db = await initDB();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction([BATCH_STORE], 'readwrite');
@@ -164,18 +233,20 @@ export const deleteBatch = async (id: string): Promise<void> => {
 };
 
 export const getAllBatches = async (): Promise<BatchData[]> => {
+  const cloudBatches = await fetchCloudData('batches');
+
   const db = await initDB();
-  return new Promise((resolve, reject) => {
+  const localBatches = await new Promise<BatchData[]>((resolve) => {
     const transaction = db.transaction([BATCH_STORE], 'readonly');
     const store = transaction.objectStore(BATCH_STORE);
     const request = store.getAll();
 
-    request.onsuccess = () => {
-      const results = (request.result as BatchData[]).sort((a, b) => b.timestamp - a.timestamp);
-      resolve(results);
-    };
-    request.onerror = () => reject('Error fetching batches');
+    request.onsuccess = () => resolve(request.result as BatchData[]);
+    request.onerror = () => resolve([]);
   });
+
+  const merged = mergeHybridData(localBatches, cloudBatches);
+  return merged.sort((a, b) => b.timestamp - a.timestamp);
 };
 
 // Font persistence
@@ -190,6 +261,8 @@ export interface FontItem {
 const FONT_STORE = 'fonts';
 
 export const saveFont = async (font: FontItem): Promise<void> => {
+  await saveToCloud('fonts', font);
+
   const db = await initDB();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction([FONT_STORE], 'readwrite');
@@ -202,6 +275,8 @@ export const saveFont = async (font: FontItem): Promise<void> => {
 };
 
 export const deleteFont = async (id: string): Promise<void> => {
+  await deleteFromCloud('fonts', id);
+
   const db = await initDB();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction([FONT_STORE], 'readwrite');
@@ -214,17 +289,19 @@ export const deleteFont = async (id: string): Promise<void> => {
 };
 
 export const getAllFonts = async (): Promise<FontItem[]> => {
+  const cloudFonts = await fetchCloudData('fonts');
+
   const db = await initDB();
-  return new Promise((resolve, reject) => {
+  const localFonts = await new Promise<FontItem[]>((resolve) => {
     const transaction = db.transaction([FONT_STORE], 'readonly');
     const store = transaction.objectStore(FONT_STORE);
     const request = store.getAll();
 
-    request.onsuccess = () => {
-      resolve(request.result as FontItem[]);
-    };
-    request.onerror = () => reject('Error fetching fonts');
+    request.onsuccess = () => resolve(request.result as FontItem[]);
+    request.onerror = () => resolve([]);
   });
+
+  return mergeHybridData(localFonts, cloudFonts);
 };
 
 // --- LIBRARY HELPERS (Folders & Templates) ---
@@ -251,13 +328,16 @@ export const createFolder = async (
   name: string,
   parentId: string | null = null
 ): Promise<LibraryFolder> => {
-  const db = await initDB();
   const folder: LibraryFolder = {
     id: `folder_${typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Date.now() + '_' + Math.random().toString(36).substr(2, 9)}`,
     name,
     parentId,
     createdAt: Date.now(),
   };
+
+  await saveToCloud('folders', folder);
+
+  const db = await initDB();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(['folders'], 'readwrite');
     const store = transaction.objectStore('folders');
@@ -268,17 +348,23 @@ export const createFolder = async (
 };
 
 export const getFolders = async (): Promise<LibraryFolder[]> => {
+  const cloudFolders = await fetchCloudData('folders');
+
   const db = await initDB();
-  return new Promise((resolve, reject) => {
+  const localFolders = await new Promise<LibraryFolder[]>((resolve) => {
     const transaction = db.transaction(['folders'], 'readonly');
     const store = transaction.objectStore('folders');
     const request = store.getAll();
     request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject('Error getting folders');
+    request.onerror = () => resolve([]);
   });
+
+  return mergeHybridData(localFolders, cloudFolders);
 };
 
 export const deleteFolder = async (id: string): Promise<void> => {
+  await deleteFromCloud('folders', id);
+
   const db = await initDB();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(['folders', 'templates'], 'readwrite');
@@ -296,6 +382,8 @@ export const deleteFolder = async (id: string): Promise<void> => {
       const keys = request.result;
       keys.forEach((key) => {
         templateStore.delete(key);
+        // Fire and forget delete on cloud for templates
+        deleteFromCloud('templates', key.toString());
       });
     };
 
@@ -305,6 +393,8 @@ export const deleteFolder = async (id: string): Promise<void> => {
 };
 
 export const saveTemplate = async (template: LibraryTemplate): Promise<void> => {
+  await saveToCloud('templates', template);
+
   const db = await initDB();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(['templates'], 'readwrite');
@@ -316,17 +406,23 @@ export const saveTemplate = async (template: LibraryTemplate): Promise<void> => 
 };
 
 export const getTemplates = async (): Promise<LibraryTemplate[]> => {
+  const cloudTemplates = await fetchCloudData('templates');
+
   const db = await initDB();
-  return new Promise((resolve, reject) => {
+  const localTemplates = await new Promise<LibraryTemplate[]>((resolve) => {
     const transaction = db.transaction(['templates'], 'readonly');
     const store = transaction.objectStore('templates');
     const request = store.getAll();
     request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject('Error getting templates');
+    request.onerror = () => resolve([]);
   });
+
+  return mergeHybridData(localTemplates, cloudTemplates);
 };
 
 export const deleteTemplate = async (id: string): Promise<void> => {
+  await deleteFromCloud('templates', id);
+
   const db = await initDB();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(['templates'], 'readwrite');
@@ -389,6 +485,8 @@ export interface ElementPreset {
 const PRESET_STORE = 'element_presets';
 
 export const savePresetToDB = async (preset: ElementPreset): Promise<void> => {
+  await saveToCloud('presets', preset);
+
   const db = await initDB();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction([PRESET_STORE], 'readwrite');
@@ -400,6 +498,8 @@ export const savePresetToDB = async (preset: ElementPreset): Promise<void> => {
 };
 
 export const deletePresetFromDB = async (id: string): Promise<void> => {
+  await deleteFromCloud('presets', id);
+
   const db = await initDB();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction([PRESET_STORE], 'readwrite');
