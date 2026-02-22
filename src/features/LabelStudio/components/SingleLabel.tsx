@@ -30,17 +30,17 @@ const SingleLabel: React.FC<SingleLabelProps> = ({ labelId, design, format }) =>
   return (
     <div
       className={`${styles.labelSlot} ${format === 'small' ? styles.small : styles.large}`}
-      style={{ '--label-bg-color': design.backgroundColor || '#ffffff' } as React.CSSProperties}
+      style={{ '--label-bg-color': design.backgroundColor || 'var(--card)' } as React.CSSProperties}
     >
       <div className={styles.labelWrapper}>
         <div
           className={styles.labelContent}
           style={
             {
-              backgroundColor: design.backgroundColor ? design.backgroundColor : '#ffffff',
+              backgroundColor: design.backgroundColor ? design.backgroundColor : 'var(--card)',
               backgroundImage: design.backgroundImage ? `url(${design.backgroundImage})` : 'none',
               // FIX: Variable pour le CSS bleed lors de l'export PDF
-              '--label-bg-color': design.backgroundColor || '#ffffff',
+              '--label-bg-color': design.backgroundColor || 'var(--card)',
               cursor: 'pointer',
               border: isLabelSelected ? '2px solid #10b981' : '1px solid #e5e7eb',
               boxSizing: 'border-box',

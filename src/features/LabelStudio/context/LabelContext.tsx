@@ -616,7 +616,7 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
     const batchId = Math.random().toString(36).substr(2, 9);
 
     const masterDesign: LabelDesign = {
-      backgroundColor: '#ffffff',
+      backgroundColor: 'var(--card)',
       triman: { enabled: false, x: 5, y: 5, format: 'standard' },
       elements: [
         {
@@ -794,7 +794,7 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
             newBatch.format
           ), // Pré-remplissage automatique
         },
-        backgroundColor: '#ffffff', // Default white background
+        backgroundColor: 'var(--card)', // Default white background
       });
     }
 
@@ -1077,7 +1077,7 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
               ? {
                   ...label,
                   design: { ...label.design, elements: [] },
-                  backgroundColor: '#ffffff', // Reset to white
+                  backgroundColor: 'var(--card)', // Reset to white
                   backgroundImage: undefined, // Remove any background image
                 }
               : label

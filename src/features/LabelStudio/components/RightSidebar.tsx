@@ -47,12 +47,12 @@ const RightSidebar: React.FC = () => {
         style={{
           width: '250px',
           borderLeft: '1px solid #e5e7eb',
-          backgroundColor: 'white',
+          backgroundColor: 'var(--card)',
           padding: '1rem',
         }}
       >
         <div
-          style={{ color: '#9ca3af', fontSize: '0.875rem', textAlign: 'center', marginTop: '2rem' }}
+          style={{ color: 'var(--muted-foreground)', fontSize: '0.875rem', textAlign: 'center', marginTop: '2rem' }}
         >
           Sélectionnez une étiquette
         </div>
@@ -67,7 +67,7 @@ const RightSidebar: React.FC = () => {
         style={{
           width: '250px',
           borderLeft: '1px solid #e5e7eb',
-          backgroundColor: 'white',
+          backgroundColor: 'var(--card)',
           padding: '1rem',
           display: 'flex',
           flexDirection: 'column',
@@ -80,7 +80,7 @@ const RightSidebar: React.FC = () => {
             width: '100%',
             padding: '0.75rem 1rem',
             backgroundColor: '#10b981',
-            color: 'white',
+            color: 'var(--card)',
             border: 'none',
             borderRadius: '0.375rem',
             fontSize: '0.875rem',
@@ -116,7 +116,7 @@ const RightSidebar: React.FC = () => {
             width: '100%',
             padding: '0.75rem 1rem',
             backgroundColor: '#3b82f6',
-            color: 'white',
+            color: 'var(--card)',
             border: 'none',
             borderRadius: '0.375rem',
             fontSize: '0.875rem',
@@ -142,7 +142,7 @@ const RightSidebar: React.FC = () => {
               updateLabel(selectedLabelId, {
                 design: {
                   elements: [],
-                  backgroundColor: '#ffffff',
+                  backgroundColor: 'var(--card)',
                   backgroundImage: null,
                   triman: {
                     enabled: false,
@@ -151,7 +151,7 @@ const RightSidebar: React.FC = () => {
                     format: 'standard',
                   },
                 },
-                backgroundColor: '#ffffff',
+                backgroundColor: 'var(--card)',
                 backgroundImage: null,
               });
             }
@@ -160,7 +160,7 @@ const RightSidebar: React.FC = () => {
             width: '100%',
             padding: '0.75rem 1rem',
             backgroundColor: '#ef4444',
-            color: 'white',
+            color: 'var(--card)',
             border: 'none',
             borderRadius: '0.375rem',
             fontSize: '0.875rem',
@@ -184,7 +184,7 @@ const RightSidebar: React.FC = () => {
             style={{
               fontSize: '0.875rem',
               fontWeight: '600',
-              color: '#374151',
+              color: 'var(--foreground)',
               display: 'block',
               marginBottom: '0.5rem',
             }}
@@ -203,7 +203,7 @@ const RightSidebar: React.FC = () => {
               '#f08474',
               '#e8be6a',
               '#fceebe',
-              '#ffffff',
+              'var(--card)',
             ].map((color) => (
               <button
                 key={color}
@@ -261,7 +261,7 @@ const RightSidebar: React.FC = () => {
               >
                 <input
                   type="color"
-                  value={selectedLabel?.design?.backgroundColor || '#ffffff'}
+                  value={selectedLabel?.design?.backgroundColor || 'var(--card)'}
                   onChange={(e) => {
                     if (selectedLabel) {
                       updateLabel(selectedLabelId, {
@@ -287,7 +287,7 @@ const RightSidebar: React.FC = () => {
               {/* 2. Le Champ Texte Hexadécimal */}
               <input
                 type="text"
-                value={selectedLabel?.design?.backgroundColor || '#ffffff'}
+                value={selectedLabel?.design?.backgroundColor || 'var(--card)'}
                 onChange={(e) => {
                   if (selectedLabel) {
                     updateLabel(selectedLabelId, {
@@ -296,7 +296,7 @@ const RightSidebar: React.FC = () => {
                     });
                   }
                 }}
-                placeholder="#FFFFFF"
+                placeholder="var(--card)"
                 style={{
                   flex: 1,
                   padding: '8px 12px',
@@ -313,7 +313,7 @@ const RightSidebar: React.FC = () => {
 
         <div
           style={{
-            color: '#9ca3af',
+            color: 'var(--muted-foreground)',
             fontSize: '0.875rem',
             textAlign: 'center',
             marginTop: '1rem',
@@ -347,7 +347,7 @@ const RightSidebar: React.FC = () => {
             width: '100%',
             padding: '0.75rem 1rem',
             backgroundColor: '#8b5cf6',
-            color: 'white',
+            color: 'var(--card)',
             border: 'none',
             borderRadius: '0.375rem',
             fontSize: '0.875rem',
@@ -405,7 +405,7 @@ const RightSidebar: React.FC = () => {
       style={{
         width: '250px',
         borderLeft: '1px solid #e5e7eb',
-        backgroundColor: 'white',
+        backgroundColor: 'var(--card)',
         display: 'flex',
         flexDirection: 'column',
       }}
@@ -417,7 +417,7 @@ const RightSidebar: React.FC = () => {
           margin: '1rem',
           padding: '0.75rem 1rem',
           backgroundColor: '#3b82f6',
-          color: 'white',
+          color: 'var(--card)',
           border: 'none',
           borderRadius: '0.375rem',
           fontSize: '0.875rem',
@@ -543,7 +543,7 @@ const RightSidebar: React.FC = () => {
               }}
               style={{
                 backgroundColor: '#10b981',
-                color: 'white',
+                color: 'var(--card)',
                 border: 'none',
                 borderRadius: '0.25rem',
                 padding: '0 0.5rem',
@@ -591,7 +591,7 @@ const RightSidebar: React.FC = () => {
                     border: '1px solid #d1d5db',
                     borderRadius: '0.375rem',
                     overflow: 'hidden',
-                    backgroundColor: 'white',
+                    backgroundColor: 'var(--card)',
                   }}
                 >
                   {/* Folder Header */}
@@ -599,14 +599,14 @@ const RightSidebar: React.FC = () => {
                     onClick={() => setActiveFolder(isExpanded ? null : folderObj.id)}
                     style={{
                       padding: '0.5rem',
-                      backgroundColor: '#f9fafb',
+                      backgroundColor: 'var(--muted)',
                       cursor: 'pointer',
                       display: 'flex',
                       justifyContent: 'space-between',
                       alignItems: 'center',
                       fontSize: '0.875rem',
                       fontWeight: '600',
-                      color: '#374151',
+                      color: 'var(--foreground)',
                       borderBottom: isExpanded ? '1px solid #e5e7eb' : 'none',
                     }}
                   >
@@ -614,9 +614,9 @@ const RightSidebar: React.FC = () => {
                     <span
                       style={{
                         fontSize: '0.75rem',
-                        color: '#6b7280',
+                        color: 'var(--muted-foreground)',
                         padding: '0.1rem 0.4rem',
-                        backgroundColor: '#e5e7eb',
+                        backgroundColor: 'var(--border)',
                         borderRadius: '1rem',
                       }}
                     >
@@ -633,14 +633,14 @@ const RightSidebar: React.FC = () => {
                         gap: '0.25rem',
                         flexWrap: 'wrap',
                         minHeight: '3rem',
-                        backgroundColor: '#ffffff',
+                        backgroundColor: 'var(--card)',
                       }}
                     >
                       {folderPresets.length === 0 ? (
                         <div
                           style={{
                             fontSize: '0.75rem',
-                            color: '#9ca3af',
+                            color: 'var(--muted-foreground)',
                             width: '100%',
                             textAlign: 'center',
                             padding: '0.5rem 0',
@@ -658,7 +658,7 @@ const RightSidebar: React.FC = () => {
                             style={{
                               display: 'flex',
                               alignItems: 'center',
-                              backgroundColor: '#f3f4f6',
+                              backgroundColor: 'var(--secondary)',
                               border: '1px solid #d1d5db',
                               borderRadius: '0.25rem',
                               overflow: 'hidden',
@@ -723,7 +723,7 @@ const RightSidebar: React.FC = () => {
           }}
           style={{
             backgroundColor: '#ef4444',
-            color: 'white',
+            color: 'var(--card)',
             border: 'none',
             padding: '10px',
             width: '100%',
@@ -776,7 +776,7 @@ const RightSidebar: React.FC = () => {
                 style={{
                   marginTop: '0.5rem',
                   fontSize: '0.75rem',
-                  color: '#6b7280',
+                  color: 'var(--muted-foreground)',
                   fontStyle: 'italic',
                 }}
               >
@@ -797,12 +797,12 @@ const RightSidebar: React.FC = () => {
                   style={{
                     flex: 1,
                     padding: '0.4rem',
-                    backgroundColor: selectedElement.fontWeight === 'bold' ? '#dbeafe' : 'white',
+                    backgroundColor: selectedElement.fontWeight === 'bold' ? '#dbeafe' : 'var(--card)',
                     border:
                       selectedElement.fontWeight === 'bold'
                         ? '1px solid #3b82f6'
                         : '1px solid #d1d5db',
-                    color: selectedElement.fontWeight === 'bold' ? '#1e40af' : '#374151',
+                    color: selectedElement.fontWeight === 'bold' ? '#1e40af' : 'var(--foreground)',
                     borderRadius: '0.25rem',
                     cursor: 'pointer',
                     fontWeight: 'bold',
@@ -821,12 +821,12 @@ const RightSidebar: React.FC = () => {
                   style={{
                     flex: 1,
                     padding: '0.4rem',
-                    backgroundColor: selectedElement.fontStyle === 'italic' ? '#dbeafe' : 'white',
+                    backgroundColor: selectedElement.fontStyle === 'italic' ? '#dbeafe' : 'var(--card)',
                     border:
                       selectedElement.fontStyle === 'italic'
                         ? '1px solid #3b82f6'
                         : '1px solid #d1d5db',
-                    color: selectedElement.fontStyle === 'italic' ? '#1e40af' : '#374151',
+                    color: selectedElement.fontStyle === 'italic' ? '#1e40af' : 'var(--foreground)',
                     borderRadius: '0.25rem',
                     cursor: 'pointer',
                     fontStyle: 'italic',
@@ -846,12 +846,12 @@ const RightSidebar: React.FC = () => {
                     flex: 1,
                     padding: '0.4rem',
                     backgroundColor:
-                      selectedElement.textDecoration === 'underline' ? '#dbeafe' : 'white',
+                      selectedElement.textDecoration === 'underline' ? '#dbeafe' : 'var(--card)',
                     border:
                       selectedElement.textDecoration === 'underline'
                         ? '1px solid #3b82f6'
                         : '1px solid #d1d5db',
-                    color: selectedElement.textDecoration === 'underline' ? '#1e40af' : '#374151',
+                    color: selectedElement.textDecoration === 'underline' ? '#1e40af' : 'var(--foreground)',
                     borderRadius: '0.25rem',
                     cursor: 'pointer',
                     textDecoration: 'underline',
@@ -874,7 +874,7 @@ const RightSidebar: React.FC = () => {
                     backgroundColor:
                       selectedElement.textAlign === 'left' || !selectedElement.textAlign
                         ? '#dbeafe'
-                        : 'white',
+                        : 'var(--card)',
                     border:
                       selectedElement.textAlign === 'left' || !selectedElement.textAlign
                         ? '1px solid #3b82f6'
@@ -882,7 +882,7 @@ const RightSidebar: React.FC = () => {
                     color:
                       selectedElement.textAlign === 'left' || !selectedElement.textAlign
                         ? '#1e40af'
-                        : '#374151',
+                        : 'var(--foreground)',
                     borderRadius: '0.25rem',
                     cursor: 'pointer',
                     display: 'flex',
@@ -898,12 +898,12 @@ const RightSidebar: React.FC = () => {
                   style={{
                     flex: 1,
                     padding: '0.4rem',
-                    backgroundColor: selectedElement.textAlign === 'center' ? '#dbeafe' : 'white',
+                    backgroundColor: selectedElement.textAlign === 'center' ? '#dbeafe' : 'var(--card)',
                     border:
                       selectedElement.textAlign === 'center'
                         ? '1px solid #3b82f6'
                         : '1px solid #d1d5db',
-                    color: selectedElement.textAlign === 'center' ? '#1e40af' : '#374151',
+                    color: selectedElement.textAlign === 'center' ? '#1e40af' : 'var(--foreground)',
                     borderRadius: '0.25rem',
                     cursor: 'pointer',
                     display: 'flex',
@@ -919,12 +919,12 @@ const RightSidebar: React.FC = () => {
                   style={{
                     flex: 1,
                     padding: '0.4rem',
-                    backgroundColor: selectedElement.textAlign === 'right' ? '#dbeafe' : 'white',
+                    backgroundColor: selectedElement.textAlign === 'right' ? '#dbeafe' : 'var(--card)',
                     border:
                       selectedElement.textAlign === 'right'
                         ? '1px solid #3b82f6'
                         : '1px solid #d1d5db',
-                    color: selectedElement.textAlign === 'right' ? '#1e40af' : '#374151',
+                    color: selectedElement.textAlign === 'right' ? '#1e40af' : 'var(--foreground)',
                     borderRadius: '0.25rem',
                     cursor: 'pointer',
                     display: 'flex',
@@ -958,7 +958,7 @@ const RightSidebar: React.FC = () => {
                   onChange={(e) => handleChange('color', e.target.value)}
                   style={{ width: '40px', height: '40px', padding: 0, border: 'none' }}
                 />
-                <span style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+                <span style={{ fontSize: '0.875rem', color: 'var(--muted-foreground)' }}>
                   {selectedElement.color}
                 </span>
               </div>
@@ -971,7 +971,7 @@ const RightSidebar: React.FC = () => {
                   Couleurs rapides
                 </span>
                 <div style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
-                  {['#000000', '#FFFFFF', '#6a3278', '#E8D5C4', '#2F4F4F', '#8B4513'].map(
+                  {['#000000', 'var(--card)', '#6a3278', '#E8D5C4', '#2F4F4F', '#8B4513'].map(
                     (color) => (
                       <button
                         key={color}

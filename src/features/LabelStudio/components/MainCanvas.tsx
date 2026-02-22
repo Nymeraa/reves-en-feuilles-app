@@ -225,7 +225,7 @@ const MainCanvas: React.FC = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: '#ccc',
+            color: 'var(--muted-foreground)',
           }}
         >
           Aucun lot sélectionné
@@ -292,7 +292,7 @@ const MainCanvas: React.FC = () => {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <span style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+          <span style={{ fontSize: '0.875rem', color: 'var(--muted-foreground)' }}>
             Zoom: {Math.round(zoomLevel * 100)}%
           </span>
           <button

@@ -175,7 +175,7 @@ const SidebarLeft: React.FC = () => {
                     borderRadius: '4px',
                     overflow: 'hidden',
                     cursor: 'pointer',
-                    backgroundColor: '#fff',
+                    backgroundColor: 'var(--card)',
                   }}
                 >
                   <img
@@ -214,7 +214,7 @@ const SidebarLeft: React.FC = () => {
                   alignItems: 'center',
                   justifyContent: 'center',
                   cursor: 'pointer',
-                  backgroundColor: '#f9fafb',
+                  backgroundColor: 'var(--muted)',
                 }}
                 onClick={() => {
                   setActiveCategory(category);
@@ -222,7 +222,7 @@ const SidebarLeft: React.FC = () => {
                 }}
                 title={`Ajouter une image (${activeBatchFormat})`}
               >
-                <Plus size={20} color="#9ca3af" />
+                <Plus size={20} color="var(--muted-foreground)" />
               </div>
             </div>
           </div>
@@ -287,8 +287,11 @@ const SidebarLeft: React.FC = () => {
                     key={batch.id}
                     className={styles.batchItem}
                     style={{
-                      borderColor: activeBatchId === batch.id ? '#f59e0b' : '#e5e7eb',
-                      backgroundColor: activeBatchId === batch.id ? '#fffbeb' : '#fff',
+                      borderColor: activeBatchId === batch.id ? '#f59e0b' : 'var(--border)',
+                      backgroundColor:
+                        activeBatchId === batch.id
+                          ? 'color-mix(in srgb, var(--accent) 50%, transparent)'
+                          : 'var(--card)',
                       position: 'relative',
                     }}
                     onClick={() => setActiveBatchId(batch.id)}
@@ -383,7 +386,7 @@ const SidebarLeft: React.FC = () => {
                                 justifyContent: 'center',
                                 border: '1px solid #eee',
                                 borderRadius: '4px',
-                                backgroundColor: '#f9f9f9',
+                                backgroundColor: 'var(--muted)',
                                 overflow: 'hidden',
                                 cursor: 'pointer',
                               }}
@@ -427,7 +430,12 @@ const SidebarLeft: React.FC = () => {
                                 <div
                                   style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}
                                 >
-                                  <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                                  <span
+                                    style={{
+                                      fontSize: '0.75rem',
+                                      color: 'var(--muted-foreground)',
+                                    }}
+                                  >
                                     Pos:
                                   </span>
                                   <input
@@ -464,7 +472,14 @@ const SidebarLeft: React.FC = () => {
                                       })
                                     }
                                   />
-                                  <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>mm</span>
+                                  <span
+                                    style={{
+                                      fontSize: '0.75rem',
+                                      color: 'var(--muted-foreground)',
+                                    }}
+                                  >
+                                    mm
+                                  </span>
                                 </div>
                               )}
                             </div>
@@ -508,7 +523,7 @@ const SidebarLeft: React.FC = () => {
             style={{
               padding: '10px',
               borderBottom: '1px solid #eee',
-              background: '#fff',
+              background: 'var(--card)',
               flexShrink: 0,
             }}
           >
@@ -561,7 +576,7 @@ const SidebarLeft: React.FC = () => {
                 }}
                 style={{
                   background: '#f59e0b',
-                  color: 'white',
+                  color: 'var(--card)',
                   border: 'none',
                   borderRadius: '4px',
                   padding: '0 10px',
@@ -601,7 +616,7 @@ const SidebarLeft: React.FC = () => {
               style={{
                 width: '100%',
                 padding: '8px',
-                background: '#f3f4f6',
+                background: 'var(--secondary)',
                 border: '1px dashed #ccc',
                 borderRadius: '6px',
                 cursor: 'pointer',
@@ -643,7 +658,7 @@ const SidebarLeft: React.FC = () => {
                   marginBottom: '1rem',
                 }}
               >
-                <span style={{ fontSize: '0.875rem', color: '#374151' }}>
+                <span style={{ fontSize: '0.875rem', color: 'var(--foreground)' }}>
                   Afficher traits de coupe
                 </span>
                 <input
@@ -663,8 +678,12 @@ const SidebarLeft: React.FC = () => {
                       marginBottom: '0.25rem',
                     }}
                   >
-                    <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>Distance (mm)</span>
-                    <span style={{ fontSize: '0.75rem', color: '#374151', fontWeight: 500 }}>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--muted-foreground)' }}>
+                      Distance (mm)
+                    </span>
+                    <span
+                      style={{ fontSize: '0.75rem', color: 'var(--foreground)', fontWeight: 500 }}
+                    >
                       {cropMarkOffset}mm
                     </span>
                   </div>
@@ -677,7 +696,13 @@ const SidebarLeft: React.FC = () => {
                     onChange={(e) => setCropMarkOffset(parseFloat(e.target.value))}
                     style={{ width: '100%', cursor: 'pointer' }}
                   />
-                  <div style={{ fontSize: '0.7rem', color: '#9ca3af', marginTop: '0.25rem' }}>
+                  <div
+                    style={{
+                      fontSize: '0.7rem',
+                      color: 'var(--muted-foreground)',
+                      marginTop: '0.25rem',
+                    }}
+                  >
                     Ajuste la position des traits par rapport aux coins des étiquettes.
                   </div>
                 </div>
@@ -711,7 +736,7 @@ const SidebarLeft: React.FC = () => {
                   style={{
                     width: '100%',
                     padding: '0.5rem',
-                    backgroundColor: '#e5e7eb',
+                    backgroundColor: 'var(--border)',
                     border: '1px solid #d1d5db',
                     borderRadius: '0.375rem',
                     cursor: 'pointer',
@@ -720,7 +745,7 @@ const SidebarLeft: React.FC = () => {
                     justifyContent: 'center',
                     gap: '0.5rem',
                     fontSize: '0.875rem',
-                    color: '#374151',
+                    color: 'var(--foreground)',
                   }}
                 >
                   <Upload size={14} />
@@ -739,7 +764,7 @@ const SidebarLeft: React.FC = () => {
                         alignItems: 'center',
                         justifyContent: 'space-between',
                         padding: '0.5rem',
-                        backgroundColor: 'white',
+                        backgroundColor: 'var(--card)',
                         border: '1px solid #e5e7eb',
                         borderRadius: '0.375rem',
                       }}
@@ -749,7 +774,7 @@ const SidebarLeft: React.FC = () => {
                           style={{
                             fontWeight: 500,
                             fontSize: '0.875rem',
-                            color: '#111827',
+                            color: 'var(--foreground)',
                             whiteSpace: 'nowrap',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
@@ -758,7 +783,11 @@ const SidebarLeft: React.FC = () => {
                           {font.displayName || font.name}
                         </div>
                         <div
-                          style={{ fontSize: '0.75rem', color: '#6b7280', fontFamily: font.name }}
+                          style={{
+                            fontSize: '0.75rem',
+                            color: 'var(--muted-foreground)',
+                            fontFamily: font.name,
+                          }}
                         >
                           Aperçu du texte 123
                         </div>
@@ -791,7 +820,7 @@ const SidebarLeft: React.FC = () => {
                 <div
                   style={{
                     fontSize: '0.875rem',
-                    color: '#9ca3af',
+                    color: 'var(--muted-foreground)',
                     textAlign: 'center',
                     padding: '1rem',
                   }}
@@ -882,7 +911,7 @@ const FolderNode: React.FC<FolderNodeProps> = ({
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '6px',
-          backgroundColor: '#f9fafb',
+          backgroundColor: 'var(--muted)',
           borderRadius: '4px',
           cursor: 'pointer',
         }}
@@ -900,7 +929,7 @@ const FolderNode: React.FC<FolderNodeProps> = ({
           }}
           style={{ border: 'none', background: 'none', cursor: 'pointer' }}
         >
-          <Trash2 size={12} color="#9ca3af" />
+          <Trash2 size={12} color="var(--muted-foreground)" />
         </button>
       </div>
 
@@ -927,7 +956,7 @@ const FolderNode: React.FC<FolderNodeProps> = ({
               style={{
                 padding: '5px 10px',
                 margin: '2px 0 2px 10px',
-                backgroundColor: 'white',
+                backgroundColor: 'var(--card)',
                 border: '1px solid #e5e7eb',
                 borderRadius: '4px',
                 fontSize: '12px',
@@ -938,7 +967,7 @@ const FolderNode: React.FC<FolderNodeProps> = ({
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <FileText size={12} color="#6b7280" />
+                <FileText size={12} color="var(--muted-foreground)" />
                 <span>{template.name}</span>
               </div>
               <button
@@ -956,7 +985,7 @@ const FolderNode: React.FC<FolderNodeProps> = ({
             <div
               style={{
                 fontSize: '12px',
-                color: '#9ca3af',
+                color: 'var(--muted-foreground)',
                 padding: '5px 0 5px 20px',
                 fontStyle: 'italic',
               }}
@@ -1014,7 +1043,14 @@ function FolderTree({
 
     if (matchingFolders.length === 0 && matchingTemplates.length === 0) {
       return (
-        <div style={{ padding: '10px', color: '#9ca3af', textAlign: 'center', fontSize: '13px' }}>
+        <div
+          style={{
+            padding: '10px',
+            color: 'var(--muted-foreground)',
+            textAlign: 'center',
+            fontSize: '13px',
+          }}
+        >
           Aucun résultat pour "{searchQuery}"
         </div>
       );
@@ -1041,7 +1077,7 @@ function FolderTree({
               onClick={() => removeFolder(folder.id)}
               style={{ border: 'none', background: 'none', cursor: 'pointer' }}
             >
-              <Trash2 size={12} color="#9ca3af" />
+              <Trash2 size={12} color="var(--muted-foreground)" />
             </button>
           </div>
         ))}
@@ -1059,7 +1095,7 @@ function FolderTree({
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <FileText size={14} color="#6b7280" />
+              <FileText size={14} color="var(--muted-foreground)" />
               <span style={{ fontSize: '13px' }}>{template.name}</span>
             </div>
             <button
@@ -1108,7 +1144,7 @@ function FolderTree({
           style={{
             padding: '8px',
             marginTop: '5px',
-            backgroundColor: 'white',
+            backgroundColor: 'var(--card)',
             border: '1px solid #e5e7eb',
             borderRadius: '4px',
             fontSize: '13px',
@@ -1119,7 +1155,7 @@ function FolderTree({
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <FileText size={14} color="#6b7280" />
+            <FileText size={14} color="var(--muted-foreground)" />
             <span>{template.name}</span>
           </div>
           <button
@@ -1135,7 +1171,14 @@ function FolderTree({
       ))}
 
       {rootFolders.length === 0 && rootTemplates.length === 0 && (
-        <div style={{ padding: '20px', textAlign: 'center', color: '#9ca3af', fontSize: '13px' }}>
+        <div
+          style={{
+            padding: '20px',
+            textAlign: 'center',
+            color: 'var(--muted-foreground)',
+            fontSize: '13px',
+          }}
+        >
           La bibliothèque est vide.
           <br />
           Créez un dossier ou sauvegardez un modèle !
