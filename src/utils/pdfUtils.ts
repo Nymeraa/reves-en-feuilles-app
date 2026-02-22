@@ -24,12 +24,19 @@ export const exportToPdf = async (elementId: string, fileName: string): Promise<
     await new Promise((resolve) => setTimeout(resolve, 800)); // Ajusté à 800ms par consigne
 
     // 2. Génération avec html-to-image (Qualité x4 pour le 300 DPI)
+    // WORKAROUND: Instead of `pixelRatio: 4` which causes subpixel rendering gaps on CSS grids,
+    // we use a manual scale transform on the clone and adjust canvas dimensions.
+    const scale = 4;
     const dataUrl = await toPng(element, {
-      pixelRatio: 4, // Équivalent du scale: 4
-      backgroundColor: '#ffffff',
+      width: element.offsetWidth * scale,
+      height: element.offsetHeight * scale,
       style: {
-        transform: 'none', // Sécurise le layout
+        transform: `scale(${scale})`,
+        transformOrigin: 'top left',
+        width: `${element.offsetWidth}px`,
+        height: `${element.offsetHeight}px`,
       },
+      backgroundColor: '#ffffff',
       cacheBust: true,
     });
 
