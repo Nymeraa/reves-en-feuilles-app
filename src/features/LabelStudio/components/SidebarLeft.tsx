@@ -135,6 +135,7 @@ const SidebarLeft: React.FC = () => {
         presetsChunks.length;
 
       let currentRequest = 0;
+      let skippedItems = 0;
 
       const sendChunk = async (payload: any, type: string) => {
         currentRequest++;
@@ -144,10 +145,14 @@ const SidebarLeft: React.FC = () => {
           `[${currentRequest}/${totalRequests}] Sending ${type} chunk... Size: ${sizeKb} KB`
         );
 
-        if (sizeKb > 4000) {
-          console.warn(
-            `ATTENTION: Ce chunk ${type} fait ${sizeKb} KB, il risque d'être rejeté par Vercel (> 4.5MB).`
+        if (sizeKb > 4200) {
+          const itemName = payload[type]?.[0]?.name || payload[type]?.[0]?.id || 'Inconnu';
+          console.error(
+            `⛔ L'élément "${itemName}" (${type}) est trop lourd (${sizeKb} KB) et a été ignoré (Limite Vercel : ~4.5MB).`
           );
+          skippedItems++;
+          // On ne jette pas d'erreur pour ne pas bloquer le reste de la migration
+          return { success: false, skipped: true };
         }
 
         const response = await fetch('/api/label-studio/migrate', {
@@ -173,9 +178,15 @@ const SidebarLeft: React.FC = () => {
       for (const chunk of foldersChunks) await sendChunk({ folders: chunk }, 'folders');
       for (const chunk of presetsChunks) await sendChunk({ presets: chunk }, 'presets');
 
-      alert(
-        'Migration réussie ! Toutes vos images, modèles, et presets sont maintenant sauvegardés dans le cloud.'
-      );
+      if (skippedItems > 0) {
+        alert(
+          `Migration presque terminée ! 🎉\n\nCependant, ${skippedItems} élément(s) étaient trop lourds (>4.5 Mo) pour Vercel et ont été ignorés.\nOuvre la console (F12) pour voir les éléments concernés.`
+        );
+      } else {
+        alert(
+          'Migration réussie ! Toutes vos images, modèles, et presets sont maintenant sauvegardés dans le cloud sans erreur.'
+        );
+      }
     } catch (error: any) {
       console.error('Migration error:', error);
       alert("Une erreur inattendue s'est produite lors de la migration: " + error.message);
