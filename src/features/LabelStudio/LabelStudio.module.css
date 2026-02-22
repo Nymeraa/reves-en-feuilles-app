@@ -244,14 +244,16 @@
   margin: 0 !important;
   box-shadow: none !important;
   outline: none !important;
+  /* NEW STRATEGY: overlapping cells by ~0.3mm to fix rendering subpixel gaps precisely */
+  transform: scale(1.003) !important;
+  /* Ensure the subpixel bleeding reflects the label's own background color, not the first label's globally */
+  background-color: var(--label-bg-color) !important;
 }
 
 :global(.pdf-export-mode) .gridSmall,
 :global(.pdf-export-mode) .gridLarge {
   gap: 0 !important;
-  /* STRATÉGIE 2 : On colore le fond de la grille avec la couleur des étiquettes */
-  /* Cela "bouche" les trous entre les étiquettes avec la bonne couleur */
-  background-color: var(--grid-bg-fill, transparent) !important;
+  background-color: transparent !important;
 }
 
 .labelSlot.small {

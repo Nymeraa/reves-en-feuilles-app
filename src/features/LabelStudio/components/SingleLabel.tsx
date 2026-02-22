@@ -28,7 +28,10 @@ const SingleLabel: React.FC<SingleLabelProps> = ({ labelId, design, format }) =>
   console.log('SingleLabel render:', { id: labelId, color: design.backgroundColor });
 
   return (
-    <div className={`${styles.labelSlot} ${format === 'small' ? styles.small : styles.large}`}>
+    <div
+      className={`${styles.labelSlot} ${format === 'small' ? styles.small : styles.large}`}
+      style={{ '--label-bg-color': design.backgroundColor || '#ffffff' } as React.CSSProperties}
+    >
       <div className={styles.labelWrapper}>
         <div
           className={styles.labelContent}
