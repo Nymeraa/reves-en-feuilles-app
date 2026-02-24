@@ -28,6 +28,22 @@ import { Trash2, Plus, Save } from 'lucide-react';
 import { findMatchingPackaging } from '@/lib/packaging-logic';
 import { useRouter } from 'next/navigation';
 
+const ESSENTIELLE_PRICES: Record<number, number> = {
+  25: 4.5,
+  50: 7.5,
+  100: 12.9,
+  250: 29.9,
+  500: 54.9,
+};
+
+const PREMIUM_PRICES: Record<number, number> = {
+  25: 5.5,
+  50: 9.5,
+  100: 15.9,
+  250: 36.9,
+  500: 69.9,
+};
+
 interface RecipeDialogProps {
   recipe?: Recipe;
   ingredients: Ingredient[];
@@ -166,9 +182,9 @@ export function RecipeDialog({
     );
     const doypackCost = doypack ? doypack.weightedAverageCost || 0 : 0;
 
-    // 3. Fixed Costs (Labor/Sticker) - Hardcoded for now or from Settings/Recipe
-    const laborCost = recipe?.laborCost || 0.5; // Example Default
-    const stickerCost = 0.1; // Example
+    // 3. Fixed Costs (Labor/Sticker)
+    const laborCost = recipe?.laborCost || 0;
+    const stickerCost = typeof recipe?.packagingCost === 'number' ? recipe.packagingCost : 0;
 
     return {
       mix: mixCost,
@@ -355,7 +371,45 @@ export function RecipeDialog({
 
             {/* Pricing */}
             <div className="bg-card p-4 rounded-lg border shadow-sm space-y-4">
-              <Label className="font-semibold">Prix de vente TTC & Marge</Label>
+              <div className="flex justify-between items-center flex-wrap gap-2">
+                <Label className="font-semibold">Prix de vente TTC & Marge</Label>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setPrices((prev) => {
+                        const next = { ...prev };
+                        Object.entries(ESSENTIELLE_PRICES).forEach(([k, v]) => {
+                          next[k] = v;
+                        });
+                        return next;
+                      });
+                    }}
+                    disabled={readonly}
+                  >
+                    Gamme essentielle
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setPrices((prev) => {
+                        const next = { ...prev };
+                        Object.entries(PREMIUM_PRICES).forEach(([k, v]) => {
+                          next[k] = v;
+                        });
+                        return next;
+                      });
+                    }}
+                    disabled={readonly}
+                  >
+                    Gamme premium
+                  </Button>
+                </div>
+              </div>
               <div className="grid grid-cols-2 gap-x-8 gap-y-4">
                 {RECIPE_FORMATS.slice(0, 6).map((f) => {
                   const costs = calculateBatchCost(f);
