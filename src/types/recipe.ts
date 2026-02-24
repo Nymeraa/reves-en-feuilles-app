@@ -10,6 +10,9 @@ export enum RecipeStatus {
 export const RECIPE_FORMATS = [25, 50, 100, 250, 500] as const;
 export type RecipeFormat = (typeof RECIPE_FORMATS)[number];
 
+export const PACK_RECIPE_FORMATS = [20, 25, 30, 50, 100, 250, 500] as const;
+export type PackRecipeFormat = (typeof PACK_RECIPE_FORMATS)[number];
+
 export interface RecipeItem {
   id: string;
   ingredientId: string;

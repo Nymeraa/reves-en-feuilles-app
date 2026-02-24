@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Pack, PackStatus, PackRecipeItem, PackPackagingItem } from '@/types/pack';
-import { Recipe, RECIPE_FORMATS } from '@/types/recipe';
+import { Recipe, PACK_RECIPE_FORMATS } from '@/types/recipe';
 import { Ingredient, IngredientStatus } from '@/types/inventory';
 import {
   Dialog,
@@ -313,7 +313,7 @@ export function PackDialog({
                       <SelectValue placeholder="Format" />
                     </SelectTrigger>
                     <SelectContent>
-                      {RECIPE_FORMATS.map((f) => (
+                      {PACK_RECIPE_FORMATS.map((f) => (
                         <SelectItem key={f} value={f.toString()}>
                           {f}g
                         </SelectItem>
