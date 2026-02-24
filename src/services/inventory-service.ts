@@ -69,6 +69,12 @@ export const InventoryService = {
         EntityType.INGREDIENT,
         MovementSource.INITIAL
       );
+
+      // Fetch the updated ingredient after the movement to get correct stock and WAC
+      const updatedIngredient = await this.getIngredientById(newIngredient.id, orgId);
+      if (updatedIngredient) {
+        return updatedIngredient;
+      }
     }
 
     return newIngredient;
