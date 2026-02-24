@@ -44,11 +44,12 @@ interface OrderDialogProps {
 
 interface OrderItemRow {
   tempId: string;
-  type: 'RECIPE' | 'PACK' | 'ACCESSORY';
+  type: 'RECIPE' | 'PACK' | 'ACCESSORY' | 'CUSTOM';
   itemId: string; // can be recipeId, packId, or ingredientId
-  format: number; // only for recipe
+  format: number; // for recipe or custom
   quantity: number;
   unitPrice?: number;
+  customItems?: { ingredientId: string; percentage: number }[];
 }
 
 export function OrderDialog({
@@ -158,6 +159,7 @@ export function OrderDialog({
             format: i.format || 100,
             quantity: i.quantity,
             unitPrice: i.unitPriceSnapshot,
+            customItems: i.customItems as any,
           }))
         );
 
@@ -255,6 +257,15 @@ export function OrderDialog({
         if (ing) {
           unitCostTTC = (ing.weightedAverageCost || 0) * tvaAccessory;
         }
+      } else if (item.type === 'CUSTOM' && item.customItems) {
+        let costPerGram = 0;
+        item.customItems.forEach((ci) => {
+          const ing = ingredients.find((i) => i.id === ci.ingredientId);
+          if (ing) {
+            costPerGram += (ci.percentage / 100) * (ing.weightedAverageCost || 0);
+          }
+        });
+        unitCostTTC = costPerGram * item.format * tvaRecipe;
       }
       materialCost += unitCostTTC * item.quantity;
     });
@@ -343,6 +354,7 @@ export function OrderDialog({
       recipeId: i.type === 'RECIPE' ? i.itemId : undefined,
       packId: i.type === 'PACK' ? i.itemId : undefined,
       ingredientId: i.type === 'ACCESSORY' ? i.itemId : undefined,
+      customItems: i.type === 'CUSTOM' ? i.customItems : undefined,
       format: i.format,
       quantity: i.quantity,
       unitPrice: i.unitPrice,
@@ -623,6 +635,7 @@ export function OrderDialog({
                       <SelectItem value="RECIPE">Recette</SelectItem>
                       <SelectItem value="PACK">Pack</SelectItem>
                       <SelectItem value="ACCESSORY">Accessoire</SelectItem>
+                      <SelectItem value="CUSTOM">Personnalisé</SelectItem>
                     </SelectContent>
                   </Select>
 
@@ -697,6 +710,124 @@ export function OrderDialog({
                           ))}
                       </SelectContent>
                     </Select>
+                  )}
+
+                  {item.type === 'CUSTOM' && (
+                    <div className="flex-1 flex flex-col gap-2 border p-2 rounded relative">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-xs font-semibold text-muted-foreground">
+                          Création sur-mesure
+                        </span>
+                        <Select
+                          value={item.format.toString()}
+                          onValueChange={(v) => updateItem(item.tempId, 'format', parseInt(v))}
+                        >
+                          <SelectTrigger className="w-[80px] h-7 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {RECIPE_FORMATS.map((f) => (
+                              <SelectItem key={f} value={f.toString()}>
+                                {f}g
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {(!item.customItems || item.customItems.length === 0) && (
+                        <div className="text-xs text-muted-foreground italic">Aucun ingrédient</div>
+                      )}
+
+                      {item.customItems?.map((ci, cIdx) => (
+                        <div key={cIdx} className="flex gap-2 items-center">
+                          <Select
+                            value={ci.ingredientId}
+                            onValueChange={(v) => {
+                              const newCustomItems = [...(item.customItems || [])];
+                              newCustomItems[cIdx].ingredientId = v;
+                              updateItem(item.tempId, 'customItems', newCustomItems);
+                            }}
+                          >
+                            <SelectTrigger className="flex-1 h-7 text-xs">
+                              <SelectValue placeholder="Ingrédient" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {ingredients
+                                .filter(
+                                  (i) => i.category !== 'Packaging' && i.category !== 'Accessoire'
+                                )
+                                .map((i) => (
+                                  <SelectItem key={i.id} value={i.id}>
+                                    {i.name}
+                                  </SelectItem>
+                                ))}
+                            </SelectContent>
+                          </Select>
+                          <div className="relative w-16">
+                            <Input
+                              type="number"
+                              className="h-7 text-xs pr-6"
+                              value={ci.percentage}
+                              onChange={(e) => {
+                                const newCustomItems = [...(item.customItems || [])];
+                                newCustomItems[cIdx].percentage = parseFloat(e.target.value) || 0;
+                                updateItem(item.tempId, 'customItems', newCustomItems);
+                              }}
+                            />
+                            <span className="absolute right-2 top-1.5 text-[10px] text-muted-foreground">
+                              %
+                            </span>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={() => {
+                              const newCustomItems = [...(item.customItems || [])];
+                              newCustomItems.splice(cIdx, 1);
+                              updateItem(item.tempId, 'customItems', newCustomItems);
+                            }}
+                          >
+                            <Trash className="h-3 w-3 text-red-500" />
+                          </Button>
+                        </div>
+                      ))}
+
+                      <div className="flex justify-between items-center mt-1">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-6 text-[10px] px-2"
+                          onClick={() => {
+                            const newCustomItems = [
+                              ...(item.customItems || []),
+                              { ingredientId: '', percentage: 0 },
+                            ];
+                            updateItem(item.tempId, 'customItems', newCustomItems);
+                          }}
+                        >
+                          <Plus className="h-3 w-3 mr-1" /> Ingrédient
+                        </Button>
+
+                        {(() => {
+                          const total = (item.customItems || []).reduce(
+                            (sum, ci) => sum + ci.percentage,
+                            0
+                          );
+                          return (
+                            <Badge
+                              variant={total === 100 ? 'default' : 'destructive'}
+                              className="text-[10px] h-5"
+                            >
+                              {total}%
+                            </Badge>
+                          );
+                        })()}
+                      </div>
+                    </div>
                   )}
 
                   <Input

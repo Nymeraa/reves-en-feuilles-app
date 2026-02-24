@@ -33,7 +33,8 @@ export const RecipeService = {
   },
 
   async getRecipes(orgId: string): Promise<Recipe[]> {
-    return db.readAll('recipes', orgId);
+    const recipes = await db.readAll<Recipe>('recipes', orgId);
+    return recipes.sort((a, b) => a.name.localeCompare(b.name));
   },
 
   async getRecipeById(id: string, orgId?: string): Promise<Recipe | undefined> {

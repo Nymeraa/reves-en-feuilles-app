@@ -18,7 +18,7 @@ export interface AnalyticsSummary {
 export interface TopProduct {
   id: string; // SKU or Name if no global product ID
   name: string;
-  type: 'RECIPE' | 'PACK' | 'ACCESSORY';
+  type: 'RECIPE' | 'PACK' | 'ACCESSORY' | 'CUSTOM';
   quantity: number;
   revenue: number;
 }
@@ -269,7 +269,7 @@ export const AnalyticsService = {
       {
         id: string;
         name: string;
-        type: 'RECIPE' | 'PACK' | 'ACCESSORY';
+        type: 'RECIPE' | 'PACK' | 'ACCESSORY' | 'CUSTOM';
         quantitySold: number;
         revenue: number; // Product Revenue
         cogs: number; // Product COGS (Materials + Packaging)

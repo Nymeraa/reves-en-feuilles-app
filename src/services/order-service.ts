@@ -146,6 +146,49 @@ export const OrderService = {
 
       unitCost = unitMaterialCost;
       unitPrice = input.unitPrice || unitCost * 2;
+    } else if (input.type === 'CUSTOM') {
+      if (!input.format || !input.customItems || input.customItems.length === 0) {
+        throw new Error('Format and Custom Items required for Custom Line');
+      }
+
+      name = 'Personnalisé';
+      versionNumber = 1;
+
+      // 1. Calculate composition cost (costPerGram)
+      const costMap = await RecipeService.getIngredientCostMap(orgId);
+      // Inline calculateMixCostPerUnit instead of depending on RecipeService's specific type (we have enough with {ingredientId, percentage})
+      let costPerGram = 0;
+      for (const item of input.customItems) {
+        const itemCost = costMap[item.ingredientId] || 0;
+        costPerGram += (item.percentage / 100) * itemCost;
+      }
+
+      const weightGrams = input.format;
+      // costMap already returns TTC (due to getIngredientCostMap logic) so don't apply tvaIngResult twice if getIngredientCostMap included it.
+      // WAIT! OrderService previously did: recipe.totalIngredientCost (HT) * tvaIngResult.
+      // Let's re-read RecipeService.getIngredientCostMap. It returns TTC.
+      // If we use it here directly, it's TTC. In `addItemToOrder` for RECIPE, it takes `totalIngredientCost` which is calculated using `CostEngine` directly?
+      // Let's stick to using raw ingredient cost to match existing logic.
+      costPerGram = 0;
+      for (const item of input.customItems) {
+        const ing = await InventoryService.getIngredientById(item.ingredientId, orgId);
+        if (ing) {
+          costPerGram += (item.percentage / 100) * (ing.weightedAverageCost || 0);
+        }
+      }
+
+      const materialCostHT = weightGrams * costPerGram;
+      unitMaterialCost = materialCostHT * tvaIngResult;
+
+      // 2. Doypack
+      const doypack = await PackagingService.findPackagingForFormat(orgId, input.format, 'Sachet');
+      if (doypack) {
+        const packCostPerUnit = doypack.weightedAverageCost || 0;
+        unitPackagingCost = packCostPerUnit * tvaPackResult;
+      }
+
+      unitCost = unitMaterialCost + unitPackagingCost;
+      unitPrice = input.unitPrice || unitCost * 2.5; // Default Margin
     }
 
     const newItem: OrderItem = {
@@ -155,6 +198,7 @@ export const OrderService = {
       recipeId: input.recipeId,
       packId: input.packId,
       ingredientId: input.ingredientId,
+      customItems: input.customItems,
       format: input.format,
       quantity: input.quantity,
       name,
@@ -357,6 +401,42 @@ export const OrderService = {
             order.id
           );
         }
+      } else if (item.type === 'CUSTOM' && item.customItems) {
+        const totalGramsSold = (item.format || 0) * item.quantity;
+
+        for (const cItem of item.customItems) {
+          const ingredientUsage = (totalGramsSold * cItem.percentage) / 100;
+          await InventoryService.addMovement(
+            orgId,
+            cItem.ingredientId,
+            MovementType.SALE,
+            -ingredientUsage,
+            undefined,
+            `Order #${order.id} - ${item.quantity}x ${item.name} (${cItem.percentage}%)`,
+            EntityType.INGREDIENT,
+            MovementSource.ORDER,
+            order.id
+          );
+        }
+
+        const doypackIng = await PackagingService.findPackagingForFormat(
+          orgId,
+          item.format || 0,
+          'Sachet'
+        );
+        if (doypackIng) {
+          await InventoryService.addMovement(
+            orgId,
+            doypackIng.id,
+            MovementType.SALE,
+            -item.quantity,
+            undefined,
+            `Order #${order.id} - Doypack ${item.format}g for ${item.name}`,
+            EntityType.PACKAGING,
+            MovementSource.ORDER,
+            order.id
+          );
+        }
       }
     }
 
@@ -541,6 +621,34 @@ export const OrderService = {
             unitCost = unitMaterialCost;
             unitPrice = itemIn.unitPrice || unitCost * 2;
           }
+        } else if (itemIn.type === 'CUSTOM' && itemIn.customItems && itemIn.format) {
+          name = 'Personnalisé';
+          versionNumber = 1;
+
+          let costPerGram = 0;
+          for (const item of itemIn.customItems) {
+            const ing = await InventoryService.getIngredientById(item.ingredientId, orgId);
+            if (ing) {
+              costPerGram += (item.percentage / 100) * (ing.weightedAverageCost || 0);
+            }
+          }
+
+          const weightGrams = itemIn.format;
+          const materialCostHT = weightGrams * costPerGram;
+          unitMaterialCost = materialCostHT * tvaIngResult;
+
+          const doypack = await PackagingService.findPackagingForFormat(
+            orgId,
+            itemIn.format,
+            'Sachet'
+          );
+          if (doypack) {
+            const packCostPerUnit = doypack.weightedAverageCost || 0;
+            unitPackagingCost = packCostPerUnit * tvaPackResult;
+          }
+
+          unitCost = unitMaterialCost + unitPackagingCost;
+          unitPrice = itemIn.unitPrice || unitCost * 2.5;
         }
 
         order.items.push({
@@ -550,6 +658,7 @@ export const OrderService = {
           recipeId: itemIn.recipeId,
           packId: itemIn.packId,
           ingredientId: itemIn.ingredientId,
+          customItems: itemIn.customItems,
           format: itemIn.format,
           quantity: itemIn.quantity,
           name,

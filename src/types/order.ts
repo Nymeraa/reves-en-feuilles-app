@@ -12,7 +12,7 @@ export enum OrderStatus {
 export interface OrderItem {
   id: string;
   orderId: string;
-  type: 'RECIPE' | 'PACK' | 'ACCESSORY'; // Discriminator
+  type: 'RECIPE' | 'PACK' | 'ACCESSORY' | 'CUSTOM'; // Discriminator
 
   // Recipe Specific
   recipeId?: string;
@@ -23,6 +23,9 @@ export interface OrderItem {
 
   // Accessory Specific
   ingredientId?: string;
+
+  // Custom Specific
+  customItems?: { ingredientId: string; percentage: number }[];
 
   // Common
   versionNumber: number; // Snapshot version
@@ -118,11 +121,12 @@ export interface CreateOrderInput {
 }
 
 export interface AddOrderItemInput {
-  type: 'RECIPE' | 'PACK' | 'ACCESSORY';
+  type: 'RECIPE' | 'PACK' | 'ACCESSORY' | 'CUSTOM';
   recipeId?: string;
   packId?: string;
   ingredientId?: string;
   format?: RecipeFormat; // e.g., 100
+  customItems?: { ingredientId: string; percentage: number }[];
   quantity: number;
   unitPrice?: number; // Optional override
 }

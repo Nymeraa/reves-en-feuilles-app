@@ -221,6 +221,7 @@ model OrderItem {
   unitMaterialCostSnapshot  Float   @default(0)
   unitPackagingCostSnapshot Float   @default(0)
   totalPrice                Float
+  customItems               Json?
   order                     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@index([orderId])
