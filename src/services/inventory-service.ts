@@ -13,7 +13,8 @@ import { AuditAction, AuditEntity, AuditSeverity } from '@/types/audit';
 
 export const InventoryService = {
   async getIngredients(orgId: string): Promise<Ingredient[]> {
-    return db.readAll('ingredients', orgId);
+    const ingredients = await db.readAll<Ingredient>('ingredients', orgId);
+    return ingredients.sort((a, b) => a.name.localeCompare(b.name));
   },
 
   async getIngredientById(id: string, orgId?: string): Promise<Ingredient | undefined> {

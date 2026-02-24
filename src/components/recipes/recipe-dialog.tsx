@@ -314,11 +314,15 @@ export function RecipeDialog({
                       <SelectValue placeholder="Ingrédient" />
                     </SelectTrigger>
                     <SelectContent>
-                      {ingredients.map((ing) => (
-                        <SelectItem key={ing.id} value={ing.id}>
-                          {ing.name}
-                        </SelectItem>
-                      ))}
+                      {ingredients
+                        .filter(
+                          (ing) => ing.category !== 'Packaging' && ing.category !== 'Accessoire'
+                        )
+                        .map((ing) => (
+                          <SelectItem key={ing.id} value={ing.id}>
+                            {ing.name}
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
                   <Input
