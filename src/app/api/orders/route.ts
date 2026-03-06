@@ -59,13 +59,14 @@ export async function POST(request: Request) {
     // 2. Add Items
     if (items && Array.isArray(items)) {
       for (const item of items) {
-        const itemType = item.type as 'RECIPE' | 'PACK' | 'ACCESSORY';
+        const itemType = item.type as 'RECIPE' | 'PACK' | 'ACCESSORY' | 'CUSTOM';
 
         await OrderService.addItemToOrder('org-1', order.id, {
           type: itemType,
           recipeId: item.recipeId || undefined,
           packId: item.packId || undefined,
           ingredientId: item.ingredientId || undefined,
+          customItems: item.customItems || undefined,
           format: (item.format || undefined) as any,
           quantity: item.quantity,
           unitPrice: item.unitPrice || undefined,
