@@ -133,6 +133,8 @@ model PackItem {
   ingredientId String?
   quantity     Float
   format       Float?
+  label        String?
+  options      Json?
   ingredient   Ingredient? @relation(fields: [ingredientId], references: [id])
   pack         Pack        @relation(fields: [packId], references: [id], onDelete: Cascade)
   recipe       Recipe?     @relation(fields: [recipeId], references: [id])
