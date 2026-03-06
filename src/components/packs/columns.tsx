@@ -18,11 +18,11 @@ export const getPackColumns = (recipes: Recipe[], ingredients: Ingredient[]): Co
     header: 'PACK',
     cell: ({ row }) => (
       <div className="flex items-center gap-3">
-        <div className="p-2 bg-purple-50 rounded-md text-purple-600">
+        <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-md text-purple-600 dark:text-purple-400">
           <Package className="h-4 w-4" />
         </div>
         <div>
-          <div className="font-medium text-slate-900">{row.original.name}</div>
+          <div className="font-medium text-slate-900 dark:text-slate-100">{row.original.name}</div>
           <div className="text-xs text-muted-foreground">
             {(row.original.recipes || []).length} produits + {(row.original.packaging || []).length}{' '}
             accessoires
@@ -47,7 +47,7 @@ export const getPackColumns = (recipes: Recipe[], ingredients: Ingredient[]): Co
             <Badge
               key={idx}
               variant="outline"
-              className="text-xs bg-purple-50 border-purple-100 text-purple-700 font-normal"
+              className="text-xs bg-purple-50 dark:bg-purple-900/20 border-purple-100 dark:border-purple-800 text-purple-700 dark:text-purple-300 font-normal"
             >
               {r?.name} {item.format}g
             </Badge>
@@ -66,8 +66,8 @@ export const getPackColumns = (recipes: Recipe[], ingredients: Ingredient[]): Co
       <Badge
         className={
           row.original.status === 'ACTIVE'
-            ? 'bg-purple-100 text-purple-700 hover:bg-purple-100'
-            : 'bg-slate-100 text-slate-700 hover:bg-slate-100'
+            ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/40'
+            : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
         }
       >
         {row.original.status}

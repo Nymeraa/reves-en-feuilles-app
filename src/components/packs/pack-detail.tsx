@@ -157,7 +157,7 @@ export function PackDetail({ initialPack, recipes, ingredients }: PackDetailProp
             </Button>
           </Link>
           <div>
-            <h1 className="text-2xl font-bold">{pack.name}</h1>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">{pack.name}</h1>
             <Badge variant={pack.status === 'ACTIVE' ? 'default' : 'secondary'}>
               {pack.status}
             </Badge>
@@ -192,7 +192,7 @@ export function PackDetail({ initialPack, recipes, ingredients }: PackDetailProp
               {pack.recipes.map((item, idx) => (
                 <div
                   key={item.id}
-                  className="flex items-center gap-4 p-3 border rounded bg-slate-50"
+                  className="flex items-center gap-4 p-3 border rounded bg-slate-50 dark:bg-slate-900 dark:border-slate-800"
                 >
                   <div className="flex-1 grid grid-cols-2 gap-4">
                     <div className="space-y-1">
@@ -258,7 +258,7 @@ export function PackDetail({ initialPack, recipes, ingredients }: PackDetailProp
                 </div>
               ))}
               {pack.recipes.length === 0 && (
-                <div className="text-center py-6 text-slate-400 text-sm">
+                <div className="text-center py-6 text-slate-400 dark:text-slate-500 text-sm">
                   Aucune recette dans ce pack.
                 </div>
               )}
@@ -280,7 +280,7 @@ export function PackDetail({ initialPack, recipes, ingredients }: PackDetailProp
               {pack.packaging.map((item, idx) => (
                 <div
                   key={item.id}
-                  className="flex items-center gap-4 p-3 border rounded bg-slate-50"
+                  className="flex items-center gap-4 p-3 border rounded bg-slate-50 dark:bg-slate-900 dark:border-slate-800"
                 >
                   <div className="flex-1 grid grid-cols-2 gap-4">
                     <div className="space-y-1">
@@ -332,7 +332,7 @@ export function PackDetail({ initialPack, recipes, ingredients }: PackDetailProp
                 </div>
               ))}
               {pack.packaging.length === 0 && (
-                <div className="text-center py-6 text-slate-400 text-sm">
+                <div className="text-center py-6 text-slate-400 dark:text-slate-500 text-sm">
                   {packagingIngredients.length === 0
                     ? "Aucun ingrédient 'Packaging' trouvé dans l'inventaire."
                     : 'Aucun emballage ajouté.'}
@@ -344,9 +344,9 @@ export function PackDetail({ initialPack, recipes, ingredients }: PackDetailProp
 
         <div className="space-y-6">
           {/* Financials */}
-          <Card className="border-emerald-100 bg-emerald-50/30">
+          <Card className="border-emerald-100 dark:border-emerald-900/50 bg-emerald-50/30 dark:bg-emerald-900/10">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-emerald-900">
+              <CardTitle className="flex items-center gap-2 text-emerald-900 dark:text-emerald-400">
                 <Calculator className="w-5 h-5" />
                 Rentabilité
               </CardTitle>
@@ -354,32 +354,32 @@ export function PackDetail({ initialPack, recipes, ingredients }: PackDetailProp
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-600">Coût Matière (Recettes)</span>
-                  <span>{recipesCost.toFixed(2)} €</span>
+                  <span className="text-slate-600 dark:text-slate-400">Coût Matière (Recettes)</span>
+                  <span className="text-slate-900 dark:text-slate-200">{recipesCost.toFixed(2)} €</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-600">Coût Emballage</span>
-                  <span>{packagingCost.toFixed(2)} €</span>
+                  <span className="text-slate-600 dark:text-slate-400">Coût Emballage</span>
+                  <span className="text-slate-900 dark:text-slate-200">{packagingCost.toFixed(2)} €</span>
                 </div>
-                <div className="pt-2 border-t flex justify-between font-medium">
-                  <span>Coût Total</span>
-                  <span>{totalCost.toFixed(2)} €</span>
+                <div className="pt-2 border-t dark:border-slate-800 flex justify-between font-medium">
+                  <span className="text-slate-900 dark:text-slate-100">Coût Total</span>
+                  <span className="text-slate-900 dark:text-slate-100">{totalCost.toFixed(2)} €</span>
                 </div>
               </div>
 
               <div className="pt-4 space-y-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Prix de Vente (TTC)</label>
+                  <label className="text-sm font-medium text-slate-900 dark:text-slate-200">Prix de Vente (TTC)</label>
                   <Input
                     type="number"
                     value={pack.price}
                     onChange={(e) => setPack({ ...pack, price: parseFloat(e.target.value) || 0 })}
-                    className="bg-white"
+                    className="bg-white dark:bg-slate-950"
                   />
                 </div>
 
-                <div className="p-3 bg-white rounded border flex justify-between items-center">
-                  <span className="text-sm font-medium text-slate-600">Marge Brute</span>
+                <div className="p-3 bg-white dark:bg-slate-950 rounded border dark:border-slate-800 flex justify-between items-center">
+                  <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Marge Brute</span>
                   <Badge
                     variant={margin < 30 ? 'destructive' : 'default'}
                     className={margin >= 30 ? 'bg-emerald-600' : ''}

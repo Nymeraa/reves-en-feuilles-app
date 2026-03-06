@@ -73,9 +73,9 @@ export async function POST(request: Request) {
       }
     }
 
-    // 3. Confirm if PAID
-    if (status === 'PAID') {
-      await OrderService.confirmOrder('org-1', order.id);
+    // 3. Apply the correct status if it's not Draft
+    if (status && status !== 'DRAFT') {
+      await OrderService.updateOrder('org-1', order.id, { status: status as any });
     }
 
     return NextResponse.json({ success: true, data: { id: order.id } });
