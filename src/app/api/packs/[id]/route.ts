@@ -5,7 +5,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   try {
     const { id } = await params;
     const body = await request.json();
-    const { name, description, status, price, recipes, packaging } = body;
+    const { name, description, status, price, recipes, packaging, recipeLots, packagingLots } = body;
 
     await PackService.updatePackFull('org-1', id, {
       name,
@@ -14,6 +14,8 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       price: parseFloat(price) || 0,
       recipes: recipes || [],
       packaging: packaging || [],
+      recipeLots: recipeLots || [],
+      packagingLots: packagingLots || [],
     });
 
     return NextResponse.json({ success: true });

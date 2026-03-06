@@ -5,7 +5,7 @@ import { PackStatus } from '@/types/pack';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, description, status, price, recipes, packaging } = body;
+    const { name, description, status, price, recipes, packaging, recipeLots, packagingLots } = body;
 
     if (!name) {
       return NextResponse.json({ error: 'Name Required' }, { status: 400 });
@@ -26,6 +26,8 @@ export async function POST(request: Request) {
         price: parseFloat(price) || 0,
         recipes: recipes || [],
         packaging: packaging || [],
+        recipeLots: recipeLots || [],
+        packagingLots: packagingLots || [],
       });
     }
 
