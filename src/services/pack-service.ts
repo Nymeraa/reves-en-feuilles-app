@@ -32,26 +32,27 @@ const _getContext = async (orgId?: string) => {
 
 // New helper function to map raw DB pack data to the Pack type
 const _mapPackFromDb = (rawPack: Pack & { items: any[] }): Pack => {
-  const recipes = rawPack.items
-    .filter((item) => item.type === 'RECIPE')
-    .map((item) => ({
+  const itemsArr = rawPack.items || [];
+  const recipes = itemsArr
+    .filter((item: any) => item.type === 'RECIPE')
+    .map((item: any) => ({
       id: item.id,
       recipeId: item.recipeId,
       quantity: item.quantity,
       format: item.format,
     }));
-  const packaging = rawPack.items
-    .filter((item) => item.type === 'INGREDIENT')
-    .map((item) => ({
+  const packaging = itemsArr
+    .filter((item: any) => item.type === 'INGREDIENT')
+    .map((item: any) => ({
       id: item.id,
       ingredientId: item.ingredientId,
       quantity: item.quantity,
     }));
 
   // Map recipe lots
-  const recipeLots: PackRecipeLot[] = rawPack.items
-    .filter((item) => item.type === 'RECIPE_LOT')
-    .map((item) => ({
+  const recipeLots: PackRecipeLot[] = itemsArr
+    .filter((item: any) => item.type === 'RECIPE_LOT')
+    .map((item: any) => ({
       id: item.id,
       label: item.label || '',
       format: item.format || 100,
@@ -60,9 +61,9 @@ const _mapPackFromDb = (rawPack: Pack & { items: any[] }): Pack => {
     }));
 
   // Map packaging lots
-  const packagingLots: PackPackagingLot[] = rawPack.items
-    .filter((item) => item.type === 'PACKAGING_LOT')
-    .map((item) => ({
+  const packagingLots: PackPackagingLot[] = itemsArr
+    .filter((item: any) => item.type === 'PACKAGING_LOT')
+    .map((item: any) => ({
       id: item.id,
       label: item.label || '',
       quantity: item.quantity || 1,

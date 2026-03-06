@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Pack, PackStatus, PackRecipeItem, PackPackagingItem } from '@/types/pack';
+import { Pack, PackStatus, PackRecipeItem, PackPackagingItem, PackRecipeLot, PackPackagingLot } from '@/types/pack';
 import { Recipe, PACK_RECIPE_FORMATS } from '@/types/recipe';
 import { Ingredient, IngredientStatus } from '@/types/inventory';
 import {
@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Plus, Box, Coffee } from 'lucide-react'; // Box for pack, Coffee for recipe
+import { Trash2, Plus, Box, Coffee, Layers } from 'lucide-react';
 // import { savePackFullAction, createPackAction } from '@/actions/pack'
 import { findMatchingPackaging } from '@/lib/packaging-logic';
 import { useRouter } from 'next/navigation';
@@ -61,6 +61,8 @@ export function PackDialog({
 
   const [packRecipes, setPackRecipes] = useState<Partial<PackRecipeItem>[]>([]);
   const [packPackaging, setPackPackaging] = useState<Partial<PackPackagingItem>[]>([]);
+  const [recipeLots, setRecipeLots] = useState<PackRecipeLot[]>([]);
+  const [packagingLots, setPackagingLots] = useState<PackPackagingLot[]>([]);
 
   // Initialize
   useEffect(() => {
@@ -78,6 +80,8 @@ export function PackDialog({
       setPrice(0);
       setPackRecipes([]);
       setPackPackaging([]);
+      setRecipeLots([]);
+      setPackagingLots([]);
     }
   }, [effectiveOpen, pack]);
 
@@ -96,6 +100,8 @@ export function PackDialog({
       price,
       recipes: packRecipes.filter((r) => r.recipeId),
       packaging: packPackaging.filter((p) => p.ingredientId),
+      recipeLots: recipeLots.filter((l) => l.options.length > 0),
+      packagingLots: packagingLots.filter((l) => l.options.length > 0),
     };
 
     try {
@@ -404,6 +410,308 @@ export function PackDialog({
                   )}
                 </div>
               ))}
+            </div>
+
+            {/* Recipe Lots Section */}
+            <div className="bg-card p-4 rounded-lg border border-purple-100 dark:border-purple-900 shadow-sm space-y-4">
+              <div className="flex justify-between items-center">
+                <Label className="font-semibold text-purple-900 dark:text-purple-300 flex items-center gap-2">
+                  <Layers className="w-4 h-4" /> Lots Recettes (Choix client)
+                </Label>
+                {!readonly && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() =>
+                      setRecipeLots([
+                        ...recipeLots,
+                        {
+                          id: Math.random().toString(36).substr(7),
+                          label: '',
+                          format: 50,
+                          quantity: 1,
+                          options: [],
+                        },
+                      ])
+                    }
+                    className="text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-800 hover:bg-purple-50 dark:hover:bg-purple-900/20"
+                  >
+                    <Plus className="w-4 h-4 mr-1" /> Ajouter un lot
+                  </Button>
+                )}
+              </div>
+              {recipeLots.map((lot, lotIdx) => (
+                <div
+                  key={lot.id}
+                  className="p-3 bg-purple-50/50 dark:bg-purple-900/10 rounded space-y-2 border border-purple-200/50 dark:border-purple-800/50"
+                >
+                  <div className="flex items-center gap-2">
+                    <Input
+                      placeholder="Label (ex: Choix du thé)"
+                      value={lot.label || ''}
+                      onChange={(e) => {
+                        const newLots = [...recipeLots];
+                        newLots[lotIdx] = { ...newLots[lotIdx], label: e.target.value };
+                        setRecipeLots(newLots);
+                      }}
+                      className="flex-1 border-purple-200 dark:border-purple-800"
+                      disabled={readonly}
+                    />
+                    <Select
+                      value={lot.format.toString()}
+                      onValueChange={(v) => {
+                        const newLots = [...recipeLots];
+                        newLots[lotIdx] = { ...newLots[lotIdx], format: parseInt(v) };
+                        setRecipeLots(newLots);
+                      }}
+                      disabled={readonly}
+                    >
+                      <SelectTrigger className="w-24 border-purple-200 dark:border-purple-800">
+                        <SelectValue placeholder="Format" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {PACK_RECIPE_FORMATS.map((f) => (
+                          <SelectItem key={f} value={f.toString()}>
+                            {f}g
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {!readonly && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setRecipeLots(recipeLots.filter((_, i) => i !== lotIdx))}
+                      >
+                        <Trash2 className="w-4 h-4 text-red-400 hover:text-red-500" />
+                      </Button>
+                    )}
+                  </div>
+                  <div className="space-y-1 pl-2">
+                    <span className="text-xs text-muted-foreground">Options :</span>
+                    {lot.options.map((opt, optIdx) => (
+                      <div key={optIdx} className="flex items-center gap-2">
+                        <Select
+                          value={opt.recipeId}
+                          onValueChange={(v) => {
+                            const newLots = [...recipeLots];
+                            const newOpts = [...newLots[lotIdx].options];
+                            newOpts[optIdx] = { recipeId: v };
+                            newLots[lotIdx] = { ...newLots[lotIdx], options: newOpts };
+                            setRecipeLots(newLots);
+                          }}
+                          disabled={readonly}
+                        >
+                          <SelectTrigger className="flex-1 h-8 text-xs border-purple-200 dark:border-purple-800">
+                            <SelectValue placeholder="Recette..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {recipes.map((r) => (
+                              <SelectItem key={r.id} value={r.id}>
+                                {r.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {!readonly && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
+                            onClick={() => {
+                              const newLots = [...recipeLots];
+                              newLots[lotIdx] = {
+                                ...newLots[lotIdx],
+                                options: newLots[lotIdx].options.filter((_, i) => i !== optIdx),
+                              };
+                              setRecipeLots(newLots);
+                            }}
+                          >
+                            <Trash2 className="w-3 h-3 text-red-400" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                    {!readonly && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="text-xs h-7"
+                        onClick={() => {
+                          if (recipes.length === 0) return;
+                          const newLots = [...recipeLots];
+                          newLots[lotIdx] = {
+                            ...newLots[lotIdx],
+                            options: [...newLots[lotIdx].options, { recipeId: recipes[0].id }],
+                          };
+                          setRecipeLots(newLots);
+                        }}
+                      >
+                        <Plus className="w-3 h-3 mr-1" /> Option
+                      </Button>
+                    )}
+                  </div>
+                  <Badge variant="secondary" className="text-xs">
+                    {lot.options.length} option{lot.options.length > 1 ? 's' : ''}
+                  </Badge>
+                </div>
+              ))}
+              {recipeLots.length === 0 && (
+                <div className="text-center py-3 text-xs text-muted-foreground">
+                  Aucun lot recette
+                </div>
+              )}
+            </div>
+
+            {/* Packaging Lots Section */}
+            <div className="bg-card p-4 rounded-lg border border-purple-100 dark:border-purple-900 shadow-sm space-y-4">
+              <div className="flex justify-between items-center">
+                <Label className="font-semibold text-purple-900 dark:text-purple-300 flex items-center gap-2">
+                  <Layers className="w-4 h-4" /> Lots Accessoires (Choix client)
+                </Label>
+                {!readonly && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() =>
+                      setPackagingLots([
+                        ...packagingLots,
+                        {
+                          id: Math.random().toString(36).substr(7),
+                          label: '',
+                          quantity: 1,
+                          options: [],
+                        },
+                      ])
+                    }
+                    className="text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-800 hover:bg-purple-50 dark:hover:bg-purple-900/20"
+                  >
+                    <Plus className="w-4 h-4 mr-1" /> Ajouter un lot
+                  </Button>
+                )}
+              </div>
+              {packagingLots.map((lot, lotIdx) => (
+                <div
+                  key={lot.id}
+                  className="p-3 bg-purple-50/50 dark:bg-purple-900/10 rounded space-y-2 border border-purple-200/50 dark:border-purple-800/50"
+                >
+                  <div className="flex items-center gap-2">
+                    <Input
+                      placeholder="Label (ex: Choix de l'accessoire)"
+                      value={lot.label || ''}
+                      onChange={(e) => {
+                        const newLots = [...packagingLots];
+                        newLots[lotIdx] = { ...newLots[lotIdx], label: e.target.value };
+                        setPackagingLots(newLots);
+                      }}
+                      className="flex-1 border-purple-200 dark:border-purple-800"
+                      disabled={readonly}
+                    />
+                    {!readonly && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setPackagingLots(packagingLots.filter((_, i) => i !== lotIdx))}
+                      >
+                        <Trash2 className="w-4 h-4 text-red-400 hover:text-red-500" />
+                      </Button>
+                    )}
+                  </div>
+                  <div className="space-y-1 pl-2">
+                    <span className="text-xs text-muted-foreground">Options :</span>
+                    {lot.options.map((opt, optIdx) => (
+                      <div key={optIdx} className="flex items-center gap-2">
+                        <Select
+                          value={opt.ingredientId}
+                          onValueChange={(v) => {
+                            const newLots = [...packagingLots];
+                            const newOpts = [...newLots[lotIdx].options];
+                            newOpts[optIdx] = { ingredientId: v };
+                            newLots[lotIdx] = { ...newLots[lotIdx], options: newOpts };
+                            setPackagingLots(newLots);
+                          }}
+                          disabled={readonly}
+                        >
+                          <SelectTrigger className="flex-1 h-8 text-xs border-purple-200 dark:border-purple-800">
+                            <SelectValue placeholder="Accessoire..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {ingredients
+                              .filter(
+                                (ing) =>
+                                  ing.category === 'Accessoire' ||
+                                  ing.category?.toLowerCase().includes('packaging') ||
+                                  ing.category?.toLowerCase().includes('emballage')
+                              )
+                              .map((ing) => (
+                                <SelectItem key={ing.id} value={ing.id}>
+                                  {ing.name}
+                                </SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
+                        {!readonly && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
+                            onClick={() => {
+                              const newLots = [...packagingLots];
+                              newLots[lotIdx] = {
+                                ...newLots[lotIdx],
+                                options: newLots[lotIdx].options.filter((_, i) => i !== optIdx),
+                              };
+                              setPackagingLots(newLots);
+                            }}
+                          >
+                            <Trash2 className="w-3 h-3 text-red-400" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                    {!readonly && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="text-xs h-7"
+                        onClick={() => {
+                          const allOpts = ingredients.filter(
+                            (ing) =>
+                              ing.category === 'Accessoire' ||
+                              ing.category?.toLowerCase().includes('packaging') ||
+                              ing.category?.toLowerCase().includes('emballage')
+                          );
+                          if (allOpts.length === 0) return;
+                          const newLots = [...packagingLots];
+                          newLots[lotIdx] = {
+                            ...newLots[lotIdx],
+                            options: [...newLots[lotIdx].options, { ingredientId: allOpts[0].id }],
+                          };
+                          setPackagingLots(newLots);
+                        }}
+                      >
+                        <Plus className="w-3 h-3 mr-1" /> Option
+                      </Button>
+                    )}
+                  </div>
+                  <Badge variant="secondary" className="text-xs">
+                    {lot.options.length} option{lot.options.length > 1 ? 's' : ''}
+                  </Badge>
+                </div>
+              ))}
+              {packagingLots.length === 0 && (
+                <div className="text-center py-3 text-xs text-muted-foreground">
+                  Aucun lot accessoire
+                </div>
+              )}
             </div>
 
             {/* Stats Footer */}
