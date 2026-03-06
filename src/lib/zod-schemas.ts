@@ -38,7 +38,7 @@ export const updateSupplierSchema = createSupplierSchema.partial();
 
 export const orderItemSchema = z.object({
   id: z.string().optional(),
-  type: z.enum(['RECIPE', 'PACK', 'ACCESSORY']),
+  type: z.enum(['RECIPE', 'PACK', 'ACCESSORY', 'CUSTOM']),
   name: z.string().optional(),
   quantity: z.coerce.number().min(1),
   format: z.coerce.number().optional(),
@@ -52,6 +52,10 @@ export const orderItemSchema = z.object({
   recipeId: z.string().optional(),
   packId: z.string().optional(),
   ingredientId: z.string().optional(),
+  customItems: z.array(z.object({
+    ingredientId: z.string(),
+    percentage: z.number()
+  })).optional(),
 });
 
 export const createOrderSchema = z.object({
