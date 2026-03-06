@@ -56,6 +56,16 @@ export const getPackColumns = (recipes: Recipe[], ingredients: Ingredient[]): Co
         {(row.original.recipes || []).length > 2 && (
           <span className="text-xs text-muted-foreground">...</span>
         )}
+        {(row.original.recipeLots && row.original.recipeLots.length > 0) && (
+          <Badge variant="outline" className="text-xs bg-teal-50 dark:bg-teal-900/20 border-teal-100 dark:border-teal-800 text-teal-700 dark:text-teal-300 font-normal">
+            + {row.original.recipeLots.length} lot(s) recette
+          </Badge>
+        )}
+        {(row.original.packagingLots && row.original.packagingLots.length > 0) && (
+          <Badge variant="outline" className="text-xs bg-amber-50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-800 text-amber-700 dark:text-amber-300 font-normal">
+            + {row.original.packagingLots.length} lot(s) accès.
+          </Badge>
+        )}
       </div>
     ),
   },

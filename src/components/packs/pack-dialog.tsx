@@ -73,6 +73,8 @@ export function PackDialog({
       setPrice(pack.price);
       setPackRecipes(pack.recipes);
       setPackPackaging(pack.packaging);
+      setRecipeLots(pack.recipeLots || []);
+      setPackagingLots(pack.packagingLots || []);
     } else if (effectiveOpen && !pack) {
       setName('');
       setDescription('');
