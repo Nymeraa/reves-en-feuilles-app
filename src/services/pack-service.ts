@@ -1,4 +1,4 @@
-import { Pack, PackStatus, CreatePackInput, PackVersion } from '@/types/pack';
+import { Pack, PackStatus, CreatePackInput, PackVersion, PackRecipeLot, PackPackagingLot } from '@/types/pack';
 import { Recipe } from '@/types/recipe';
 import { db } from '@/lib/db';
 import { AuditService } from './audit-service';
@@ -48,12 +48,35 @@ const _mapPackFromDb = (rawPack: Pack & { items: any[] }): Pack => {
       quantity: item.quantity,
     }));
 
+  // Map recipe lots
+  const recipeLots: PackRecipeLot[] = rawPack.items
+    .filter((item) => item.type === 'RECIPE_LOT')
+    .map((item) => ({
+      id: item.id,
+      label: item.label || '',
+      format: item.format || 100,
+      quantity: item.quantity || 1,
+      options: item.options || [],
+    }));
+
+  // Map packaging lots
+  const packagingLots: PackPackagingLot[] = rawPack.items
+    .filter((item) => item.type === 'PACKAGING_LOT')
+    .map((item) => ({
+      id: item.id,
+      label: item.label || '',
+      quantity: item.quantity || 1,
+      options: item.options || [],
+    }));
+
   // Remove the 'items' property and add 'recipes' and 'packaging'
   const { items, ...packWithoutItems } = rawPack;
   return {
     ...packWithoutItems,
     recipes,
     packaging,
+    recipeLots: recipeLots.length > 0 ? recipeLots : undefined,
+    packagingLots: packagingLots.length > 0 ? packagingLots : undefined,
   } as Pack;
 };
 
@@ -83,6 +106,8 @@ export const PackService = {
       description: input.description,
       recipes: [],
       packaging: [],
+      recipeLots: [],
+      packagingLots: [],
       price: 0,
       updatedAt: new Date(),
       version: 1,
@@ -121,8 +146,10 @@ export const PackService = {
     // 1. Calculate Cost
     const nextRecipes = data.recipes || pack.recipes;
     const nextPackaging = data.packaging || pack.packaging;
+    const nextRecipeLots = data.recipeLots || pack.recipeLots || [];
+    const nextPackagingLots = data.packagingLots || pack.packagingLots || [];
     const { recipeMap, ingMap } = await _getContext(orgId);
-    const totalCost = CostEngine.calculatePackCost(nextRecipes, nextPackaging, recipeMap, ingMap);
+    const totalCost = CostEngine.calculatePackCost(nextRecipes, nextPackaging, nextRecipeLots, nextPackagingLots, recipeMap, ingMap);
 
     // 2. Versioning Logic
     if (pack.status === PackStatus.ACTIVE) {
@@ -138,6 +165,8 @@ export const PackService = {
         status: 'VERSION',
         recipes: pack.recipes,
         packaging: pack.packaging,
+        recipeLots: pack.recipeLots,
+        packagingLots: pack.packagingLots,
         price: pack.price,
         totalCost: pack.totalCost || 0,
         margin: pack.margin || 0,
@@ -164,12 +193,11 @@ export const PackService = {
 
     // 3. Prepare Items for DB if they changed
     let itemsForDb: any[] | undefined = undefined;
-    if (data.recipes || data.packaging) {
+    if (data.recipes || data.packaging || data.recipeLots || data.packagingLots) {
       itemsForDb = [];
       nextRecipes.forEach((r) =>
         itemsForDb!.push({
           id: r.id || Math.random().toString(36).substring(7),
-          // packId, // REMOVED: Nested create/update handles this
           type: 'RECIPE',
           recipeId: r.recipeId,
           quantity: r.quantity,
@@ -179,10 +207,28 @@ export const PackService = {
       nextPackaging.forEach((p) =>
         itemsForDb!.push({
           id: p.id || Math.random().toString(36).substring(7),
-          // packId, // REMOVED: Nested create/update handles this
           type: 'INGREDIENT',
           ingredientId: p.ingredientId,
           quantity: p.quantity,
+        })
+      );
+      nextRecipeLots.forEach((lot) =>
+        itemsForDb!.push({
+          id: lot.id || Math.random().toString(36).substring(7),
+          type: 'RECIPE_LOT',
+          label: lot.label,
+          format: lot.format,
+          quantity: lot.quantity,
+          options: lot.options,
+        })
+      );
+      nextPackagingLots.forEach((lot) =>
+        itemsForDb!.push({
+          id: lot.id || Math.random().toString(36).substring(7),
+          type: 'PACKAGING_LOT',
+          label: lot.label,
+          quantity: lot.quantity,
+          options: lot.options,
         })
       );
     }
@@ -196,7 +242,7 @@ export const PackService = {
     };
 
     // Exclude relations to prevent upsert issues, inject items if needed
-    const { recipes, packaging, items, ...packToUpdate } = updatedPackBase as any;
+    const { recipes, packaging, recipeLots, packagingLots, items, ...packToUpdate } = updatedPackBase as any;
 
     if (itemsForDb) {
       (packToUpdate as any).items = itemsForDb;
@@ -231,6 +277,8 @@ export const PackService = {
       ...updatedPackBase,
       recipes: nextRecipes,
       packaging: nextPackaging,
+      recipeLots: nextRecipeLots,
+      packagingLots: nextPackagingLots,
     } as Pack;
   },
 
@@ -252,6 +300,8 @@ export const PackService = {
     const cost = CostEngine.calculatePackCost(
       newPack.recipes,
       newPack.packaging,
+      newPack.recipeLots || [],
+      newPack.packagingLots || [],
       recipeMap,
       ingMap
     );
@@ -263,7 +313,6 @@ export const PackService = {
     newPack.recipes.forEach((r) =>
       itemsForDb.push({
         id: Math.random().toString(36).substring(7),
-        // packId: newPack.id, // REMOVED
         type: 'RECIPE',
         recipeId: r.recipeId,
         quantity: r.quantity,
@@ -273,14 +322,32 @@ export const PackService = {
     newPack.packaging.forEach((p) =>
       itemsForDb.push({
         id: Math.random().toString(36).substring(7),
-        // packId: newPack.id, // REMOVED
         type: 'INGREDIENT',
         ingredientId: p.ingredientId,
         quantity: p.quantity,
       })
     );
+    (newPack.recipeLots || []).forEach((lot) =>
+      itemsForDb.push({
+        id: Math.random().toString(36).substring(7),
+        type: 'RECIPE_LOT',
+        label: lot.label,
+        format: lot.format,
+        quantity: lot.quantity,
+        options: lot.options,
+      })
+    );
+    (newPack.packagingLots || []).forEach((lot) =>
+      itemsForDb.push({
+        id: Math.random().toString(36).substring(7),
+        type: 'PACKAGING_LOT',
+        label: lot.label,
+        quantity: lot.quantity,
+        options: lot.options,
+      })
+    );
 
-    const { recipes, packaging, ...dbPayload } = newPack;
+    const { recipes, packaging, recipeLots, packagingLots, ...dbPayload } = newPack;
     (dbPayload as any).items = itemsForDb;
 
     await db.upsert('packs', dbPayload, orgId);
@@ -318,6 +385,8 @@ export const PackService = {
         const totalCost = CostEngine.calculatePackCost(
           pack.recipes,
           pack.packaging,
+          pack.recipeLots || [],
+          pack.packagingLots || [],
           recipeMap,
           ingMap
         );
@@ -348,6 +417,8 @@ export const PackService = {
         const totalCost = CostEngine.calculatePackCost(
           pack.recipes,
           pack.packaging,
+          pack.recipeLots || [],
+          pack.packagingLots || [],
           recipeMap,
           ingMap
         );

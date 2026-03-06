@@ -1,6 +1,6 @@
 
 import { Recipe, RecipeItem } from '@/types/recipe';
-import { PackRecipeItem, PackPackagingItem } from '@/types/pack';
+import { PackRecipeItem, PackPackagingItem, PackRecipeLot, PackPackagingLot } from '@/types/pack';
 
 /**
  * Pure Calculation Engine
@@ -50,21 +50,17 @@ export const CostEngine = {
     calculatePackCost(
         recipes: PackRecipeItem[], // { recipeId, quantity (count), format (g) }
         packaging: PackPackagingItem[],
+        recipeLots: PackRecipeLot[],
+        packagingLots: PackPackagingLot[],
         recipeMap: Record<string, Recipe>, // Should contain full recipe for fallback costs
         ingredientCostMap: Record<string, number> // For packaging ingredients
     ): number {
         let total = 0;
 
-        // 1. Recipes
+        // 1. Fixed Recipes
         for (const item of recipes) {
             const recipe = recipeMap[item.recipeId];
             if (!recipe) continue;
-
-            // Recalculate Recipe Cost based on current params? 
-            // Or use Recipe's stored `totalIngredientCost`?
-            // "Source of Truth" -> We should probably use the stored Mix Cost from Recipe 
-            // but re-apply format logic.
-            // Recipe.totalIngredientCost is MixCostPerUnit (per gram).
 
             const mixCostPerGram = recipe.totalIngredientCost || 0;
             const materialCost = mixCostPerGram * item.format;
@@ -73,10 +69,37 @@ export const CostEngine = {
             total += (materialCost + unitFixedCost) * item.quantity;
         }
 
-        // 2. Packaging (Box, etc.)
+        // 2. Fixed Packaging (Box, etc.)
         for (const item of packaging) {
             const cost = ingredientCostMap[item.ingredientId] || 0;
             total += cost * item.quantity;
+        }
+
+        // 3. Recipe Lots (average cost of all options)
+        for (const lot of recipeLots) {
+            if (lot.options.length === 0) continue;
+            let sumCost = 0;
+            for (const opt of lot.options) {
+                const recipe = recipeMap[opt.recipeId];
+                if (!recipe) continue;
+                const mixCostPerGram = recipe.totalIngredientCost || 0;
+                const materialCost = mixCostPerGram * lot.format;
+                const unitFixedCost = (recipe.laborCost || 0) + (recipe.packagingCost || 0);
+                sumCost += materialCost + unitFixedCost;
+            }
+            const avgCost = sumCost / lot.options.length;
+            total += avgCost * lot.quantity;
+        }
+
+        // 4. Packaging Lots (average cost of all options)
+        for (const lot of packagingLots) {
+            if (lot.options.length === 0) continue;
+            let sumCost = 0;
+            for (const opt of lot.options) {
+                sumCost += ingredientCostMap[opt.ingredientId] || 0;
+            }
+            const avgCost = sumCost / lot.options.length;
+            total += avgCost * lot.quantity;
         }
 
         return total;

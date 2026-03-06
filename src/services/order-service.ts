@@ -199,6 +199,7 @@ export const OrderService = {
       packId: input.packId,
       ingredientId: input.ingredientId,
       customItems: input.customItems,
+      lotSelections: input.lotSelections,
       format: input.format,
       quantity: input.quantity,
       name,
@@ -386,6 +387,58 @@ export const OrderService = {
             MovementSource.ORDER,
             order.id
           );
+        }
+
+        // Deduct stock for lot selections (chosen items only)
+        if (item.lotSelections && item.lotSelections.length > 0) {
+          for (const sel of item.lotSelections) {
+            if (sel.type === 'RECIPE') {
+              const lotRecipe = await RecipeService.getRecipeById(sel.selectedId);
+              if (!lotRecipe) continue;
+              const lotFormat = sel.format || 100;
+              const totalGramsLot = lotFormat * 1 * item.quantity; // quantity in lot is always 1
+              for (const ing of lotRecipe.items) {
+                const ingredientUsage = (totalGramsLot * ing.percentage) / 100;
+                await InventoryService.addMovement(
+                  orgId,
+                  ing.ingredientId,
+                  MovementType.SALE,
+                  -ingredientUsage,
+                  undefined,
+                  `Order #${order.id} (Pack Lot) - ${lotRecipe.name}`,
+                  EntityType.INGREDIENT,
+                  MovementSource.ORDER,
+                  order.id
+                );
+              }
+              const lotDoypack = await PackagingService.findPackagingForFormat(orgId, lotFormat, 'Sachet');
+              if (lotDoypack) {
+                await InventoryService.addMovement(
+                  orgId,
+                  lotDoypack.id,
+                  MovementType.SALE,
+                  -item.quantity,
+                  undefined,
+                  `Order #${order.id} (Pack Lot) - Doypack for ${lotRecipe.name}`,
+                  EntityType.PACKAGING,
+                  MovementSource.ORDER,
+                  order.id
+                );
+              }
+            } else if (sel.type === 'PACKAGING') {
+              await InventoryService.addMovement(
+                orgId,
+                sel.selectedId,
+                MovementType.SALE,
+                -item.quantity,
+                undefined,
+                `Order #${order.id} (Pack Lot) - Accessory`,
+                EntityType.PACKAGING,
+                MovementSource.ORDER,
+                order.id
+              );
+            }
+          }
         }
       } else if (item.type === 'ACCESSORY') {
         if (item.ingredientId) {
@@ -775,6 +828,44 @@ export const OrderService = {
             MovementSource.ORDER,
             order.id
           );
+        }
+
+        // Revert lot selections
+        if (item.lotSelections && item.lotSelections.length > 0) {
+          for (const sel of item.lotSelections) {
+            if (sel.type === 'RECIPE') {
+              const lotRecipe = await RecipeService.getRecipeById(sel.selectedId);
+              if (!lotRecipe) continue;
+              const lotFormat = sel.format || 100;
+              const totalGrams = lotFormat * 1 * item.quantity;
+              for (const ing of lotRecipe.items) {
+                const usage = (totalGrams * ing.percentage) / 100;
+                await InventoryService.addMovement(
+                  orgId,
+                  ing.ingredientId,
+                  MovementType.ADJUSTMENT,
+                  usage,
+                  undefined,
+                  `Revert Order #${order.id} (Pack Lot) - Restock`,
+                  EntityType.INGREDIENT,
+                  MovementSource.ORDER,
+                  order.id
+                );
+              }
+            } else if (sel.type === 'PACKAGING') {
+              await InventoryService.addMovement(
+                orgId,
+                sel.selectedId,
+                MovementType.ADJUSTMENT,
+                item.quantity,
+                undefined,
+                `Revert Order #${order.id} (Pack Lot) - Return Accessory`,
+                EntityType.PACKAGING,
+                MovementSource.ORDER,
+                order.id
+              );
+            }
+          }
         }
       }
     }

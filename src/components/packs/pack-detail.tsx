@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Pack, PackRecipeItem, PackPackagingItem } from '@/types/pack';
-import { Recipe } from '@/types/recipe';
+import { Pack, PackRecipeItem, PackPackagingItem, PackRecipeLot, PackPackagingLot } from '@/types/pack';
+import { Recipe, PACK_RECIPE_FORMATS } from '@/types/recipe';
 import { Ingredient } from '@/types/inventory';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,6 +22,7 @@ import {
   Package as PackageIcon,
   ChefHat,
   Calculator,
+  Layers,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -48,6 +49,49 @@ export function PackDetail({ initialPack, recipes, ingredients }: PackDetailProp
         i.category?.toLowerCase().includes('emballage')
     );
   }, [ingredients]);
+
+  const accessoryIngredients = useMemo(() => {
+    return ingredients.filter(
+      (i) =>
+        i.category?.toLowerCase().includes('accessoire')
+    );
+  }, [ingredients]);
+
+  // Lot cost calculations
+  const recipeLotsCost = useMemo(() => {
+    return (pack.recipeLots || []).reduce((sum, lot) => {
+      if (lot.options.length === 0) return sum;
+      let optCostsSum = 0;
+      for (const opt of lot.options) {
+        const recipe = recipes.find((r) => r.id === opt.recipeId);
+        if (!recipe) continue;
+        let costPer100g = 0;
+        recipe.items.forEach((ri) => {
+          const ing = ingredients.find((i) => i.id === ri.ingredientId);
+          if (ing) {
+            costPer100g += ri.percentage * (ing.weightedAverageCost / 1000);
+          }
+        });
+        const itemWeight = typeof lot.format === 'number' ? lot.format : 0;
+        optCostsSum += (itemWeight / 100) * costPer100g;
+      }
+      const avgCost = optCostsSum / lot.options.length;
+      return sum + avgCost * lot.quantity;
+    }, 0);
+  }, [pack.recipeLots, recipes, ingredients]);
+
+  const packagingLotsCost = useMemo(() => {
+    return (pack.packagingLots || []).reduce((sum, lot) => {
+      if (lot.options.length === 0) return sum;
+      let optCostsSum = 0;
+      for (const opt of lot.options) {
+        const ing = ingredients.find((i) => i.id === opt.ingredientId);
+        if (ing) optCostsSum += ing.weightedAverageCost;
+      }
+      const avgCost = optCostsSum / lot.options.length;
+      return sum + avgCost * lot.quantity;
+    }, 0);
+  }, [pack.packagingLots, ingredients]);
 
   // Calculations
   const recipesCost = useMemo(() => {
@@ -97,7 +141,7 @@ export function PackDetail({ initialPack, recipes, ingredients }: PackDetailProp
     }, 0);
   }, [pack.packaging, ingredients]);
 
-  const totalCost = recipesCost + packagingCost;
+  const totalCost = recipesCost + packagingCost + recipeLotsCost + packagingLotsCost;
   const margin = pack.price > 0 ? ((pack.price - totalCost) / pack.price) * 100 : 0;
 
   const handleSave = async () => {
@@ -142,6 +186,37 @@ export function PackDetail({ initialPack, recipes, ingredients }: PackDetailProp
           id: Math.random().toString(36).substr(7),
           ingredientId: packagingIngredients[0].id,
           quantity: 1,
+        },
+      ],
+    }));
+  };
+
+  const addRecipeLot = () => {
+    setPack((p) => ({
+      ...p,
+      recipeLots: [
+        ...(p.recipeLots || []),
+        {
+          id: Math.random().toString(36).substr(7),
+          label: '',
+          format: 100,
+          quantity: 1,
+          options: [],
+        },
+      ],
+    }));
+  };
+
+  const addPackagingLot = () => {
+    setPack((p) => ({
+      ...p,
+      packagingLots: [
+        ...(p.packagingLots || []),
+        {
+          id: Math.random().toString(36).substr(7),
+          label: '',
+          quantity: 1,
+          options: [],
         },
       ],
     }));
@@ -340,6 +415,257 @@ export function PackDetail({ initialPack, recipes, ingredients }: PackDetailProp
               )}
             </CardContent>
           </Card>
+
+          {/* Recipe Lots Section */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Layers className="w-5 h-5 text-purple-600" />
+                Lots Recettes (Choix client)
+              </CardTitle>
+              <Button size="sm" variant="outline" onClick={addRecipeLot}>
+                <Plus className="w-4 h-4 mr-1" /> Ajouter un lot
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {(pack.recipeLots || []).map((lot, lotIdx) => (
+                <div
+                  key={lot.id}
+                  className="p-4 border rounded-lg bg-purple-50/50 dark:bg-purple-900/10 dark:border-purple-900/30 space-y-3"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 space-y-1">
+                      <label className="text-xs font-medium text-slate-500">Label du lot</label>
+                      <Input
+                        placeholder="Ex: Choix du thé"
+                        value={lot.label || ''}
+                        onChange={(e) => {
+                          const newLots = [...(pack.recipeLots || [])];
+                          newLots[lotIdx] = { ...newLots[lotIdx], label: e.target.value };
+                          setPack({ ...pack, recipeLots: newLots });
+                        }}
+                      />
+                    </div>
+                    <div className="w-24 space-y-1">
+                      <label className="text-xs font-medium text-slate-500">Format</label>
+                      <Select
+                        value={lot.format.toString()}
+                        onValueChange={(v) => {
+                          const newLots = [...(pack.recipeLots || [])];
+                          newLots[lotIdx] = { ...newLots[lotIdx], format: parseInt(v) };
+                          setPack({ ...pack, recipeLots: newLots });
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {PACK_RECIPE_FORMATS.map((f) => (
+                            <SelectItem key={f} value={f.toString()}>
+                              {f}g
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-red-500 hover:text-red-600 hover:bg-red-50 mt-5"
+                      onClick={() => {
+                        const newLots = (pack.recipeLots || []).filter((l) => l.id !== lot.id);
+                        setPack({ ...pack, recipeLots: newLots });
+                      }}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+
+                  <div className="space-y-2 pl-2">
+                    <label className="text-xs font-medium text-slate-500">Options (recettes)</label>
+                    {lot.options.map((opt, optIdx) => (
+                      <div key={optIdx} className="flex items-center gap-2">
+                        <Select
+                          value={opt.recipeId}
+                          onValueChange={(v) => {
+                            const newLots = [...(pack.recipeLots || [])];
+                            const newOpts = [...newLots[lotIdx].options];
+                            newOpts[optIdx] = { recipeId: v };
+                            newLots[lotIdx] = { ...newLots[lotIdx], options: newOpts };
+                            setPack({ ...pack, recipeLots: newLots });
+                          }}
+                        >
+                          <SelectTrigger className="flex-1">
+                            <SelectValue placeholder="Choisir une recette" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {recipes.map((r) => (
+                              <SelectItem key={r.id} value={r.id}>
+                                {r.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-red-500"
+                          onClick={() => {
+                            const newLots = [...(pack.recipeLots || [])];
+                            const newOpts = newLots[lotIdx].options.filter((_, i) => i !== optIdx);
+                            newLots[lotIdx] = { ...newLots[lotIdx], options: newOpts };
+                            setPack({ ...pack, recipeLots: newLots });
+                          }}
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    ))}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="text-xs"
+                      onClick={() => {
+                        if (recipes.length === 0) return;
+                        const newLots = [...(pack.recipeLots || [])];
+                        newLots[lotIdx] = {
+                          ...newLots[lotIdx],
+                          options: [...newLots[lotIdx].options, { recipeId: recipes[0].id }],
+                        };
+                        setPack({ ...pack, recipeLots: newLots });
+                      }}
+                    >
+                      <Plus className="w-3 h-3 mr-1" /> Ajouter une option
+                    </Button>
+                  </div>
+                  <Badge variant="secondary" className="text-xs">
+                    {lot.options.length} option{lot.options.length > 1 ? 's' : ''}
+                  </Badge>
+                </div>
+              ))}
+              {(!pack.recipeLots || pack.recipeLots.length === 0) && (
+                <div className="text-center py-6 text-slate-400 dark:text-slate-500 text-sm">
+                  Aucun lot recette. Le client n'a pas de choix de recette.
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Packaging Lots Section */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Layers className="w-5 h-5 text-teal-600" />
+                Lots Accessoires (Choix client)
+              </CardTitle>
+              <Button size="sm" variant="outline" onClick={addPackagingLot}>
+                <Plus className="w-4 h-4 mr-1" /> Ajouter un lot
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {(pack.packagingLots || []).map((lot, lotIdx) => (
+                <div
+                  key={lot.id}
+                  className="p-4 border rounded-lg bg-teal-50/50 dark:bg-teal-900/10 dark:border-teal-900/30 space-y-3"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 space-y-1">
+                      <label className="text-xs font-medium text-slate-500">Label du lot</label>
+                      <Input
+                        placeholder="Ex: Choix de l'accessoire"
+                        value={lot.label || ''}
+                        onChange={(e) => {
+                          const newLots = [...(pack.packagingLots || [])];
+                          newLots[lotIdx] = { ...newLots[lotIdx], label: e.target.value };
+                          setPack({ ...pack, packagingLots: newLots });
+                        }}
+                      />
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-red-500 hover:text-red-600 hover:bg-red-50 mt-5"
+                      onClick={() => {
+                        const newLots = (pack.packagingLots || []).filter((l) => l.id !== lot.id);
+                        setPack({ ...pack, packagingLots: newLots });
+                      }}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+
+                  <div className="space-y-2 pl-2">
+                    <label className="text-xs font-medium text-slate-500">Options (accessoires/packaging)</label>
+                    {lot.options.map((opt, optIdx) => (
+                      <div key={optIdx} className="flex items-center gap-2">
+                        <Select
+                          value={opt.ingredientId}
+                          onValueChange={(v) => {
+                            const newLots = [...(pack.packagingLots || [])];
+                            const newOpts = [...newLots[lotIdx].options];
+                            newOpts[optIdx] = { ingredientId: v };
+                            newLots[lotIdx] = { ...newLots[lotIdx], options: newOpts };
+                            setPack({ ...pack, packagingLots: newLots });
+                          }}
+                        >
+                          <SelectTrigger className="flex-1">
+                            <SelectValue placeholder="Choisir un accessoire" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {[...packagingIngredients, ...accessoryIngredients].map((i) => (
+                              <SelectItem key={i.id} value={i.id}>
+                                {i.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-red-500"
+                          onClick={() => {
+                            const newLots = [...(pack.packagingLots || [])];
+                            const newOpts = newLots[lotIdx].options.filter((_, i) => i !== optIdx);
+                            newLots[lotIdx] = { ...newLots[lotIdx], options: newOpts };
+                            setPack({ ...pack, packagingLots: newLots });
+                          }}
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    ))}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="text-xs"
+                      onClick={() => {
+                        const allOpts = [...packagingIngredients, ...accessoryIngredients];
+                        if (allOpts.length === 0) return;
+                        const newLots = [...(pack.packagingLots || [])];
+                        newLots[lotIdx] = {
+                          ...newLots[lotIdx],
+                          options: [...newLots[lotIdx].options, { ingredientId: allOpts[0].id }],
+                        };
+                        setPack({ ...pack, packagingLots: newLots });
+                      }}
+                    >
+                      <Plus className="w-3 h-3 mr-1" /> Ajouter une option
+                    </Button>
+                  </div>
+                  <Badge variant="secondary" className="text-xs">
+                    {lot.options.length} option{lot.options.length > 1 ? 's' : ''}
+                  </Badge>
+                </div>
+              ))}
+              {(!pack.packagingLots || pack.packagingLots.length === 0) && (
+                <div className="text-center py-6 text-slate-400 dark:text-slate-500 text-sm">
+                  Aucun lot accessoire. Le client n'a pas de choix d'accessoire.
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
         <div className="space-y-6">
@@ -357,10 +683,22 @@ export function PackDetail({ initialPack, recipes, ingredients }: PackDetailProp
                   <span className="text-slate-600 dark:text-slate-400">Coût Matière (Recettes)</span>
                   <span className="text-slate-900 dark:text-slate-200">{recipesCost.toFixed(2)} €</span>
                 </div>
+                {recipeLotsCost > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-600 dark:text-slate-400">Coût Lots Recettes (moy.)</span>
+                    <span className="text-slate-900 dark:text-slate-200">{recipeLotsCost.toFixed(2)} €</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-600 dark:text-slate-400">Coût Emballage</span>
                   <span className="text-slate-900 dark:text-slate-200">{packagingCost.toFixed(2)} €</span>
                 </div>
+                {packagingLotsCost > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-600 dark:text-slate-400">Coût Lots Accessoires (moy.)</span>
+                    <span className="text-slate-900 dark:text-slate-200">{packagingLotsCost.toFixed(2)} €</span>
+                  </div>
+                )}
                 <div className="pt-2 border-t dark:border-slate-800 flex justify-between font-medium">
                   <span className="text-slate-900 dark:text-slate-100">Coût Total</span>
                   <span className="text-slate-900 dark:text-slate-100">{totalCost.toFixed(2)} €</span>

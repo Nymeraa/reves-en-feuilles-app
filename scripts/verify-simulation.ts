@@ -32,7 +32,7 @@ async function verify() {
      Packaging: 1 * 1.5 = 1.5 €.
      Total: 12.9 €.
     */
-    const packCost = CostEngine.calculatePackCost(packRecipes, packPackaging, recipeMocks, ingCosts);
+    const packCost = CostEngine.calculatePackCost(packRecipes, packPackaging, [], [], recipeMocks, ingCosts);
     if (Math.abs(packCost - 12.9) > 0.001) console.error(`FAIL: Pack Cost. Exp 12.9, Got ${packCost}`);
     else console.log('PASS: Pack Cost calculation correct.');
 

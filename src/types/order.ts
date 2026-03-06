@@ -27,6 +27,14 @@ export interface OrderItem {
   // Custom Specific
   customItems?: { ingredientId: string; percentage: number }[];
 
+  // Pack Lot Selections (choices made by customer)
+  lotSelections?: {
+    lotId: string;
+    type: 'RECIPE' | 'PACKAGING';
+    selectedId: string; // recipeId or ingredientId chosen
+    format?: number;    // for recipe lots
+  }[];
+
   // Common
   versionNumber: number; // Snapshot version
   name: string; // Snapshot for display
@@ -127,6 +135,12 @@ export interface AddOrderItemInput {
   ingredientId?: string;
   format?: RecipeFormat; // e.g., 100
   customItems?: { ingredientId: string; percentage: number }[];
+  lotSelections?: {
+    lotId: string;
+    type: 'RECIPE' | 'PACKAGING';
+    selectedId: string;
+    format?: number;
+  }[];
   quantity: number;
   unitPrice?: number; // Optional override
 }

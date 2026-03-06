@@ -24,6 +24,23 @@ export interface PackPackagingItem {
   quantity: number;
 }
 
+// Lot: a group of recipes where the customer chooses ONE
+export interface PackRecipeLot {
+  id: string;
+  label?: string;  // Ex: "Choix du thé"
+  format: number;  // Same format for all options
+  quantity: number; // Always 1
+  options: { recipeId: string }[];
+}
+
+// Lot: a group of packaging/accessories where the customer chooses ONE
+export interface PackPackagingLot {
+  id: string;
+  label?: string;  // Ex: "Choix de l'accessoire"
+  quantity: number; // Always 1
+  options: { ingredientId: string }[];
+}
+
 export interface Pack {
   id: string;
   organizationId: string;
@@ -35,6 +52,8 @@ export interface Pack {
   // Components
   recipes: PackRecipeItem[];
   packaging: PackPackagingItem[];
+  recipeLots?: PackRecipeLot[];
+  packagingLots?: PackPackagingLot[];
 
   // Financials
   price: number; // Selling Price TTC
@@ -58,6 +77,8 @@ export interface PackVersion extends Omit<Pack, 'id' | 'status' | 'version'> {
   // Locked Components (Deep Copy)
   recipes: PackRecipeItem[];
   packaging: PackPackagingItem[];
+  recipeLots?: PackRecipeLot[];
+  packagingLots?: PackPackagingLot[];
 
   // Locked Financials
   price: number;

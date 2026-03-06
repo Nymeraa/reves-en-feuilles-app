@@ -67,6 +67,7 @@ export async function POST(request: Request) {
           packId: item.packId || undefined,
           ingredientId: item.ingredientId || undefined,
           customItems: item.customItems || undefined,
+          lotSelections: item.lotSelections || undefined,
           format: (item.format || undefined) as any,
           quantity: item.quantity,
           unitPrice: item.unitPrice || undefined,

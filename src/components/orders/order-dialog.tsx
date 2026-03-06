@@ -50,6 +50,7 @@ interface OrderItemRow {
   quantity: number;
   unitPrice?: number;
   customItems?: { ingredientId: string; percentage: number }[];
+  lotSelections?: { lotId: string; type: 'RECIPE' | 'PACKAGING'; selectedId: string; format?: number }[];
 }
 
 export function OrderDialog({
@@ -355,6 +356,7 @@ export function OrderDialog({
       packId: i.type === 'PACK' ? i.itemId : undefined,
       ingredientId: i.type === 'ACCESSORY' ? i.itemId : undefined,
       customItems: i.type === 'CUSTOM' ? i.customItems : undefined,
+      lotSelections: i.type === 'PACK' ? i.lotSelections : undefined,
       format: i.format,
       quantity: i.quantity,
       unitPrice: i.unitPrice,
@@ -675,21 +677,98 @@ export function OrderDialog({
                   )}
 
                   {item.type === 'PACK' && (
-                    <Select
-                      value={item.itemId}
-                      onValueChange={(v) => updateItem(item.tempId, 'itemId', v)}
-                    >
-                      <SelectTrigger className="flex-1 min-w-[200px]">
-                        <SelectValue placeholder="Choisir un pack..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {packs.map((p) => (
-                          <SelectItem key={p.id} value={p.id}>
-                            {p.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <>
+                      <Select
+                        value={item.itemId}
+                        onValueChange={(v) => updateItem(item.tempId, 'itemId', v)}
+                      >
+                        <SelectTrigger className="flex-1 min-w-[200px]">
+                          <SelectValue placeholder="Choisir un pack..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {packs.map((p) => (
+                            <SelectItem key={p.id} value={p.id}>
+                              {p.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {/* Lot selectors for this pack */}
+                      {(() => {
+                        const selectedPack = packs.find((p) => p.id === item.itemId);
+                        if (!selectedPack) return null;
+                        const hasLots = (selectedPack.recipeLots?.length || 0) > 0 || (selectedPack.packagingLots?.length || 0) > 0;
+                        if (!hasLots) return null;
+                        return (
+                          <div className="w-full flex flex-col gap-1 ml-2 mt-1">
+                            {(selectedPack.recipeLots || []).map((lot) => {
+                              const currentSelection = (item.lotSelections || []).find((ls) => ls.lotId === lot.id);
+                              return (
+                                <div key={lot.id} className="flex items-center gap-2">
+                                  <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                    {lot.label || 'Choix recette'} ({lot.format}g):
+                                  </span>
+                                  <Select
+                                    value={currentSelection?.selectedId || ''}
+                                    onValueChange={(v) => {
+                                      const newSelections = [...(item.lotSelections || []).filter((ls) => ls.lotId !== lot.id)];
+                                      newSelections.push({ lotId: lot.id, type: 'RECIPE', selectedId: v, format: lot.format });
+                                      updateItem(item.tempId, 'lotSelections', newSelections);
+                                    }}
+                                  >
+                                    <SelectTrigger className="h-7 text-xs flex-1">
+                                      <SelectValue placeholder="Choisir..." />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {lot.options.map((opt) => {
+                                        const recipe = recipes.find((r) => r.id === opt.recipeId);
+                                        return (
+                                          <SelectItem key={opt.recipeId} value={opt.recipeId}>
+                                            {recipe?.name || opt.recipeId}
+                                          </SelectItem>
+                                        );
+                                      })}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              );
+                            })}
+                            {(selectedPack.packagingLots || []).map((lot) => {
+                              const currentSelection = (item.lotSelections || []).find((ls) => ls.lotId === lot.id);
+                              return (
+                                <div key={lot.id} className="flex items-center gap-2">
+                                  <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                    {lot.label || 'Choix accessoire'}:
+                                  </span>
+                                  <Select
+                                    value={currentSelection?.selectedId || ''}
+                                    onValueChange={(v) => {
+                                      const newSelections = [...(item.lotSelections || []).filter((ls) => ls.lotId !== lot.id)];
+                                      newSelections.push({ lotId: lot.id, type: 'PACKAGING', selectedId: v });
+                                      updateItem(item.tempId, 'lotSelections', newSelections);
+                                    }}
+                                  >
+                                    <SelectTrigger className="h-7 text-xs flex-1">
+                                      <SelectValue placeholder="Choisir..." />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {lot.options.map((opt) => {
+                                        const ing = ingredients.find((i) => i.id === opt.ingredientId);
+                                        return (
+                                          <SelectItem key={opt.ingredientId} value={opt.ingredientId}>
+                                            {ing?.name || opt.ingredientId}
+                                          </SelectItem>
+                                        );
+                                      })}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        );
+                      })()}
+                    </>
                   )}
 
                   {item.type === 'ACCESSORY' && (

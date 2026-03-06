@@ -56,6 +56,12 @@ export const orderItemSchema = z.object({
     ingredientId: z.string(),
     percentage: z.number()
   })).optional(),
+  lotSelections: z.array(z.object({
+    lotId: z.string(),
+    type: z.enum(['RECIPE', 'PACKAGING']),
+    selectedId: z.string(),
+    format: z.coerce.number().optional(),
+  })).optional(),
 });
 
 export const createOrderSchema = z.object({
