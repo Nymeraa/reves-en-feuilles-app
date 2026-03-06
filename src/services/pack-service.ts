@@ -116,8 +116,8 @@ export const PackService = {
       margin: 0,
     };
 
-    // Exclude recipes/packaging from DB payload (Prisma doesn't know them)
-    const { recipes, packaging, ...dbPayload } = newPack;
+    // Exclude recipes/packaging/lots from DB payload (Prisma doesn't know them)
+    const { recipes, packaging, recipeLots, packagingLots, ...dbPayload } = newPack;
 
     await db.upsert('packs', dbPayload, orgId);
 
