@@ -237,7 +237,14 @@
   box-sizing: border-box;
 }
 
-/* Hide border during PDF export and fix hairlines */
+/* ===== PDF EXPORT MODE ===== */
+/* Objectif : surface propre sans artefacts sub-pixel, sans ombres, sans overlays */
+
+/* Strip paperA4 shadow */
+:global(.pdf-export-mode) {
+  box-shadow: none !important;
+}
+
 :global(.pdf-export-mode) .labelSlot {
   border: none !important;
   margin: 0 !important;
@@ -246,29 +253,30 @@
   width: 100% !important;
   height: 100% !important;
   overflow: hidden !important;
-  background-color: transparent !important; /* Let the grid background shine through any gaps */
+  background-color: transparent !important;
 }
 
 :global(.pdf-export-mode) .labelContent {
-  /* This prevents the inline 1px var(--border) border from rendering during PDF export */
   border: none !important;
+  box-shadow: none !important; /* Supprime le box-shadow rgba qui crée des artefacts jaunes */
 }
 
-/* 
-  NEW PARADIGM: Instead of trying to make the cells overlap perfectly (impossible with html-to-image scaling),
-  we color the backdrop of the entire grid with the label color. Thus, any sub-pixel gap will just reveal the identical 
-  color behind it, rendering the gap entirely invisible.
-*/
+/* Masquer les infos de debug (fond rgba semi-transparent) */
+:global(.pdf-export-mode) .debugInfo {
+  display: none !important;
+}
+
+/* GRILLES : dimensions fixes en mm (jamais de %) pour éviter les coutures sub-pixel */
 :global(.pdf-export-mode) .gridSmall {
-  grid-template-columns: 50% 50% !important;
-  grid-template-rows: 25% 25% 25% 25% !important;
+  grid-template-columns: 105mm 105mm !important;
+  grid-template-rows: 74.25mm 74.25mm 74.25mm 74.25mm !important;
   gap: 0 !important;
   background-color: var(--grid-bg-fill) !important;
 }
 
 :global(.pdf-export-mode) .gridLarge {
-  grid-template-columns: 50% 50% !important;
-  grid-template-rows: 50% 50% !important;
+  grid-template-columns: 105mm 105mm !important;
+  grid-template-rows: 148.5mm 148.5mm !important;
   gap: 0 !important;
   background-color: var(--grid-bg-fill) !important;
 }
