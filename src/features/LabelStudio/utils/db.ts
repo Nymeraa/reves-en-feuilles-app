@@ -233,7 +233,20 @@ export const deleteBatch = async (id: string): Promise<void> => {
 };
 
 export const getAllBatches = async (): Promise<BatchData[]> => {
-  const cloudBatches = await fetchCloudData('batches');
+  let cloudBatches = await fetchCloudData('batches');
+  
+  // Parse stringified labels array from the cloud
+  cloudBatches = cloudBatches.map(b => {
+    if (typeof b.labels === 'string') {
+      try {
+        b.labels = JSON.parse(b.labels);
+      } catch(e) {
+        console.error('Failed to parse cloud batch labels', e);
+        b.labels = [];
+      }
+    }
+    return b;
+  });
 
   const db = await initDB();
   const localBatches = await new Promise<BatchData[]>((resolve) => {
@@ -406,7 +419,19 @@ export const saveTemplate = async (template: LibraryTemplate): Promise<void> => 
 };
 
 export const getTemplates = async (): Promise<LibraryTemplate[]> => {
-  const cloudTemplates = await fetchCloudData('templates');
+  let cloudTemplates = await fetchCloudData('templates');
+  
+  // Parse stringified design objects from the cloud
+  cloudTemplates = cloudTemplates.map(t => {
+    if (typeof t.design === 'string') {
+      try { 
+        t.design = JSON.parse(t.design); 
+      } catch(e) {
+        console.error('Failed to parse cloud template design', e);
+      }
+    }
+    return t;
+  });
 
   const db = await initDB();
   const localTemplates = await new Promise<LibraryTemplate[]>((resolve) => {
@@ -511,12 +536,29 @@ export const deletePresetFromDB = async (id: string): Promise<void> => {
 };
 
 export const getAllPresets = async (): Promise<ElementPreset[]> => {
+  let cloudPresets = await fetchCloudData('presets');
+  
+  // Parse stringified properties from the cloud
+  cloudPresets = cloudPresets.map(p => {
+    if (typeof p.properties === 'string') {
+      try {
+        p.properties = JSON.parse(p.properties);
+      } catch(e) {
+        console.error('Failed to parse cloud preset properties', e);
+        p.properties = {};
+      }
+    }
+    return p;
+  });
+
   const db = await initDB();
-  return new Promise((resolve, reject) => {
+  const localPresets = await new Promise<ElementPreset[]>((resolve) => {
     const transaction = db.transaction([PRESET_STORE], 'readonly');
     const store = transaction.objectStore(PRESET_STORE);
     const request = store.getAll();
     request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject('Error getting presets');
+    request.onerror = () => resolve([]);
   });
+
+  return mergeHybridData(localPresets, cloudPresets);
 };
