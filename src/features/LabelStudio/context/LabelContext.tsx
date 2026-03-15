@@ -410,6 +410,19 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
     // Apply design (Deep copy to avoid ref issues)
     const designToApply = JSON.parse(JSON.stringify(template.design));
 
+    // IMPORTANT: Regenerate unique IDs for all elements to avoid React key collisions
+    // and shared state bugs if the same template is applied to multiple labels.
+    if (designToApply.elements && Array.isArray(designToApply.elements)) {
+      designToApply.elements = designToApply.elements.map((el: LabelElement) => {
+        // Extract the original suffix/identifier from the template element's ID
+        const suffix = el.id.includes('_') ? el.id.split('_').pop() : el.id;
+        return {
+          ...el,
+          id: `${selectedLabelId}_${suffix}`,
+        };
+      });
+    }
+
     updateLabel(selectedLabelId, {
       design: designToApply,
     });
