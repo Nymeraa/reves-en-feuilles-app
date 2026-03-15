@@ -895,13 +895,19 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
         const clonedElements = structuredClone(sourceLabel.design.elements);
 
         // Apply the cloned design to all other labels in the batch
+        // IMPORTANT: Regenerate unique IDs per label to avoid shared-ID drag bugs
         return {
           ...batch,
           labels: batch.labels.map((label) => ({
             ...label,
             design: {
               ...label.design,
-              elements: structuredClone(clonedElements),
+              elements: structuredClone(clonedElements).map(
+                (el: LabelElement) => ({
+                  ...el,
+                  id: `${label.id}_${el.id.split('_').pop()}`,
+                })
+              ),
             },
           })),
         };
