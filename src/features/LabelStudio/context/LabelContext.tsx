@@ -414,8 +414,11 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
     // and shared state bugs if the same template is applied to multiple labels.
     if (designToApply.elements && Array.isArray(designToApply.elements)) {
       designToApply.elements = designToApply.elements.map((el: LabelElement) => {
+        // Safe check for el.id existence (old templates might have corrupted data)
+        const originalId = el.id || `text_${Date.now()}_${Math.random()}`;
         // Extract the original suffix/identifier from the template element's ID
-        const suffix = el.id.includes('_') ? el.id.split('_').pop() : el.id;
+        const suffix = originalId.includes('_') ? originalId.split('_').pop() : originalId;
+        
         return {
           ...el,
           id: `${selectedLabelId}_${suffix}`,
