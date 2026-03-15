@@ -408,23 +408,26 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
       return;
 
     // Apply design (Deep copy to avoid ref issues)
-    const designToApply = JSON.parse(JSON.stringify(template.design));
+    // Fallback to empty object if template.design is undefined (old/corrupted models)
+    const designToApply = template?.design ? JSON.parse(JSON.stringify(template.design)) : {};
 
     // IMPORTANT: Regenerate unique IDs for all elements to avoid React key collisions
     // and shared state bugs if the same template is applied to multiple labels.
-    if (designToApply.elements && Array.isArray(designToApply.elements)) {
-      designToApply.elements = designToApply.elements.map((el: LabelElement) => {
-        // Safe check for el.id existence (old templates might have corrupted data)
-        const originalId = el.id || `text_${Date.now()}_${Math.random()}`;
-        // Extract the original suffix/identifier from the template element's ID
-        const suffix = originalId.includes('_') ? originalId.split('_').pop() : originalId;
-        
-        return {
-          ...el,
-          id: `${selectedLabelId}_${suffix}`,
-        };
-      });
+    if (!designToApply.elements || !Array.isArray(designToApply.elements)) {
+      designToApply.elements = [];
     }
+
+    designToApply.elements = designToApply.elements.map((el: LabelElement) => {
+      // Safe check for el.id existence (old templates might have corrupted data)
+      const originalId = el.id || `text_${Date.now()}_${Math.random()}`;
+      // Extract the original suffix/identifier from the template element's ID
+      const suffix = originalId.includes('_') ? originalId.split('_').pop() : originalId;
+      
+      return {
+        ...el,
+        id: `${selectedLabelId}_${suffix}`,
+      };
+    });
 
     updateLabel(selectedLabelId, {
       design: designToApply,
