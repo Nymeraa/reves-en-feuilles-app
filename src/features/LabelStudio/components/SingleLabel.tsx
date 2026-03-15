@@ -55,7 +55,7 @@ const SingleLabel: React.FC<SingleLabelProps> = ({ labelId, design, format }) =>
           }}
         >
           {/* Elements Rendering */}
-          {design.elements.map((el) => {
+          {(design.elements || []).map((el) => {
             const isSelected = selectedElementId === el.id;
 
             if (el.type === 'text') {
