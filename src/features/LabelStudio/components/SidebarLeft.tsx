@@ -1279,7 +1279,7 @@ function FolderTree({
     <div
       onDragOver={handleDragOver}
       onDrop={(e) => handleDrop(e, null)}
-      style={{ minHeight: '100%;', paddingBottom: '30px' }}
+      style={{ minHeight: '100%', paddingBottom: '30px' }}
     >
       {rootFolders.map((folder) => (
         <FolderNode

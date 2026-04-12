@@ -463,34 +463,34 @@ export const moveItem = async (
   type: 'folder' | 'template',
   targetFolderId: string | null
 ): Promise<void> => {
-  const db = await initDB();
   const storeName = type === 'folder' ? 'folders' : 'templates';
 
+  // 1. Fetch item from hybrid storage (Cloud + Local)
+  const allItems = type === 'folder' ? await getFolders() : await getTemplates();
+  const item = allItems.find(i => i.id === itemId);
+
+  if (!item) {
+    throw new Error('Item not found');
+  }
+
+  // 2. Update parent/folder location
+  if (type === 'folder') {
+    (item as LibraryFolder).parentId = targetFolderId;
+  } else {
+    (item as LibraryTemplate).folderId = targetFolderId;
+  }
+
+  // 3. Sync the move to Cloud
+  saveToCloud(storeName, item).catch(err => console.error("Cloud sync failed on move:", err));
+
+  // 4. Update or insert the updated item back into Local DB
+  const db = await initDB();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction([storeName], 'readwrite');
     const store = transaction.objectStore(storeName);
-    const getRequest = store.get(itemId);
-
-    getRequest.onsuccess = () => {
-      const item = getRequest.result;
-      if (!item) {
-        reject('Item not found');
-        return;
-      }
-
-      // Update parentId or folderId
-      if (type === 'folder') {
-        item.parentId = targetFolderId;
-      } else {
-        item.folderId = targetFolderId;
-      }
-
-      const putRequest = store.put(item);
-      putRequest.onsuccess = () => resolve();
-      putRequest.onerror = () => reject('Error moving item');
-    };
-
-    getRequest.onerror = () => reject('Error fetching item to move');
+    const putRequest = store.put(item);
+    putRequest.onsuccess = () => resolve();
+    putRequest.onerror = () => reject('Error moving item locally');
   });
 };
 

@@ -16,6 +16,11 @@ export const DraggableElement: React.FC<DraggableProps> = ({ element, slotIndex,
     const { state, actions } = useLabelStore();
     const ref = useRef<HTMLDivElement>(null);
     const [isDragging, setIsDragging] = useState(false);
+    
+    // Performance: État local pour le glisser/redimensionner afin d'éviter 
+    // de redessiner toutes les étiquettes 60 fois par seconde pendant l'action
+    const [localOffset, setLocalOffset] = useState({ x: 0, y: 0 });
+    const [localScaleOffset, setLocalScaleOffset] = useState(0);
 
     // Selection State
     const isSelected = state.selectedElementId === element.id && (state.selectedSlotIndex === slotIndex || state.selectedSlotIndex === null);
@@ -37,50 +42,48 @@ export const DraggableElement: React.FC<DraggableProps> = ({ element, slotIndex,
         const startElX = element.x;
         const startElY = element.y;
 
+        let finalDXmm = 0;
+        let finalDYmm = 0;
+
         const onMouseMove = (ev: MouseEvent) => {
             const dx = ev.clientX - startX;
             const dy = ev.clientY - startY;
 
             // SCALE CORRECTION: We zoom the canvas, so 1px moved mouse != 1mm.
-            // 1mm ~ 3.78px.
-            // And Zoom factor applies.
             const mmPerPx = 25.4 / 96; // ~0.264
-            // Zoom Factor:
             const zoom = state.zoom;
 
-            // Effective Change in MM
             let dXmm = dx * mmPerPx / zoom;
             let dYmm = dy * mmPerPx / zoom;
 
             // AXIS INVERSION for Rotated Content (Format A)
-            // If content is rotated 90deg, visually Horizontal drag moves along the element's Vertical axis.
             if (isRotated) {
-                // Visual Right (X+) -> Element Y+ (Down in rotated frame) ? 
-                // Or Y- (Up)? 
-                // Let's assume Standard 90deg CW rotation.
-                // Visual X+ aligns with Element Y-.
-                // Visual Y+ aligns with Element X+.
-                // Let's try:
                 const temp = dXmm;
                 dXmm = dYmm;   // Visual Y -> Element X
                 dYmm = -temp;  // Visual X -> Element Y (inverted)
-                // We'll calibrate this via "try/fail" mental model or strict standard.
-                // Standard CSS Rotate 90deg:
-                // X axis points Down. Y axis points Left.
-                // Wait.
-                // Let's just implement X->Y and Y->X basic swap first. user said "X devient Y".
             }
 
-            actions.updateSelected({
-                x: startElX + dXmm,
-                y: startElY + dYmm
-            });
+            finalDXmm = dXmm;
+            finalDYmm = dYmm;
+
+            // PERFORMANCE: On met à jour uniquement l'état local pour fluidifier le rendu
+            // Sans causer de redessin global de toutes les autres étiquettes.
+            setLocalOffset({ x: dXmm, y: dYmm });
         };
 
         const onMouseUp = () => {
             setIsDragging(false);
             window.removeEventListener('mousemove', onMouseMove);
             window.removeEventListener('mouseup', onMouseUp);
+            
+            // On envoie le changement au Store Global SEULEMENT quand le clic est relaché.
+            if (finalDXmm !== 0 || finalDYmm !== 0) {
+                actions.updateSelected({
+                    x: startElX + finalDXmm,
+                    y: startElY + finalDYmm
+                });
+                setLocalOffset({ x: 0, y: 0 }); // On réinitialise l'offset local
+            }
         };
 
         window.addEventListener('mousemove', onMouseMove);
@@ -102,10 +105,10 @@ export const DraggableElement: React.FC<DraggableProps> = ({ element, slotIndex,
             onMouseDown={handleMouseDown}
             style={{
                 position: 'absolute',
-                left: `${element.x}mm`,
-                top: `${element.y}mm`,
-                width: `${element.width * element.scale}mm`,
-                height: `${element.height * element.scale}mm`,
+                left: `${element.x + localOffset.x}mm`,
+                top: `${element.y + localOffset.y}mm`,
+                width: `${element.width * Math.max(0.1, element.scale + localScaleOffset)}mm`,
+                height: `${element.height * Math.max(0.1, element.scale + localScaleOffset)}mm`,
                 // Rotation is usually internal to element logic or visual.
                 // If isRotated is true (Format A), the whole SLOT is rotated? 
                 // No, the user said "Content is rotated".
@@ -135,16 +138,24 @@ export const DraggableElement: React.FC<DraggableProps> = ({ element, slotIndex,
                         // ...
                         const startY = e.clientY;
                         const startScale = element.scale;
+                        
+                        let finalScaleOffset = 0;
 
                         const onMove = (ev: MouseEvent) => {
                             const dy = ev.clientY - startY;
                             // Simple scale interact: Down = Grow.
-                            const newScale = Math.max(0.1, startScale + (dy * 0.01));
-                            actions.updateSelected({ scale: newScale });
+                            finalScaleOffset = dy * 0.01;
+                            setLocalScaleOffset(finalScaleOffset);
                         };
                         const onUp = () => {
                             window.removeEventListener('mousemove', onMove);
                             window.removeEventListener('mouseup', onUp);
+                            
+                            if (finalScaleOffset !== 0) {
+                                const finalNewScale = Math.max(0.1, startScale + finalScaleOffset);
+                                actions.updateSelected({ scale: finalNewScale });
+                                setLocalScaleOffset(0);
+                            }
                         }
                         window.addEventListener('mousemove', onMove);
                         window.addEventListener('mouseup', onUp);

@@ -306,18 +306,24 @@ export const LabelProvider = ({ children }: { children: ReactNode }) => {
 
   // Auto-save batches whenever they change
   React.useEffect(() => {
-    const saveBatches = async () => {
-      try {
-        for (const batch of batches) {
-          await saveBatchToDB({ ...batch, timestamp: Date.now() });
+    if (batches.length === 0) return;
+
+    // PERFORMANCE FIX: Debounce auto-save to prevent IndexedDB flooding
+    // when dragging sliders or frequent updates that push 60fps array modifications.
+    const timeoutId = setTimeout(() => {
+      const saveBatches = async () => {
+        try {
+          for (const batch of batches) {
+            await saveBatchToDB({ ...batch, timestamp: Date.now() });
+          }
+        } catch (error) {
+          console.error('Failed to save batches:', error);
         }
-      } catch (error) {
-        console.error('Failed to save batches:', error);
-      }
-    };
-    if (batches.length > 0) {
+      };
       saveBatches();
-    }
+    }, 1000);
+
+    return () => clearTimeout(timeoutId);
   }, [batches]);
 
   // --- LIBRARY LOGIC ---

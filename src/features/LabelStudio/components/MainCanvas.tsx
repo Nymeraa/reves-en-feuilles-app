@@ -52,6 +52,7 @@ const MainCanvas: React.FC = () => {
     initialLabelX: number;
     initialLabelY: number;
   } | null>(null);
+  const dragDeltaRef = React.useRef({ percentX: 0, percentY: 0 });
   const hasSnapshotRef = React.useRef(false);
 
   const activeBatch = batches.find((b) => b.id === activeBatchId);
@@ -193,26 +194,40 @@ const MainCanvas: React.FC = () => {
       hasSnapshotRef.current = true;
     }
 
-    updateLabelElement(
-      selectedLabelId,
-      selectedElementId,
-      {
-        x: dragStartRef.current.initialLabelX + percentDeltaX,
-        y: dragStartRef.current.initialLabelY + percentDeltaY,
-      },
-      false // Skip history during drag
-    );
+    dragDeltaRef.current = { percentX: percentDeltaX, percentY: percentDeltaY };
+
+    const newX = dragStartRef.current.initialLabelX + percentDeltaX;
+    const newY = dragStartRef.current.initialLabelY + percentDeltaY;
+
+    // PERFORMANCE FIX: Update DOM directly during drag
+    const elementNode = document.querySelector(`[data-id="${selectedElementId}"]`) as HTMLElement;
+    if (elementNode) {
+      elementNode.style.left = `${newX}%`;
+      elementNode.style.top = `${newY}%`;
+    }
   };
 
   const handleMouseUp = () => {
     if (isDragging) {
-      // Final commit could be here if we were using a temp state,
-      // but passing false to history in move updates the 'present' correctly.
-      // The snapshot ensures we can undo.
+      // Save final position to context if moved
+      if (dragStartRef.current && selectedLabelId && selectedElementId) {
+        if (dragDeltaRef.current.percentX !== 0 || dragDeltaRef.current.percentY !== 0) {
+          const newX = dragStartRef.current.initialLabelX + dragDeltaRef.current.percentX;
+          const newY = dragStartRef.current.initialLabelY + dragDeltaRef.current.percentY;
+
+          updateLabelElement(
+            selectedLabelId,
+            selectedElementId,
+            { x: newX, y: newY },
+            false
+          );
+        }
+      }
       hasSnapshotRef.current = false;
     }
     setIsDragging(false);
     dragStartRef.current = null;
+    dragDeltaRef.current = { percentX: 0, percentY: 0 };
   };
 
   const renderGrid = () => {
